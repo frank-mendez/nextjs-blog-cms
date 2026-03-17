@@ -9,14 +9,14 @@ import { toast } from 'sonner'
 import slugify from 'slugify'
 import {
   Loader2, Check, ImageIcon, Tag, Settings2,
-  Search, BarChart3, ChevronLeft, Globe,
+  Search, BarChart3, ChevronLeft, Globe, Send, BookOpen,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Editor } from '@/components/editor/Editor'
-import { createPost, updatePost } from '@/features/posts/actions'
+import { createPost, updatePost, publishPost, unpublishPost } from '@/features/posts/actions'
 import type { PostWithRelations, Category, Tag as TagType } from '@/features/posts/types'
 
 const postSchema = z.object({
@@ -58,8 +58,11 @@ function getTagPalette(index: number) {
 export function PostEditor({ post, categories, tags }: PostEditorProps) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
+  const [publishing, setPublishing] = useState(false)
 
-  const { register, handleSubmit, control, setValue, watch, formState: { errors } } =
+  const isPublished = post?.status === 'published'
+
+  const { register, handleSubmit, control, setValue, watch, getValues, formState: { errors } } =
     useForm<PostFormValues>({
       resolver: zodResolver(postSchema),
       defaultValues: {
@@ -101,14 +104,45 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
 
     if (result.error) {
       toast.error(result.error)
-      setSaving(false)
     } else {
-      toast.success(post ? 'Post updated' : 'Post created')
+      toast.success(post ? 'Draft saved' : 'Post saved as draft')
       if (!post && result.data) {
         router.push(`/dashboard/posts/${result.data.id}/edit`)
       }
     }
     setSaving(false)
+  }
+
+  async function handlePublishToggle() {
+    if (!post) return
+    setPublishing(true)
+
+    if (isPublished) {
+      const result = await unpublishPost(post.id)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success('Post unpublished')
+        router.refresh()
+      }
+    } else {
+      // Save current form values first, then publish
+      const saveResult = await updatePost(post.id, getValues())
+      if (saveResult.error) {
+        toast.error(saveResult.error)
+        setPublishing(false)
+        return
+      }
+      const publishResult = await publishPost(post.id)
+      if (publishResult.error) {
+        toast.error(publishResult.error)
+      } else {
+        toast.success('Post saved and published!')
+        router.refresh()
+      }
+    }
+
+    setPublishing(false)
   }
 
   return (
@@ -131,21 +165,82 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
             size="sm"
             onClick={() => router.push('/dashboard/posts')}
             className="text-muted-foreground"
+            disabled={saving || publishing}
           >
             Discard
           </Button>
-          <Button
-            type="submit"
-            disabled={saving}
-            size="sm"
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-sm shadow-blue-500/25 hover:-translate-y-px transition-all duration-150 px-5"
-          >
-            {saving ? (
-              <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Saving…</>
-            ) : (
-              post ? 'Update Post' : 'Publish Post'
-            )}
-          </Button>
+
+          {/* Save draft — only for existing posts */}
+          {post && (
+            <Button
+              type="submit"
+              disabled={saving || publishing}
+              size="sm"
+              variant="outline"
+              className="border-border/70 hover:-translate-y-px transition-all duration-150 px-4 min-w-[110px]"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Saving…
+                </>
+              ) : (
+                <>
+                  <BookOpen className="mr-1.5 h-3.5 w-3.5" />
+                  Save Draft
+                </>
+              )}
+            </Button>
+          )}
+
+          {/* Publish / Unpublish — only shown for existing posts */}
+          {post && (
+            <Button
+              type="button"
+              disabled={saving || publishing}
+              size="sm"
+              onClick={handlePublishToggle}
+              className={
+                isPublished
+                  ? 'bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-sm shadow-amber-500/25 hover:-translate-y-px transition-all duration-150 px-5 min-w-[130px]'
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-sm shadow-blue-500/25 hover:-translate-y-px transition-all duration-150 px-5 min-w-[130px]'
+              }
+            >
+              {publishing ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  {isPublished ? 'Unpublishing…' : 'Publishing…'}
+                </>
+              ) : (
+                <>
+                  <Send className="mr-1.5 h-3.5 w-3.5" />
+                  {isPublished ? 'Unpublish' : 'Publish'}
+                </>
+              )}
+            </Button>
+          )}
+
+          {/* New post — single publish button */}
+          {!post && (
+            <Button
+              type="submit"
+              disabled={saving}
+              size="sm"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-sm shadow-blue-500/25 hover:-translate-y-px transition-all duration-150 px-5 min-w-[130px]"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Creating…
+                </>
+              ) : (
+                <>
+                  <Send className="mr-1.5 h-3.5 w-3.5" />
+                  Create Post
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 

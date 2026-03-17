@@ -16,7 +16,7 @@ export default async function NewPostPage() {
   ])
 
   return (
-    <div className="p-8 pb-16 animate-page">
+    <div className="p-4 md:p-8 pb-16 animate-page">
       <PostEditor categories={categories ?? []} tags={tags ?? []} />
     </div>
   )

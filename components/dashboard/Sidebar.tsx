@@ -1,19 +1,19 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine,
+  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { can } from '@/lib/permissions'
 import type { Role } from '@/lib/permissions'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import type { Profile } from '@/lib/supabase/types'
 
 interface SidebarProps {
-  profile: Profile
+  readonly profile: Profile
 }
 
 export function Sidebar({ profile }: SidebarProps) {
@@ -21,6 +21,12 @@ export function Sidebar({ profile }: SidebarProps) {
   const router = useRouter()
   const supabase = createClient()
   const role = profile.role as Role
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Close drawer on navigation
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -45,16 +51,23 @@ export function Sidebar({ profile }: SidebarProps) {
   const mainItems = visibleItems.slice(0, 3)
   const adminItems = visibleItems.slice(3)
 
-  return (
-    <aside className="w-64 min-h-screen bg-slate-950 flex flex-col border-r border-slate-800">
+  const sidebarContent = (
+    <>
       {/* Logo */}
-      <div className="p-6">
+      <div className="p-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-shadow">
             <PenLine className="w-4 h-4 text-white" />
           </div>
           <span className="font-bold text-white text-lg tracking-tight">Blog CMS</span>
         </Link>
+        <button
+          className="md:hidden text-slate-400 hover:text-white p-1"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close menu"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -138,6 +151,47 @@ export function Sidebar({ profile }: SidebarProps) {
           Sign out
         </button>
       </div>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14 bg-slate-950 border-b border-slate-800">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600">
+            <PenLine className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-bold text-white text-base tracking-tight">Blog CMS</span>
+        </Link>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="text-slate-400 hover:text-white p-1"
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Backdrop */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar — drawer on mobile, static on md+ */}
+      <aside
+        className={cn(
+          'fixed top-0 left-0 z-50 h-full w-64 bg-slate-950 flex flex-col border-r border-slate-800 transition-transform duration-300 ease-in-out',
+          'md:relative md:translate-x-0 md:z-auto md:h-auto md:min-h-screen',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        )}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   )
 }

@@ -71,9 +71,9 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="p-8 space-y-8 animate-page">
+    <div className="p-4 md:p-8 space-y-8 animate-page">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <p className="text-sm text-muted-foreground font-medium">Good to see you back</p>
           <h1 className="text-3xl font-bold tracking-tight mt-0.5">Hello, {firstName} 👋</h1>

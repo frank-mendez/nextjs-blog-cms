@@ -26,8 +26,8 @@ export default async function PostsPage() {
   )
 
   return (
-    <div className="p-8 space-y-6 animate-page">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6 animate-page">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Posts</h1>
           <p className="text-sm text-muted-foreground mt-0.5">

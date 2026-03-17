@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import NextTopLoader from 'nextjs-toploader'
 import './globals.css'
 
@@ -24,6 +25,9 @@ export default function RootLayout({
         <NextTopLoader showSpinner={false} />
         {children}
       </body>
+      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+      )}
     </html>
   )
 }

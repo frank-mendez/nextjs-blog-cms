@@ -271,6 +271,10 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
               {...register('slug')}
               placeholder="auto-generated-from-title"
               className="flex-1 text-xs text-muted-foreground bg-transparent border-0 outline-none placeholder:text-muted-foreground/40 font-mono"
+              onChange={(e) => {
+                const formatted = slugify(e.target.value, { lower: true, strict: true })
+                setValue('slug', formatted)
+              }}
             />
           </div>
 

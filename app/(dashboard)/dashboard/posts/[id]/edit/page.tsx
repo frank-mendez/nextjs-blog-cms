@@ -28,8 +28,8 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   if (!post) notFound()
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <h1 className="text-3xl font-bold">Edit Post</h1>
         <div className="flex items-center gap-3">
           <PostStatusBadge status={post.status} />

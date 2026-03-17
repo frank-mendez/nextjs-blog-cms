@@ -148,7 +148,7 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {/* ── Sticky action bar ───────────────────────────────────── */}
-      <div className="sticky top-0 z-20 -mx-8 px-8 py-3 mb-6 bg-background/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between gap-4">
+      <div className="sticky top-0 z-20 -mx-4 px-4 md:-mx-8 md:px-8 py-3 mb-6 bg-background/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between gap-4 flex-wrap">
         <button
           type="button"
           onClick={() => router.push('/dashboard/posts')}

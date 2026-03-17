@@ -7,15 +7,17 @@ import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import slugify from 'slugify'
-import { Loader2 } from 'lucide-react'
+import {
+  Loader2, Check, ImageIcon, Tag, Settings2,
+  Search, BarChart3, ChevronLeft, Globe,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
 import { Editor } from '@/components/editor/Editor'
 import { createPost, updatePost } from '@/features/posts/actions'
-import type { PostWithRelations, Category, Tag } from '@/features/posts/types'
+import type { PostWithRelations, Category, Tag as TagType } from '@/features/posts/types'
 
 const postSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -32,9 +34,25 @@ const postSchema = z.object({
 type PostFormValues = z.infer<typeof postSchema>
 
 interface PostEditorProps {
-  post?: PostWithRelations
-  categories: Category[]
-  tags: Tag[]
+  readonly post?: PostWithRelations
+  readonly categories: Category[]
+  readonly tags: TagType[]
+}
+
+// Deterministic color palette for tags — muted, sophisticated hues
+const TAG_PALETTES = [
+  { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700', activeBg: 'bg-rose-500', activeText: 'text-white', activeBorder: 'border-rose-500', dot: 'bg-rose-400' },
+  { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700', activeBg: 'bg-violet-500', activeText: 'text-white', activeBorder: 'border-violet-500', dot: 'bg-violet-400' },
+  { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700', activeBg: 'bg-sky-500', activeText: 'text-white', activeBorder: 'border-sky-500', dot: 'bg-sky-400' },
+  { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', activeBg: 'bg-emerald-500', activeText: 'text-white', activeBorder: 'border-emerald-500', dot: 'bg-emerald-400' },
+  { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', activeBg: 'bg-amber-500', activeText: 'text-white', activeBorder: 'border-amber-500', dot: 'bg-amber-400' },
+  { bg: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-700', activeBg: 'bg-pink-500', activeText: 'text-white', activeBorder: 'border-pink-500', dot: 'bg-pink-400' },
+  { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700', activeBg: 'bg-indigo-500', activeText: 'text-white', activeBorder: 'border-indigo-500', dot: 'bg-indigo-400' },
+  { bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-700', activeBg: 'bg-teal-500', activeText: 'text-white', activeBorder: 'border-teal-500', dot: 'bg-teal-400' },
+]
+
+function getTagPalette(index: number) {
+  return TAG_PALETTES[index % TAG_PALETTES.length]
 }
 
 export function PostEditor({ post, categories, tags }: PostEditorProps) {
@@ -58,6 +76,7 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
     })
 
   const title = watch('title')
+  const coverImage = watch('cover_image')
   const selectedTagIds = watch('tag_ids')
 
   function autoSlug() {
@@ -93,35 +112,91 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        {/* Main content */}
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* ── Sticky action bar ───────────────────────────────────── */}
+      <div className="sticky top-0 z-20 -mx-8 px-8 py-3 mb-6 bg-background/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between gap-4">
+        <button
+          type="button"
+          onClick={() => router.push('/dashboard/posts')}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          All posts
+        </button>
+
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/dashboard/posts')}
+            className="text-muted-foreground"
+          >
+            Discard
+          </Button>
+          <Button
+            type="submit"
+            disabled={saving}
+            size="sm"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-sm shadow-blue-500/25 hover:-translate-y-px transition-all duration-150 px-5"
+          >
+            {saving ? (
+              <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Saving…</>
+            ) : (
+              post ? 'Update Post' : 'Publish Post'
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* ── Main layout ─────────────────────────────────────────── */}
+      <div className="grid gap-8 lg:grid-cols-[1fr_292px]">
+
+        {/* Left: writing area */}
+        <div className="space-y-5 min-w-0">
+
+          {/* Title */}
+          <div className="space-y-1">
+            <input
               {...register('title')}
               onBlur={autoSlug}
-              className="text-lg"
+              placeholder="Post title…"
+              className="w-full text-3xl font-bold tracking-tight bg-transparent border-0 outline-none placeholder:text-muted-foreground/40 text-foreground resize-none leading-tight"
             />
             {errors.title && (
-              <p className="text-sm text-destructive">{errors.title.message}</p>
+              <p className="text-xs text-destructive pl-0.5">{errors.title.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="slug">Slug</Label>
-            <Input id="slug" {...register('slug')} />
+          {/* Slug row */}
+          <div className="flex items-center gap-2 py-2 border-y border-dashed border-border/70">
+            <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <span className="text-xs text-muted-foreground shrink-0">slug /</span>
+            <input
+              {...register('slug')}
+              placeholder="auto-generated-from-title"
+              className="flex-1 text-xs text-muted-foreground bg-transparent border-0 outline-none placeholder:text-muted-foreground/40 font-mono"
+            />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="excerpt">Excerpt</Label>
-            <Textarea id="excerpt" {...register('excerpt')} rows={3} />
+          {/* Excerpt */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+              Excerpt
+            </Label>
+            <Textarea
+              {...register('excerpt')}
+              placeholder="A short summary displayed in post listings and meta descriptions…"
+              rows={3}
+              className="resize-none text-sm leading-relaxed bg-muted/30 border-border/60 focus-visible:border-blue-400/60 focus-visible:ring-blue-400/20 placeholder:text-muted-foreground/40"
+            />
           </div>
 
-          <div className="space-y-2">
-            <Label>Content</Label>
+          {/* Content editor */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+              Content
+            </Label>
             <Controller
               name="content"
               control={control}
@@ -132,85 +207,138 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
           </div>
         </div>
 
-        {/* Sidebar */}
+        {/* Right: sidebar */}
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Settings</h3>
 
+          {/* ── Settings card ──────────────────────────── */}
+          <SidebarCard icon={Settings2} title="Settings">
+            {/* Cover image */}
             <div className="space-y-2">
-              <Label htmlFor="cover_image">Cover Image URL</Label>
-              <Input id="cover_image" {...register('cover_image')} placeholder="https://..." />
+              <Label className="text-xs text-muted-foreground">Cover Image</Label>
+              {coverImage && (
+                <div className="relative rounded-lg overflow-hidden aspect-video bg-muted mb-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={coverImage}
+                    alt="Cover preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                </div>
+              )}
+              <div className="relative">
+                <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+                <Input
+                  {...register('cover_image')}
+                  placeholder="https://…"
+                  className="pl-9 text-sm h-9 bg-muted/30 border-border/60"
+                />
+              </div>
             </div>
 
+            {/* Category */}
             <div className="space-y-2">
-              <Label htmlFor="category_id">Category</Label>
+              <Label className="text-xs text-muted-foreground">Category</Label>
               <select
-                id="category_id"
                 {...register('category_id')}
-                className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                className="w-full h-9 rounded-md border border-border/60 bg-muted/30 px-3 py-1 text-sm shadow-none focus:outline-none focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/20 transition-colors"
               >
-                <option value="">Select category</option>
+                <option value="">Select category…</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
             </div>
+          </SidebarCard>
 
-            <div className="space-y-2">
-              <Label>Tags</Label>
+          {/* ── Tags card ──────────────────────────────── */}
+          <SidebarCard icon={Tag} title="Tags">
+            {tags.length === 0 ? (
+              <p className="text-xs text-muted-foreground/60 italic">No tags created yet.</p>
+            ) : (
               <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <button
-                    key={tag.id}
-                    type="button"
-                    onClick={() => toggleTag(tag.id)}
-                    className="focus:outline-none"
-                  >
-                    <Badge
-                      variant={selectedTagIds?.includes(tag.id) ? 'default' : 'outline'}
+                {tags.map((tag, i) => {
+                  const palette = getTagPalette(i)
+                  const isSelected = selectedTagIds?.includes(tag.id)
+
+                  return (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => toggleTag(tag.id)}
+                      className={[
+                        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-150 select-none cursor-pointer',
+                        isSelected
+                          ? `${palette.activeBg} ${palette.activeText} ${palette.activeBorder} shadow-sm scale-[1.03]`
+                          : `${palette.bg} ${palette.text} ${palette.border} hover:scale-[1.03] hover:shadow-sm`,
+                      ].join(' ')}
                     >
+                      {isSelected
+                        ? <Check className="h-3 w-3 shrink-0" />
+                        : <span className={`h-1.5 w-1.5 rounded-full ${palette.dot} shrink-0`} />
+                      }
                       {tag.name}
-                    </Badge>
-                  </button>
-                ))}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
+            {selectedTagIds && selectedTagIds.length > 0 && (
+              <p className="text-xs text-muted-foreground/60 mt-1">
+                {selectedTagIds.length} tag{selectedTagIds.length === 1 ? '' : 's'} selected
+              </p>
+            )}
+          </SidebarCard>
+
+          {/* ── SEO card ───────────────────────────────── */}
+          <SidebarCard icon={BarChart3} title="SEO">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Meta Title</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+                <Input
+                  {...register('seo_title')}
+                  placeholder="Overrides post title in search…"
+                  className="pl-9 text-sm h-9 bg-muted/30 border-border/60"
+                />
               </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">SEO</h3>
             <div className="space-y-2">
-              <Label htmlFor="seo_title">SEO Title</Label>
-              <Input id="seo_title" {...register('seo_title')} />
+              <Label className="text-xs text-muted-foreground">Meta Description</Label>
+              <Textarea
+                {...register('seo_description')}
+                placeholder="Concise summary for search results…"
+                rows={3}
+                className="resize-none text-sm leading-relaxed bg-muted/30 border-border/60 focus-visible:border-blue-400/60 focus-visible:ring-blue-400/20 placeholder:text-muted-foreground/40"
+              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="seo_description">SEO Description</Label>
-              <Textarea id="seo_description" {...register('seo_description')} rows={3} />
-            </div>
-          </div>
+          </SidebarCard>
         </div>
       </div>
-
-      <div className="flex gap-3">
-        <Button
-          type="submit"
-          disabled={saving}
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-sm shadow-blue-500/20 hover:-translate-y-px transition-all duration-200"
-        >
-          {saving ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</>
-          ) : (
-            post ? 'Update Post' : 'Create Post'
-          )}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push('/dashboard/posts')}
-        >
-          Cancel
-        </Button>
-      </div>
     </form>
+  )
+}
+
+// ── Shared sidebar card shell ──────────────────────────────────────────────────
+function SidebarCard({
+  icon: Icon,
+  title,
+  children,
+}: {
+  readonly icon: React.ElementType
+  readonly title: string
+  readonly children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-xl border border-border/70 bg-card shadow-sm overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/20">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground/70" />
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+          {title}
+        </span>
+      </div>
+      <div className="p-4 space-y-4">{children}</div>
+    </div>
   )
 }

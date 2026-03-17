@@ -6,8 +6,13 @@
 /.vscode
 /.idea
 /.DS_Store
+/.next
 *.log
 *.env
+*.env.local
+*.env.development
+*.env.test
+*.env.production
 *.lock
 *.tmp
 *.bak

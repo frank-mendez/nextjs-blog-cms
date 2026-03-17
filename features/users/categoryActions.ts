@@ -29,14 +29,16 @@ export async function createCategory(formData: FormData) {
   const description = formData.get('description') as string
   const slug = slugify(name, { lower: true, strict: true })
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('categories')
     .insert({ name, slug, description: description || null })
+    .select()
+    .single()
 
   if (error) return { error: error.message }
 
   revalidatePath('/dashboard/admin/categories')
-  return { success: true }
+  return { success: true, category: data }
 }
 
 export async function deleteCategory(id: string) {
@@ -67,14 +69,16 @@ export async function createTag(formData: FormData) {
   const name = formData.get('name') as string
   const slug = slugify(name, { lower: true, strict: true })
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('tags')
     .insert({ name, slug })
+    .select()
+    .single()
 
   if (error) return { error: error.message }
 
   revalidatePath('/dashboard/admin/tags')
-  return { success: true }
+  return { success: true, tag: data }
 }
 
 export async function deleteTag(id: string) {

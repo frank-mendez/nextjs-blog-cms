@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { X, Tag, Plus, Loader2, Hash } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createTag, deleteTag } from '@/features/users/categoryActions'
+import { useTaxonomyStore } from '@/lib/store/taxonomy'
 import type { Tag as TagType } from '@/lib/supabase/types'
 
 interface TagsManagerProps {
@@ -14,26 +15,46 @@ interface TagsManagerProps {
 }
 
 export function TagsManager({ tags: initial }: TagsManagerProps) {
-  const [tags, setTags] = useState(initial)
-  const [saving, setSaving] = useState(false)
+  const { tags, setTags, addTagOptimistic, commitTag, rollbackTag, removeTagOptimistic } =
+    useTaxonomyStore()
+
+  // Seed store once on mount
+  const seeded = useRef(false)
+  useEffect(() => {
+    if (!seeded.current) {
+      setTags(initial)
+      seeded.current = true
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const formRef = useRef<HTMLFormElement>(null)
 
   async function handleCreate(formData: FormData) {
-    setSaving(true)
+    const name = (formData.get('name') as string).trim()
+    if (!name) return
+
+    const tempId = `optimistic-${crypto.randomUUID()}`
+    addTagOptimistic(tempId, name)
+    formRef.current?.reset()
+
     const result = await createTag(formData)
+
     if (result.error) {
+      rollbackTag(tempId)
       toast.error(result.error)
     } else {
+      commitTag(tempId, result.tag!)
       toast.success('Tag created')
     }
-    setSaving(false)
   }
 
   async function handleDelete(id: string, name: string) {
+    const rollback = removeTagOptimistic(id)
     const result = await deleteTag(id)
     if (result.error) {
+      rollback()
       toast.error(result.error)
     } else {
-      setTags((prev) => prev.filter((t) => t.id !== id))
       toast.success(`Tag "${name}" deleted`)
     }
   }
@@ -51,7 +72,7 @@ export function TagsManager({ tags: initial }: TagsManagerProps) {
             <p className="text-xs text-muted-foreground">Label posts with topics or keywords</p>
           </div>
         </div>
-        <form action={handleCreate} className="space-y-4">
+        <form ref={formRef} action={handleCreate} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="name" className="text-sm font-medium">
               Name <span className="text-red-500">*</span>
@@ -63,14 +84,9 @@ export function TagsManager({ tags: initial }: TagsManagerProps) {
           </div>
           <Button
             type="submit"
-            disabled={saving}
             className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-sm"
           >
-            {saving ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Adding…</>
-            ) : (
-              <><Plus className="h-4 w-4 mr-2" />Add Tag</>
-            )}
+            <Plus className="h-4 w-4 mr-2" />Add Tag
           </Button>
         </form>
       </div>
@@ -94,21 +110,34 @@ export function TagsManager({ tags: initial }: TagsManagerProps) {
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <span
-                key={tag.id}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-sm font-medium text-slate-700 transition-colors duration-150"
-              >
-                <Hash className="h-3 w-3 text-slate-400" />
-                {tag.name}
-                <button
-                  onClick={() => handleDelete(tag.id, tag.name)}
-                  className="flex items-center justify-center w-4 h-4 rounded-full hover:bg-red-100 hover:text-red-600 text-slate-400 transition-colors duration-150 ml-0.5"
+            {tags.map((tag) => {
+              const isOptimistic = tag.id.startsWith('optimistic-')
+              return (
+                <span
+                  key={tag.id}
+                  className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-150 ${
+                    isOptimistic
+                      ? 'bg-blue-50 text-blue-500 opacity-70'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            ))}
+                  {isOptimistic ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Hash className="h-3 w-3 text-slate-400" />
+                  )}
+                  {tag.name}
+                  {!isOptimistic && (
+                    <button
+                      onClick={() => handleDelete(tag.id, tag.name)}
+                      className="flex items-center justify-center w-4 h-4 rounded-full hover:bg-red-100 hover:text-red-600 text-slate-400 transition-colors duration-150 ml-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </span>
+              )
+            })}
           </div>
         )}
       </div>

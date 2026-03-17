@@ -1,10 +1,22 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Playfair_Display, DM_Sans } from 'next/font/google'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import NextTopLoader from 'nextjs-toploader'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
+
+export const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+})
+
+export const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: {
@@ -21,7 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.className} ${playfair.variable} ${dmSans.variable}`}>
         <NextTopLoader showSpinner={false} />
         {children}
       </body>

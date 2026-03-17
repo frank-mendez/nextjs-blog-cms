@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import slugify from 'slugify'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -133,8 +134,8 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
 
         {/* Sidebar */}
         <div className="space-y-4">
-          <div className="border rounded-lg p-4 space-y-4">
-            <h3 className="font-medium">Post Settings</h3>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Settings</h3>
 
             <div className="space-y-2">
               <Label htmlFor="cover_image">Cover Image URL</Label>
@@ -176,8 +177,8 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
             </div>
           </div>
 
-          <div className="border rounded-lg p-4 space-y-4">
-            <h3 className="font-medium">SEO</h3>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">SEO</h3>
             <div className="space-y-2">
               <Label htmlFor="seo_title">SEO Title</Label>
               <Input id="seo_title" {...register('seo_title')} />
@@ -191,8 +192,16 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
       </div>
 
       <div className="flex gap-3">
-        <Button type="submit" disabled={saving}>
-          {saving ? 'Saving...' : post ? 'Update Post' : 'Create Post'}
+        <Button
+          type="submit"
+          disabled={saving}
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-sm shadow-blue-500/20 hover:-translate-y-px transition-all duration-200"
+        >
+          {saving ? (
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</>
+          ) : (
+            post ? 'Update Post' : 'Create Post'
+          )}
         </Button>
         <Button
           type="button"

@@ -26,8 +26,11 @@ export default async function TagsPage() {
     .order('name')
 
   return (
-    <div className="p-8 space-y-6">
-      <h1 className="text-3xl font-bold">Tags</h1>
+    <div className="p-8 space-y-6 animate-page">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Tags</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Label your posts with keywords</p>
+      </div>
       <TagsManager tags={tags ?? []} />
     </div>
   )

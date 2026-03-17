@@ -26,8 +26,11 @@ export default async function CategoriesPage() {
     .order('name')
 
   return (
-    <div className="p-8 space-y-6">
-      <h1 className="text-3xl font-bold">Categories</h1>
+    <div className="p-8 space-y-6 animate-page">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Categories</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Organize your posts into topics</p>
+      </div>
       <CategoriesManager categories={categories ?? []} />
     </div>
   )

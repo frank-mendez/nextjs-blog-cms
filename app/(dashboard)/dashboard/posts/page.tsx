@@ -1,11 +1,10 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { PenLine } from 'lucide-react'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { getAllPostsForDashboard } from '@/features/posts/queries'
 import { PostTable } from '@/components/dashboard/PostTable'
-import { Button } from '@/components/ui/button'
 import type { Profile } from '@/lib/supabase/types'
 
 export const metadata: Metadata = { title: 'Posts' }
@@ -22,20 +21,25 @@ export default async function PostsPage() {
     .single()
 
   const profile = profileRaw as Profile | null
-
   const posts = await getAllPostsForDashboard(
     profile?.role === 'admin' ? undefined : user.id
   )
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 animate-page">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Posts</h1>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Posts</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {posts.length} post{posts.length !== 1 ? 's' : ''} total
+          </p>
+        </div>
         <Link
           href="/dashboard/posts/new"
-          className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/25 hover:-translate-y-px transition-all duration-200"
         >
-          <Plus className="h-4 w-4" /> New Post
+          <PenLine className="h-4 w-4" />
+          New Post
         </Link>
       </div>
       <PostTable posts={posts} />

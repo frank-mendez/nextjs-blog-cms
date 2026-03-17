@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 export async function register(formData: FormData) {
@@ -17,12 +16,17 @@ export async function register(formData: FormData) {
     },
   }
 
-  const { error } = await supabase.auth.signUp(data)
+  const { data: authData, error } = await supabase.auth.signUp(data)
 
   if (error) {
     return { error: error.message }
   }
 
+  // If no session, email confirmation is required
+  if (!authData.session) {
+    return { needsConfirmation: true }
+  }
+
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  return { success: true }
 }

@@ -24,8 +24,11 @@ export default async function UsersPage() {
   const users = await getAllUsers()
 
   return (
-    <div className="p-8 space-y-6">
-      <h1 className="text-3xl font-bold">Users</h1>
+    <div className="p-8 space-y-6 animate-page">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Users</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Manage team members and their roles</p>
+      </div>
       <UserTable users={users} currentUserId={user.id} />
     </div>
   )

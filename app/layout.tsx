@@ -6,13 +6,13 @@ import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const playfair = Playfair_Display({
+const playfair = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-playfair',
   display: 'swap',
 })
 
-export const dmSans = DM_Sans({
+const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-dm-sans',
   display: 'swap',

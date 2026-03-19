@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import slugify from 'slugify'
 import {
   Loader2, Check, ImageIcon, Tag, Settings2,
-  Search, BarChart3, ChevronLeft, Globe, Send, BookOpen,
+  Search, BarChart3, ChevronLeft, Globe, Send, BookOpen, ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -170,7 +170,22 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
             Discard
           </Button>
 
-          {/* Save draft — only for existing posts */}
+          {/* View published post */}
+          {post && isPublished && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
+              disabled={saving || publishing}
+            >
+              <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+              View Post
+            </Button>
+          )}
+
+          {/* Save — only for existing posts */}
           {post && (
             <Button
               type="submit"
@@ -187,7 +202,7 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
               ) : (
                 <>
                   <BookOpen className="mr-1.5 h-3.5 w-3.5" />
-                  Save Draft
+                  {isPublished ? 'Save Changes' : 'Save Draft'}
                 </>
               )}
             </Button>

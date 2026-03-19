@@ -8,8 +8,9 @@ interface PostListProps {
 export function PostList({ posts }: PostListProps) {
   if (posts.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        No posts yet.
+      <div className="text-center py-16 space-y-2">
+        <p className="text-lg font-medium text-foreground">No posts yet.</p>
+        <p className="text-sm text-muted-foreground">Check back soon for new articles.</p>
       </div>
     )
   }

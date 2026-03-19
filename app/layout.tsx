@@ -20,10 +20,10 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Blog CMS',
-    template: '%s | Blog CMS',
+    default: 'The Practical Engineer',
+    template: '%s | The Practical Engineer',
   },
-  description: 'A modern blog CMS built with Next.js and Supabase',
+  description: 'Practical knowledge for engineers who ship. Deep dives, guides, and architecture insights.',
 }
 
 export default function RootLayout({

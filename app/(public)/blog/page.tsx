@@ -23,19 +23,26 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const totalPages = Math.ceil(total / limit)
 
   return (
-    <div className="container max-w-5xl mx-auto py-12 px-4 space-y-8">
-      <h1 className="text-4xl font-bold">Blog</h1>
+    <div className="container max-w-5xl mx-auto py-12 px-4 space-y-10">
+      {/* Page header */}
+      <div className="space-y-2 border-b pb-8">
+        <p className="text-sm font-medium text-primary uppercase tracking-widest">Our Blog</p>
+        <h1 className="text-4xl font-bold tracking-tight">Latest Articles</h1>
+        <p className="text-muted-foreground text-base max-w-xl">
+          Insights, tutorials, and stories from our team. Stay up to date with the latest.
+        </p>
+      </div>
 
       <PostList posts={posts} />
 
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2">
+        <div className="flex items-center justify-center gap-3 pt-4">
           {page > 1 && (
             <Link
               href={`/blog?page=${page - 1}`}
-              className="px-4 py-2 border rounded-md text-sm hover:bg-muted transition-colors"
+              className="px-5 py-2 border rounded-full text-sm font-medium hover:bg-muted transition-colors shadow-sm"
             >
-              Previous
+              ← Previous
             </Link>
           )}
           <span className="px-4 py-2 text-sm text-muted-foreground">
@@ -44,9 +51,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           {page < totalPages && (
             <Link
               href={`/blog?page=${page + 1}`}
-              className="px-4 py-2 border rounded-md text-sm hover:bg-muted transition-colors"
+              className="px-5 py-2 border rounded-full text-sm font-medium hover:bg-muted transition-colors shadow-sm"
             >
-              Next
+              Next →
             </Link>
           )}
         </div>

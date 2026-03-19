@@ -7,6 +7,7 @@ import { getPostBySlug, getAllPublishedSlugs } from '@/features/posts/queries'
 import { EditorContent } from '@/components/editor/EditorContent'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { BackToTopButton } from '@/components/BackToTopButton'
 
 export const revalidate = 3600
 
@@ -67,11 +68,20 @@ export default async function PostPage({ params }: PostPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <article className="container max-w-3xl mx-auto py-12 px-4">
-        {post.category && (
-          <Link href={`/blog/category/${post.category.slug}`}>
-            <Badge variant="outline" className="mb-4">{post.category.name}</Badge>
+        <div className="flex items-center gap-3 mb-6">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            Back to Blog
           </Link>
-        )}
+          {post.category && (
+            <Link href={`/blog/category/${post.category.slug}`}>
+              <Badge className="rounded-full px-3 text-xs">{post.category.name}</Badge>
+            </Link>
+          )}
+        </div>
 
         <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
 
@@ -114,12 +124,13 @@ export default async function PostPage({ params }: PostPageProps) {
           <div className="mt-12 flex flex-wrap gap-2">
             {post.tags.map((tag) => (
               <Link key={tag.id} href={`/blog/tag/${tag.slug}`}>
-                <Badge variant="secondary">{tag.name}</Badge>
+                <Badge variant="secondary" className="rounded-full px-3 text-xs">#{tag.name}</Badge>
               </Link>
             ))}
           </div>
         )}
       </article>
+      <BackToTopButton />
     </>
   )
 }

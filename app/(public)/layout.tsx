@@ -10,11 +10,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             className="font-bold text-lg tracking-tight"
             style={{ fontFamily: 'var(--font-playfair, serif)' }}
           >
-            <span style={{ color: '#f59e0b' }}>✦</span> Blog
+            <span style={{ color: '#f59e0b' }}>✦</span> The Practical Engineer
           </Link>
           <nav className="flex items-center gap-6 text-sm">
             <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors text-xs uppercase tracking-widest">
-              Blog
+              Articles
             </Link>
             <Link
               href="/dashboard"
@@ -27,7 +27,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       </header>
       <main className="flex-1">{children}</main>
       <footer className="border-t py-8 text-center text-xs text-muted-foreground/60 tracking-wide">
-        <p>&copy; {new Date().getFullYear()} Blog CMS. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} The Practical Engineer. All rights reserved.</p>
       </footer>
     </div>
   )

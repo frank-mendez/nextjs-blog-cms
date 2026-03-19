@@ -6,8 +6,8 @@ import { PostList } from '@/features/posts/components/PostList'
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Read our latest articles',
+  title: 'Articles',
+  description: 'Practical knowledge for engineers who ship.',
 }
 
 interface BlogPageProps {
@@ -26,10 +26,10 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     <div className="container max-w-5xl mx-auto py-12 px-4 space-y-10">
       {/* Page header */}
       <div className="space-y-2 border-b pb-8">
-        <p className="text-sm font-medium text-primary uppercase tracking-widest">Our Blog</p>
-        <h1 className="text-4xl font-bold tracking-tight">Latest Articles</h1>
+        <p className="text-sm font-medium text-primary uppercase tracking-widest">The Practical Engineer</p>
+        <h1 className="text-4xl font-bold tracking-tight">All Articles</h1>
         <p className="text-muted-foreground text-base max-w-xl">
-          Insights, tutorials, and stories from our team. Stay up to date with the latest.
+          Practical knowledge for engineers who ship. Deep dives, guides, and architecture insights.
         </p>
       </div>
 

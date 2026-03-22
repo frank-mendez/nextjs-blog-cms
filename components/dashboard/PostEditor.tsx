@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import slugify from 'slugify'
 import {
   Loader2, Check, ImageIcon, Tag, Settings2,
-  Search, BarChart3, ChevronLeft, Globe, Send, BookOpen, ExternalLink,
+  Search, BarChart3, ChevronLeft, Globe, Send, BookOpen, ExternalLink, ArrowUp,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -59,6 +59,16 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
+  const [showBackToTop, setShowBackToTop] = useState(false)
+
+  useEffect(() => {
+    function onScroll() {
+      setShowBackToTop(window.scrollY > 300)
+    }
+    const options: AddEventListenerOptions = { passive: true }
+    window.addEventListener('scroll', onScroll, options)
+    return () => window.removeEventListener('scroll', onScroll, options)
+  }, [])
 
   const isPublished = post?.status === 'published'
 
@@ -146,291 +156,305 @@ export function PostEditor({ post, categories, tags }: PostEditorProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      {/* ── Sticky action bar ───────────────────────────────────── */}
-      <div className="sticky top-0 z-20 -mx-4 px-4 md:-mx-8 md:px-8 py-3 mb-6 bg-background/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between gap-4 flex-wrap">
-        <button
-          type="button"
-          onClick={() => router.push('/dashboard/posts')}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          All posts
-        </button>
-
-        <div className="flex items-center gap-2">
-          <Button
+    <>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {/* ── Sticky action bar ───────────────────────────────────── */}
+        <div className="sticky top-0 z-20 -mx-4 px-4 md:-mx-8 md:px-8 py-3 mb-6 bg-background/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between gap-4 flex-wrap">
+          <button
             type="button"
-            variant="ghost"
-            size="sm"
             onClick={() => router.push('/dashboard/posts')}
-            className="text-muted-foreground"
-            disabled={saving || publishing}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            Discard
-          </Button>
+            <ChevronLeft className="h-4 w-4" />
+            All posts
+          </button>
 
-          {/* View published post */}
-          {post && isPublished && (
+          <div className="flex items-center gap-2">
             <Button
               type="button"
-              size="sm"
               variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
+              size="sm"
+              onClick={() => router.push('/dashboard/posts')}
+              className="text-muted-foreground"
               disabled={saving || publishing}
             >
-              <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-              View Post
+              Discard
             </Button>
-          )}
 
-          {/* Save — only for existing posts */}
-          {post && (
-            <Button
-              type="submit"
-              disabled={saving || publishing}
-              size="sm"
-              variant="outline"
-              className="border-border/70 hover:-translate-y-px transition-all duration-150 px-4 min-w-[110px]"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  Saving…
-                </>
-              ) : (
-                <>
-                  <BookOpen className="mr-1.5 h-3.5 w-3.5" />
-                  {isPublished ? 'Save Changes' : 'Save Draft'}
-                </>
-              )}
-            </Button>
-          )}
-
-          {/* Publish / Unpublish — only shown for existing posts */}
-          {post && (
-            <Button
-              type="button"
-              disabled={saving || publishing}
-              size="sm"
-              onClick={handlePublishToggle}
-              className={
-                isPublished
-                  ? 'bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-sm shadow-amber-500/25 hover:-translate-y-px transition-all duration-150 px-5 min-w-[130px]'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-sm shadow-blue-500/25 hover:-translate-y-px transition-all duration-150 px-5 min-w-[130px]'
-              }
-            >
-              {publishing ? (
-                <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  {isPublished ? 'Unpublishing…' : 'Publishing…'}
-                </>
-              ) : (
-                <>
-                  <Send className="mr-1.5 h-3.5 w-3.5" />
-                  {isPublished ? 'Unpublish' : 'Publish'}
-                </>
-              )}
-            </Button>
-          )}
-
-          {/* New post — single publish button */}
-          {!post && (
-            <Button
-              type="submit"
-              disabled={saving}
-              size="sm"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-sm shadow-blue-500/25 hover:-translate-y-px transition-all duration-150 px-5 min-w-[130px]"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  Creating…
-                </>
-              ) : (
-                <>
-                  <Send className="mr-1.5 h-3.5 w-3.5" />
-                  Create Post
-                </>
-              )}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* ── Main layout ─────────────────────────────────────────── */}
-      <div className="grid gap-8 lg:grid-cols-[1fr_292px]">
-
-        {/* Left: writing area */}
-        <div className="space-y-5 min-w-0">
-
-          {/* Title */}
-          <div className="space-y-1">
-            <input
-              {...register('title')}
-              onBlur={autoSlug}
-              placeholder="Post title…"
-              className="w-full text-3xl font-bold tracking-tight bg-transparent border-0 outline-none placeholder:text-muted-foreground/40 text-foreground resize-none leading-tight"
-            />
-            {errors.title && (
-              <p className="text-xs text-destructive pl-0.5">{errors.title.message}</p>
-            )}
-          </div>
-
-          {/* Slug row */}
-          <div className="flex items-center gap-2 py-2 border-y border-dashed border-border/70">
-            <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className="text-xs text-muted-foreground shrink-0">slug /</span>
-            <input
-              {...register('slug')}
-              placeholder="auto-generated-from-title"
-              className="flex-1 text-xs text-muted-foreground bg-transparent border-0 outline-none placeholder:text-muted-foreground/40 font-mono"
-              onChange={(e) => {
-                const formatted = slugify(e.target.value, { lower: true, strict: true })
-                setValue('slug', formatted)
-              }}
-            />
-          </div>
-
-          {/* Excerpt */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-              Excerpt
-            </Label>
-            <Textarea
-              {...register('excerpt')}
-              placeholder="A short summary displayed in post listings and meta descriptions…"
-              rows={3}
-              className="resize-none text-sm leading-relaxed bg-muted/30 border-border/60 focus-visible:border-blue-400/60 focus-visible:ring-blue-400/20 placeholder:text-muted-foreground/40"
-            />
-          </div>
-
-          {/* Content editor */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-              Content
-            </Label>
-            <Controller
-              name="content"
-              control={control}
-              render={({ field }) => (
-                <Editor value={field.value} onChange={field.onChange} />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Right: sidebar */}
-        <div className="space-y-4">
-
-          {/* ── Settings card ──────────────────────────── */}
-          <SidebarCard icon={Settings2} title="Settings">
-            {/* Cover image */}
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Cover Image</Label>
-              {coverImage && (
-                <div className="relative rounded-lg overflow-hidden aspect-video bg-muted mb-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={coverImage}
-                    alt="Cover preview"
-                    className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                  />
-                </div>
-              )}
-              <div className="relative">
-                <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-                <Input
-                  {...register('cover_image')}
-                  placeholder="https://…"
-                  className="pl-9 text-sm h-9 bg-muted/30 border-border/60"
-                />
-              </div>
-            </div>
-
-            {/* Category */}
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Category</Label>
-              <select
-                {...register('category_id')}
-                className="w-full h-9 rounded-md border border-border/60 bg-muted/30 px-3 py-1 text-sm shadow-none focus:outline-none focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/20 transition-colors"
+            {/* View published post */}
+            {post && isPublished && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
+                disabled={saving || publishing}
               >
-                <option value="">Select category…</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
-            </div>
-          </SidebarCard>
-
-          {/* ── Tags card ──────────────────────────────── */}
-          <SidebarCard icon={Tag} title="Tags">
-            {tags.length === 0 ? (
-              <p className="text-xs text-muted-foreground/60 italic">No tags created yet.</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag, i) => {
-                  const palette = getTagPalette(i)
-                  const isSelected = selectedTagIds?.includes(tag.id)
-
-                  return (
-                    <button
-                      key={tag.id}
-                      type="button"
-                      onClick={() => toggleTag(tag.id)}
-                      className={[
-                        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-150 select-none cursor-pointer',
-                        isSelected
-                          ? `${palette.activeBg} ${palette.activeText} ${palette.activeBorder} shadow-sm scale-[1.03]`
-                          : `${palette.bg} ${palette.text} ${palette.border} hover:scale-[1.03] hover:shadow-sm`,
-                      ].join(' ')}
-                    >
-                      {isSelected
-                        ? <Check className="h-3 w-3 shrink-0" />
-                        : <span className={`h-1.5 w-1.5 rounded-full ${palette.dot} shrink-0`} />
-                      }
-                      {tag.name}
-                    </button>
-                  )
-                })}
-              </div>
+                <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+                View Post
+              </Button>
             )}
 
-            {selectedTagIds && selectedTagIds.length > 0 && (
-              <p className="text-xs text-muted-foreground/60 mt-1">
-                {selectedTagIds.length} tag{selectedTagIds.length === 1 ? '' : 's'} selected
-              </p>
+            {/* Save — only for existing posts */}
+            {post && (
+              <Button
+                type="submit"
+                disabled={saving || publishing}
+                size="sm"
+                variant="outline"
+                className="border-border/70 hover:-translate-y-px transition-all duration-150 px-4 min-w-[110px]"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Saving…
+                  </>
+                ) : (
+                  <>
+                    <BookOpen className="mr-1.5 h-3.5 w-3.5" />
+                    {isPublished ? 'Save Changes' : 'Save Draft'}
+                  </>
+                )}
+              </Button>
             )}
-          </SidebarCard>
 
-          {/* ── SEO card ───────────────────────────────── */}
-          <SidebarCard icon={BarChart3} title="SEO">
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Meta Title</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-                <Input
-                  {...register('seo_title')}
-                  placeholder="Overrides post title in search…"
-                  className="pl-9 text-sm h-9 bg-muted/30 border-border/60"
-                />
-              </div>
+            {/* Publish / Unpublish — only shown for existing posts */}
+            {post && (
+              <Button
+                type="button"
+                disabled={saving || publishing}
+                size="sm"
+                onClick={handlePublishToggle}
+                className={
+                  isPublished
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-sm shadow-amber-500/25 hover:-translate-y-px transition-all duration-150 px-5 min-w-[130px]'
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-sm shadow-blue-500/25 hover:-translate-y-px transition-all duration-150 px-5 min-w-[130px]'
+                }
+              >
+                {publishing ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    {isPublished ? 'Unpublishing…' : 'Publishing…'}
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-1.5 h-3.5 w-3.5" />
+                    {isPublished ? 'Unpublish' : 'Publish'}
+                  </>
+                )}
+              </Button>
+            )}
+
+            {/* New post — single publish button */}
+            {!post && (
+              <Button
+                type="submit"
+                disabled={saving}
+                size="sm"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-sm shadow-blue-500/25 hover:-translate-y-px transition-all duration-150 px-5 min-w-[130px]"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Creating…
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-1.5 h-3.5 w-3.5" />
+                    Create Post
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* ── Main layout ─────────────────────────────────────────── */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_292px]">
+
+          {/* Left: writing area */}
+          <div className="space-y-5 min-w-0">
+
+            {/* Title */}
+            <div className="space-y-1">
+              <input
+                {...register('title')}
+                onBlur={autoSlug}
+                placeholder="Post title…"
+                className="w-full text-3xl font-bold tracking-tight bg-transparent border-0 outline-none placeholder:text-muted-foreground/40 text-foreground resize-none leading-tight"
+              />
+              {errors.title && (
+                <p className="text-xs text-destructive pl-0.5">{errors.title.message}</p>
+              )}
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Meta Description</Label>
+
+            {/* Slug row */}
+            <div className="flex items-center gap-2 py-2 border-y border-dashed border-border/70">
+              <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-xs text-muted-foreground shrink-0">slug /</span>
+              <input
+                {...register('slug')}
+                placeholder="auto-generated-from-title"
+                className="flex-1 text-xs text-muted-foreground bg-transparent border-0 outline-none placeholder:text-muted-foreground/40 font-mono"
+                onChange={(e) => {
+                  const formatted = slugify(e.target.value, { lower: true, strict: true })
+                  setValue('slug', formatted)
+                }}
+              />
+            </div>
+
+            {/* Excerpt */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+                Excerpt
+              </Label>
               <Textarea
-                {...register('seo_description')}
-                placeholder="Concise summary for search results…"
+                {...register('excerpt')}
+                placeholder="A short summary displayed in post listings and meta descriptions…"
                 rows={3}
                 className="resize-none text-sm leading-relaxed bg-muted/30 border-border/60 focus-visible:border-blue-400/60 focus-visible:ring-blue-400/20 placeholder:text-muted-foreground/40"
               />
             </div>
-          </SidebarCard>
+
+            {/* Content editor */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+                Content
+              </Label>
+              <Controller
+                name="content"
+                control={control}
+                render={({ field }) => (
+                  <Editor value={field.value} onChange={field.onChange} />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Right: sidebar */}
+          <div className="space-y-4">
+
+            {/* ── Settings card ──────────────────────────── */}
+            <SidebarCard icon={Settings2} title="Settings">
+              {/* Cover image */}
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Cover Image</Label>
+                {coverImage && (
+                  <div className="relative rounded-lg overflow-hidden aspect-video bg-muted mb-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={coverImage}
+                      alt="Cover preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                  </div>
+                )}
+                <div className="relative">
+                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+                  <Input
+                    {...register('cover_image')}
+                    placeholder="https://…"
+                    className="pl-9 text-sm h-9 bg-muted/30 border-border/60"
+                  />
+                </div>
+              </div>
+
+              {/* Category */}
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Category</Label>
+                <select
+                  {...register('category_id')}
+                  className="w-full h-9 rounded-md border border-border/60 bg-muted/30 px-3 py-1 text-sm shadow-none focus:outline-none focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/20 transition-colors"
+                >
+                  <option value="">Select category…</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+            </SidebarCard>
+
+            {/* ── Tags card ──────────────────────────────── */}
+            <SidebarCard icon={Tag} title="Tags">
+              {tags.length === 0 ? (
+                <p className="text-xs text-muted-foreground/60 italic">No tags created yet.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag, i) => {
+                    const palette = getTagPalette(i)
+                    const isSelected = selectedTagIds?.includes(tag.id)
+
+                    return (
+                      <button
+                        key={tag.id}
+                        type="button"
+                        onClick={() => toggleTag(tag.id)}
+                        className={[
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-150 select-none cursor-pointer',
+                          isSelected
+                            ? `${palette.activeBg} ${palette.activeText} ${palette.activeBorder} shadow-sm scale-[1.03]`
+                            : `${palette.bg} ${palette.text} ${palette.border} hover:scale-[1.03] hover:shadow-sm`,
+                        ].join(' ')}
+                      >
+                        {isSelected
+                          ? <Check className="h-3 w-3 shrink-0" />
+                          : <span className={`h-1.5 w-1.5 rounded-full ${palette.dot} shrink-0`} />
+                        }
+                        {tag.name}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {selectedTagIds && selectedTagIds.length > 0 && (
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  {selectedTagIds.length} tag{selectedTagIds.length === 1 ? '' : 's'} selected
+                </p>
+              )}
+            </SidebarCard>
+
+            {/* ── SEO card ───────────────────────────────── */}
+            <SidebarCard icon={BarChart3} title="SEO">
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Meta Title</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+                  <Input
+                    {...register('seo_title')}
+                    placeholder="Overrides post title in search…"
+                    className="pl-9 text-sm h-9 bg-muted/30 border-border/60"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Meta Description</Label>
+                <Textarea
+                  {...register('seo_description')}
+                  placeholder="Concise summary for search results…"
+                  rows={3}
+                  className="resize-none text-sm leading-relaxed bg-muted/30 border-border/60 focus-visible:border-blue-400/60 focus-visible:ring-blue-400/20 placeholder:text-muted-foreground/40"
+                />
+              </div>
+            </SidebarCard>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+      {showBackToTop && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon"
+          className="fixed bottom-6 right-6 z-50 rounded-full shadow-md"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Back to top"
+        >
+          <ArrowUp className="h-4 w-4" />
+        </Button>
+      )}
+    </>
   )
 }
 

@@ -11,6 +11,8 @@ interface TipTapNode {
   text?: string
 }
 
+const ALLOWED_LINE_HEIGHTS = ['1', '1.5', '2', '2.5', '3']
+
 function renderMark(mark: TipTapMark, inner: string): string {
   switch (mark.type) {
     case 'bold': return `<strong>${inner}</strong>`
@@ -40,12 +42,18 @@ function renderNode(node: TipTapNode): string {
 
   switch (node.type) {
     case 'doc': return inner
-    case 'paragraph': return `<p>${inner}</p>`
+    case 'paragraph': {
+      const lh = node.attrs?.lineHeight
+      const style = lh && ALLOWED_LINE_HEIGHTS.includes(String(lh)) ? ` style="line-height:${lh}"` : ''
+      return `<p${style}>${inner}</p>`
+    }
     case 'hardBreak': return '<br />'
     case 'horizontalRule': return '<hr />'
     case 'heading': {
       const level = node.attrs?.level ?? 2
-      return `<h${level}>${inner}</h${level}>`
+      const lh = node.attrs?.lineHeight
+      const style = lh && ALLOWED_LINE_HEIGHTS.includes(String(lh)) ? ` style="line-height:${lh}"` : ''
+      return `<h${level}${style}>${inner}</h${level}>`
     }
     case 'bulletList': return `<ul class="list-disc pl-6">${inner}</ul>`
     case 'orderedList': return `<ol class="list-decimal pl-6">${inner}</ol>`

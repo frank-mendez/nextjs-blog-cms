@@ -1,0 +1,55 @@
+<h2>Code Block Visibility — Which approach?</h2>
+<p class="subtitle">Current styling uses <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-family:monospace">bg-muted</code> which blends into the page. Pick an improvement approach.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#fff;border-bottom:1px solid #e5e7eb">
+      <div style="font-family:sans-serif;font-size:13px;color:#374151;margin-bottom:8px">Inline code example:</div>
+      <p style="font-family:sans-serif;font-size:13px;color:#374151">Call the <code style="background:#1e1e2e;color:#cdd6f4;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px">handleUpdate()</code> function.</p>
+      <div style="margin-top:12px;background:#1e1e2e;border-radius:6px;padding:12px;font-family:monospace;font-size:12px;color:#cdd6f4;border:1px solid #313244">
+        <div style="color:#89b4fa">function</div> <span style="color:#cdd6f4">handleUpdate(editor) {</span><br>
+        <span style="color:#a6e3a1;padding-left:16px">&nbsp;&nbsp;onChange(editor.getJSON())</span><br>
+        <span style="color:#cdd6f4">}</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Dark theme code blocks</h3>
+      <p>CSS-only: dark background (#1e1e2e Catppuccin), light text. High contrast, developer-friendly. No new dependencies.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#fff;border-bottom:1px solid #e5e7eb">
+      <div style="font-family:sans-serif;font-size:13px;color:#374151;margin-bottom:8px">Inline code example:</div>
+      <p style="font-family:sans-serif;font-size:13px;color:#374151">Call the <code style="background:#f3f4f6;color:#b91c1c;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;border:1px solid #e5e7eb">handleUpdate()</code> function.</p>
+      <div style="margin-top:12px;background:#f8f9fc;border-radius:6px;padding:12px;font-family:monospace;font-size:12px;color:#1f2937;border:1px solid #d1d5db;border-left:3px solid #6366f1">
+        <span style="color:#7c3aed">function</span> <span style="color:#1d4ed8">handleUpdate</span><span style="color:#374151">(editor) {</span><br>
+        <span style="color:#047857">&nbsp;&nbsp;onChange</span><span style="color:#374151">(editor.getJSON())</span><br>
+        <span style="color:#374151">}</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Light theme with syntax colors</h3>
+      <p>CSS + <code style="font-size:11px;background:#f0f0f0;padding:1px 4px;border-radius:3px">lowlight</code> extension for syntax highlighting. Colored keywords, light bg with border accent. Adds ~30kb dependency.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#fff;border-bottom:1px solid #e5e7eb">
+      <div style="font-family:sans-serif;font-size:13px;color:#374151;margin-bottom:8px">Inline code example:</div>
+      <p style="font-family:sans-serif;font-size:13px;color:#374151">Call the <code style="background:#f3f4f6;color:#b91c1c;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;border:1px solid #e5e7eb">handleUpdate()</code> function.</p>
+      <div style="margin-top:12px;background:#0d1117;border-radius:6px;padding:12px;font-family:monospace;font-size:12px;color:#e6edf3;border:1px solid #30363d">
+        <span style="color:#ff7b72">function</span> <span style="color:#d2a8ff">handleUpdate</span><span style="color:#e6edf3">(editor) {</span><br>
+        <span style="color:#79c0ff">&nbsp;&nbsp;onChange</span><span style="color:#e6edf3">(editor.getJSON())</span><br>
+        <span style="color:#e6edf3">}</span>
+      </div>
+      <div style="margin-top:8px;font-size:11px;font-family:sans-serif;color:#6b7280;text-align:right">github-dark theme</div>
+    </div>
+    <div class="card-body">
+      <h3>C — GitHub Dark + syntax highlighting</h3>
+      <p>CSS + <code style="font-size:11px;background:#f0f0f0;padding:1px 4px;border-radius:3px">lowlight</code> with GitHub dark palette. Familiar to developers. Respects dark/light mode.</p>
+    </div>
+  </div>
+
+</div>

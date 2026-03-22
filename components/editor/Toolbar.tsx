@@ -105,6 +105,13 @@ export function Toolbar({ editor }: ToolbarProps) {
     },
   ]
 
+  const LINE_HEIGHTS = ['1', '1.5', '2', '2.5', '3']
+
+  const activeLineHeight =
+    editor.getAttributes('paragraph').lineHeight ??
+    editor.getAttributes('heading').lineHeight ??
+    null
+
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/30">
       {tools.map((tool, idx) => {
@@ -126,6 +133,26 @@ export function Toolbar({ editor }: ToolbarProps) {
           </Button>
         )
       })}
+      <Separator orientation="vertical" className="h-6 mx-1" />
+      <span className="text-muted-foreground text-xs">↕</span>
+      <div className="flex border border-border rounded-md overflow-hidden">
+        {LINE_HEIGHTS.map((lh) => (
+          <Button
+            key={lh}
+            type="button"
+            variant={activeLineHeight === lh ? 'secondary' : 'ghost'}
+            size="sm"
+            className="h-8 px-2 text-xs rounded-none border-0"
+            onClick={() =>
+              activeLineHeight === lh
+                ? editor.chain().focus().unsetLineHeight().run()
+                : editor.chain().focus().setLineHeight(lh).run()
+            }
+          >
+            {lh}
+          </Button>
+        ))}
+      </div>
     </div>
   )
 }

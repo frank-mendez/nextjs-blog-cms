@@ -168,8 +168,30 @@
 .ProseMirror ul { @apply list-disc pl-6 mb-3; }
 .ProseMirror ol { @apply list-decimal pl-6 mb-3; }
 .ProseMirror blockquote { @apply border-l-4 border-border pl-4 italic my-4; }
-.ProseMirror code { @apply bg-muted px-1 py-0.5 rounded text-sm font-mono; }
-.ProseMirror pre { @apply bg-muted p-4 rounded my-4 overflow-x-auto; }
-.ProseMirror pre code { @apply bg-transparent p-0; }
+.ProseMirror code {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.875em;
+  font-family: monospace;
+}
+
+.ProseMirror pre {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 1rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.875em;
+}
+
+.ProseMirror pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
 .ProseMirror a { @apply text-primary underline; }
 .ProseMirror img { @apply max-w-full rounded my-4; }

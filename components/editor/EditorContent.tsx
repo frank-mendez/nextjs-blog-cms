@@ -16,7 +16,7 @@ function renderMark(mark: TipTapMark, inner: string): string {
     case 'bold': return `<strong>${inner}</strong>`
     case 'italic': return `<em>${inner}</em>`
     case 'strike': return `<s>${inner}</s>`
-    case 'code': return `<code>${inner}</code>`
+    case 'code': return `<code style="background:#1e1e2e;color:#cdd6f4;padding:2px 6px;border-radius:4px;font-size:0.875em;font-family:monospace">${inner}</code>`
     case 'link': {
       const href = mark.attrs?.href ?? '#'
       return `<a href="${href}" rel="noopener noreferrer" class="text-primary underline">${inner}</a>`
@@ -51,7 +51,7 @@ function renderNode(node: TipTapNode): string {
     case 'orderedList': return `<ol class="list-decimal pl-6">${inner}</ol>`
     case 'listItem': return `<li>${inner}</li>`
     case 'blockquote': return `<blockquote>${inner}</blockquote>`
-    case 'codeBlock': return `<pre><code>${inner}</code></pre>`
+    case 'codeBlock': return `<pre style="background:#1e1e2e;color:#cdd6f4;padding:1rem;border-radius:6px;margin:1rem 0;overflow-x:auto;font-family:monospace;font-size:0.875em"><code style="background:transparent;color:inherit;padding:0">${inner}</code></pre>`
     case 'image': {
       const src = node.attrs?.src ?? ''
       const alt = node.attrs?.alt ?? ''

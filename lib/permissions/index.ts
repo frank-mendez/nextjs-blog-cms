@@ -15,7 +15,7 @@ const rolePermissions: Record<Role, Permission[]> = {
     'categories:write',
     'tags:write',
     'comments:delete:own',
-    'comments:delete:any',
+    'comments:delete:all',
   ],
   author: [
     'posts:create',

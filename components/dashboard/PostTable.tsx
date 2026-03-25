@@ -110,7 +110,7 @@ export function PostTable({ posts }: PostTableProps) {
                   )}
                 </td>
                 <td className="px-5 py-4 hidden lg:table-cell text-sm text-muted-foreground">
-                  {format(new Date(post.updated_at), 'MMM d, yyyy')}
+                  {post.updated_at ? format(new Date(post.updated_at), 'MMM d, yyyy') : '—'}
                 </td>
                 <td className="px-5 py-4 text-right">
                   <DropdownMenu>

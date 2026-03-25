@@ -13,3 +13,5 @@ export type Permission =
   | 'users:update'
   | 'categories:write'
   | 'tags:write'
+  | 'comments:delete:own'
+  | 'comments:delete:all'

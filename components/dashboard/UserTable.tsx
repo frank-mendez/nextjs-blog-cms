@@ -87,7 +87,7 @@ export function UserTable({ users, currentUserId }: UserTableProps) {
                   )}
                 </td>
                 <td className="px-5 py-4 hidden lg:table-cell text-sm text-muted-foreground">
-                  {format(new Date(user.created_at), 'MMM d, yyyy')}
+                  {user.created_at ? format(new Date(user.created_at), 'MMM d, yyyy') : '—'}
                 </td>
                 <td className="px-5 py-4 text-right">
                   {!isCurrent && (

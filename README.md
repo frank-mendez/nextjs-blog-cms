@@ -11,6 +11,7 @@ A modern blog CMS vibe-coded with Claude Code using Next.js, Supabase, and Tailw
 - 📝 WYSIWYG Editor (TipTap / Lexical ready)
 - 📰 Draft & Publish workflow
 - 🏷️ Tags & Categories
+- 💬 Comments (authenticated users, thread-style, admin management)
 - 🌐 SEO-friendly blog pages
 - ⚡ Fast deployment with Vercel
 - 🤖 AI-assisted development via Claude Code + MCP
@@ -59,6 +60,7 @@ features/
 posts/
 users/
 auth/
+comments/
 
 lib/
 supabase/
@@ -128,10 +130,10 @@ npm run dev
 
 ## 🔐 Roles & Permissions
 
-| Role   | Access                             |
-| ------ | ---------------------------------- |
-| Admin  | Full control (users, posts, roles) |
-| Author | Create & manage own posts          |
+| Role   | Access                                          |
+| ------ | ----------------------------------------------- |
+| Admin  | Full control (users, posts, roles, comments)    |
+| Author | Create & manage own posts, delete own comments  |
 
 Enforced using **Supabase Row Level Security (RLS)**.
 
@@ -169,7 +171,7 @@ This project is designed to work seamlessly with **Claude Code**:
 
 ## 📌 Roadmap
 
-- [ ] Comments system
+- [x] Comments system
 - [ ] Analytics dashboard
 - [ ] Scheduled posts
 - [ ] Multi-author collaboration

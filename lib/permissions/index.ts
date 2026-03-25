@@ -14,6 +14,8 @@ const rolePermissions: Record<Role, Permission[]> = {
     'users:update',
     'categories:write',
     'tags:write',
+    'comments:delete:own',
+    'comments:delete:any',
   ],
   author: [
     'posts:create',
@@ -21,6 +23,7 @@ const rolePermissions: Record<Role, Permission[]> = {
     'posts:update:own',
     'posts:delete:own',
     'posts:publish',
+    'comments:delete:own',
   ],
 }
 

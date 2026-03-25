@@ -139,19 +139,19 @@ createComment(postId: string, content: string): Promise<{ data?: Comment; error?
 deleteComment(id: string, postSlug: string): Promise<{ error?: string }>
 ```
 
-**`deleteComment` authorization:** Follows the same pattern as `deletePost` in `features/posts/actions.ts`. The action calls `getCurrentProfile()`, then checks `can(profile.role, 'comments:delete:own')` (own comment) or `can(profile.role, 'comments:delete:any')` (admin) before issuing the DELETE. Additionally checks that `count === 1` after the DELETE; if 0 rows were affected it returns `{ error: 'Unauthorized or comment not found' }` as a safety net against RLS silent blocks.
+**`deleteComment` authorization:** Follows the same pattern as `deletePost` in `features/posts/actions.ts`. The action calls `getCurrentProfile()`, then checks `can(profile.role, 'comments:delete:own')` (own comment) or `can(profile.role, 'comments:delete:all')` (admin) before issuing the DELETE. Additionally checks that `count === 1` after the DELETE; if 0 rows were affected it returns `{ error: 'Unauthorized or comment not found' }` as a safety net against RLS silent blocks.
 
 ### Permissions (`lib/permissions/index.ts` + `lib/permissions/types.ts`)
 
 Add to `Permission` union type in `types.ts`:
 ```typescript
-| 'comments:delete:any'
+| 'comments:delete:all'
 | 'comments:delete:own'
 ```
 
 Add to role maps in `index.ts`:
 ```typescript
-admin:  [...existing, 'comments:delete:any']
+admin:  [...existing, 'comments:delete:all']
 author: [...existing, 'comments:delete:own']
 ```
 

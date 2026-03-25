@@ -20,14 +20,20 @@ async function getCurrentProfile() {
   return profile
 }
 
+const MAX_COMMENT_LENGTH = 2000
+
 export async function createComment(postId: string, content: string, postSlug: string) {
   const profile = await getCurrentProfile()
   if (!profile) return { error: 'You must be signed in to comment' }
 
+  const trimmedContent = content.trim()
+  if (trimmedContent.length === 0) return { error: 'Comment cannot be empty' }
+  if (trimmedContent.length > MAX_COMMENT_LENGTH) return { error: 'Comment is too long' }
+
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('comments')
-    .insert({ post_id: postId, author_id: profile.id, content })
+    .insert({ post_id: postId, author_id: profile.id, content: trimmedContent })
     .select()
     .single()
 

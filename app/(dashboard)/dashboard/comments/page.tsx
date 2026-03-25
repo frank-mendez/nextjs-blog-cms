@@ -1,4 +1,4 @@
-// app/(dashboard)/comments/page.tsx
+// app/(dashboard)/dashboard/comments/page.tsx
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getAllCommentsForDashboard } from '@/features/comments/queries'

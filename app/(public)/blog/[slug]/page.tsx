@@ -8,6 +8,7 @@ import { EditorContent } from '@/components/editor/EditorContent'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { BackToTopButton } from '@/components/BackToTopButton'
+import { CommentSection } from '@/features/comments/components/CommentSection'
 
 export const revalidate = 3600
 
@@ -129,6 +130,8 @@ export default async function PostPage({ params }: PostPageProps) {
             ))}
           </div>
         )}
+
+        <CommentSection postId={post.id} postSlug={post.slug} />
       </article>
       <BackToTopButton />
     </>

@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getAllCommentsForDashboard } from '@/features/comments/queries'
 import { CommentsTable } from '@/features/comments/components/CommentsTable'
+import { can } from '@/lib/permissions'
+import type { Role } from '@/lib/permissions'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Comments' }
@@ -11,6 +13,14 @@ export default async function CommentsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+
+  if (!can((profileData as { role: string } | null)?.role as Role, 'comments:delete:all')) redirect('/dashboard')
 
   const comments = await getAllCommentsForDashboard()
 

@@ -170,7 +170,7 @@
 .ProseMirror li { @apply my-0.5; }
 .ProseMirror li > p { @apply mb-0 mt-0; }
 
-/* article page: override prose paragraph margin inside list items */
+/* Global prose overrides: adjust paragraph and list item margins inside .prose content */
 .prose li > p { margin-top: 0; margin-bottom: 0; }
 .prose li { margin-top: 0.2em; margin-bottom: 0.2em; }
 

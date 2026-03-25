@@ -136,6 +136,7 @@ export function CategoriesManager({ categories: initial }: CategoriesManagerProp
                   {!isOptimistic && (
                     <button
                       onClick={() => handleDelete(cat.id, cat.name)}
+                      aria-label={`Delete category ${cat.name}`}
                       className="opacity-0 group-hover:opacity-100 shrink-0 ml-1 flex items-center justify-center w-6 h-6 rounded text-red-400 hover:text-red-600 hover:bg-red-50 transition-all duration-150"
                     >
                       <Trash2 className="h-3 w-3" />

@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X, MessageSquare,
+  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X, MessageSquare, Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { can } from '@/lib/permissions'
@@ -22,16 +22,19 @@ export function Sidebar({ profile }: SidebarProps) {
   const supabase = createClient()
   const role = profile.role as Role
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   // Close drawer on navigation
   useEffect(() => {
     setMobileOpen(false)
   }, [pathname])
 
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+  function handleLogout() {
+    startTransition(async () => {
+      await supabase.auth.signOut()
+      router.push('/login')
+      router.refresh()
+    })
   }
 
   const navItems = [
@@ -146,10 +149,14 @@ export function Sidebar({ profile }: SidebarProps) {
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-150"
+          disabled={isPending}
+          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <LogOut className="h-4 w-4 shrink-0" />
-          Sign out
+          {isPending
+            ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+            : <LogOut className="h-4 w-4 shrink-0" />
+          }
+          {isPending ? 'Signing out…' : 'Sign out'}
         </button>
       </div>
     </>

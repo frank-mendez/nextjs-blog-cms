@@ -127,6 +127,7 @@ export function TagsManager({ tags: initial }: TagsManagerProps) {
                   {!isOptimistic && (
                     <button
                       onClick={() => handleDelete(tag.id, tag.name)}
+                      aria-label={`Delete tag ${tag.name}`}
                       className="flex items-center justify-center w-4 h-4 rounded-full hover:bg-red-100 hover:text-red-600 text-slate-400 transition-colors duration-150 ml-0.5"
                     >
                       <X className="h-3 w-3" />

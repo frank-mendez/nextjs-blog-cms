@@ -1,9 +1,7 @@
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { NavAuthButton } from '@/components/NavAuthButton'
 
-export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export default function PublicLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -20,21 +18,7 @@ export default async function PublicLayout({ children }: { children: React.React
             <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors text-xs uppercase tracking-widest">
               Articles
             </Link>
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center justify-center bg-foreground text-background h-8 px-4 text-xs font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity"
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center bg-foreground text-background h-8 px-4 text-xs font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity"
-              >
-                Sign In
-              </Link>
-            )}
+            <NavAuthButton />
           </nav>
         </div>
       </header>

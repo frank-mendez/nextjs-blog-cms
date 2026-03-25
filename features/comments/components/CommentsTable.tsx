@@ -107,8 +107,8 @@ export function CommentsTable({ comments }: CommentsTableProps) {
                 <Button
                   variant="destructive"
                   size="sm"
-                  disabled={deleting === comment.id}
-                  onClick={() => handleDelete(comment.id, comment.post?.slug ?? '')}
+                  disabled={deleting === comment.id || !comment.post?.slug}
+                  onClick={() => handleDelete(comment.id, comment.post!.slug)}
                 >
                   {deleting === comment.id ? '...' : 'Delete'}
                 </Button>

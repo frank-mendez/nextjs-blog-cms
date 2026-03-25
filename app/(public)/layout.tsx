@@ -1,6 +1,10 @@
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
 
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
+export default async function PublicLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-border/60 sticky top-0 z-50 bg-background/95 backdrop-blur-sm">
@@ -16,12 +20,21 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors text-xs uppercase tracking-widest">
               Articles
             </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center justify-center bg-foreground text-background h-8 px-4 text-xs font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity"
-            >
-              Dashboard
-            </Link>
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center bg-foreground text-background h-8 px-4 text-xs font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center bg-foreground text-background h-8 px-4 text-xs font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity"
+              >
+                Sign In
+              </Link>
+            )}
           </nav>
         </div>
       </header>

@@ -167,6 +167,16 @@
 .ProseMirror p { @apply mb-3; }
 .ProseMirror ul { @apply list-disc pl-6 mb-3; }
 .ProseMirror ol { @apply list-decimal pl-6 mb-3; }
+.ProseMirror li { @apply my-0.5; }
+.ProseMirror li > p { @apply mb-0 mt-0; }
+
+/* article page: override prose paragraph margin inside list items */
+.prose li > p { margin-top: 0; margin-bottom: 0; }
+.prose li { margin-top: 0.2em; margin-bottom: 0.2em; }
+
+/* section divider spacing */
+.ProseMirror hr { @apply my-4; }
+.prose hr { margin-top: 1rem; margin-bottom: 1rem; }
 .ProseMirror blockquote { @apply border-l-4 border-border pl-4 italic my-4; }
 .ProseMirror code {
   background: #1e1e2e;

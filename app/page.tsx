@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
 
 const pillars = [
   {
@@ -40,7 +41,10 @@ const stats = [
   { value: 'No fluff', label: 'Direct and honest' },
 ]
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <div className="tpe-root">
       {/* Graph-paper texture overlay */}
@@ -57,7 +61,11 @@ export default function Home() {
           </Link>
           <div className="tpe-nav-links">
             <Link href="/blog" className="tpe-nav-ghost">Articles</Link>
-            <Link href="/dashboard" className="tpe-nav-solid">Dashboard →</Link>
+            {user ? (
+              <Link href="/dashboard" className="tpe-nav-solid">Dashboard →</Link>
+            ) : (
+              <Link href="/login" className="tpe-nav-solid">Sign In →</Link>
+            )}
           </div>
         </div>
       </nav>
@@ -91,9 +99,15 @@ export default function Home() {
             <Link href="/blog" className="tpe-btn-primary">
               Read Articles <span aria-hidden>→</span>
             </Link>
-            <Link href="/dashboard" className="tpe-btn-ghost">
-              Open Dashboard
-            </Link>
+            {user ? (
+              <Link href="/dashboard" className="tpe-btn-ghost">
+                Open Dashboard
+              </Link>
+            ) : (
+              <Link href="/login" className="tpe-btn-ghost">
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
 
@@ -170,7 +184,11 @@ export default function Home() {
           </p>
           <div className="tpe-footer-links">
             <Link href="/blog" className="tpe-footer-link">Articles</Link>
-            <Link href="/dashboard" className="tpe-footer-link">Dashboard</Link>
+            {user ? (
+              <Link href="/dashboard" className="tpe-footer-link">Dashboard</Link>
+            ) : (
+              <Link href="/login" className="tpe-footer-link">Sign In</Link>
+            )}
           </div>
         </div>
       </footer>

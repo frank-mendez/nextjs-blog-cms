@@ -17,7 +17,7 @@ interface BlogPageProps {
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   const { page: pageParam } = await searchParams
   const page = Number(pageParam) || 1
-  const limit = 10
+  const limit = 12
   const { posts, total } = await getPublishedPosts(page, limit)
 
   const totalPages = Math.ceil(total / limit)

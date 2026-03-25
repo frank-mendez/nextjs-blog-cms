@@ -3,8 +3,6 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { getPostById } from '@/features/posts/queries'
 import { PostEditor } from '@/components/dashboard/PostEditor'
-import { publishPost, unpublishPost } from '@/features/posts/actions'
-import { Button } from '@/components/ui/button'
 import { PostStatusBadge } from '@/features/posts/components/PostStatusBadge'
 
 export const metadata: Metadata = { title: 'Edit Post' }
@@ -31,32 +29,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     <div className="p-4 md:p-8 space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <h1 className="text-3xl font-bold">Edit Post</h1>
-        <div className="flex items-center gap-3">
-          <PostStatusBadge status={post.status} />
-          <form>
-            {post.status === 'draft' ? (
-              <Button
-                formAction={async () => {
-                  'use server'
-                  await publishPost(id)
-                }}
-                variant="default"
-              >
-                Publish
-              </Button>
-            ) : (
-              <Button
-                formAction={async () => {
-                  'use server'
-                  await unpublishPost(id)
-                }}
-                variant="outline"
-              >
-                Unpublish
-              </Button>
-            )}
-          </form>
-        </div>
+        <PostStatusBadge status={post.status} />
       </div>
       <PostEditor post={post} categories={categories ?? []} tags={tags ?? []} />
     </div>

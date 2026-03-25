@@ -60,45 +60,42 @@ export function TagsManager({ tags: initial }: TagsManagerProps) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-[280px_1fr] items-start">
       {/* Create form */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-50">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 shrink-0">
             <Plus className="h-4 w-4 text-blue-600" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-gray-900">New Tag</h2>
+            <h2 className="text-sm font-semibold text-gray-900">New Tag</h2>
             <p className="text-xs text-muted-foreground">Label posts with topics or keywords</p>
           </div>
         </div>
-        <form ref={formRef} action={handleCreate} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-sm font-medium">
+        <form ref={formRef} action={handleCreate} className="space-y-3">
+          <div className="space-y-1">
+            <Label htmlFor="name" className="text-xs font-medium">
               Name <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-              <Input id="name" name="name" required placeholder="e.g. JavaScript" className="pl-9" />
+              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+              <Input id="name" name="name" required placeholder="e.g. JavaScript" className="pl-8 h-8 text-sm" />
             </div>
           </div>
-          <Button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-sm"
-          >
-            <Plus className="h-4 w-4 mr-2" />Add Tag
+          <Button type="submit" size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white border-0">
+            <Plus className="h-3.5 w-3.5 mr-1.5" />Add Tag
           </Button>
         </form>
       </div>
 
       {/* Tag cloud */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-violet-50">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-violet-50 shrink-0">
             <Tag className="h-4 w-4 text-violet-600" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Existing Tags</h2>
+            <h2 className="text-sm font-semibold text-gray-900">Existing Tags</h2>
             <p className="text-xs text-muted-foreground">{tags.length} tag{tags.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
@@ -115,7 +112,7 @@ export function TagsManager({ tags: initial }: TagsManagerProps) {
               return (
                 <span
                   key={tag.id}
-                  className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-150 ${
+                  className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-150 ${
                     isOptimistic
                       ? 'bg-blue-50 text-blue-500 opacity-70'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
@@ -130,6 +127,7 @@ export function TagsManager({ tags: initial }: TagsManagerProps) {
                   {!isOptimistic && (
                     <button
                       onClick={() => handleDelete(tag.id, tag.name)}
+                      aria-label={`Delete tag ${tag.name}`}
                       className="flex items-center justify-center w-4 h-4 rounded-full hover:bg-red-100 hover:text-red-600 text-slate-400 transition-colors duration-150 ml-0.5"
                     >
                       <X className="h-3 w-3" />

@@ -1,4 +1,3 @@
-Initialising login role...
 export type Json =
   | string
   | number
@@ -394,3 +393,10 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+export type Profile = Database['public']['Tables']['profiles']['Row']
+export type Post = Database['public']['Tables']['posts']['Row']
+export type Category = Database['public']['Tables']['categories']['Row']
+export type Tag = Database['public']['Tables']['tags']['Row']
+export type PostTag = Database['public']['Tables']['post_tags']['Row']
+export type Comment = Database['public']['Tables']['comments']['Row']

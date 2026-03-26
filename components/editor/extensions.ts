@@ -34,7 +34,7 @@ export const extensions = [
   Subscript,
   Superscript,
   TaskList,
-  TaskItem.configure({ nested: true }),
+  TaskItem.configure({ nested: true, HTMLAttributes: { class: 'tiptap-task-item' } }),
   Table.configure({ resizable: false }),
   TableRow,
   TableCell,

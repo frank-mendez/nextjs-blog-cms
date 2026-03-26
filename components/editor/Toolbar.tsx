@@ -7,7 +7,7 @@ import {
   Bold, Italic, Underline, Strikethrough,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   List, ListOrdered, ListTodo, Quote, Code,
-  Link, Image as ImageIcon, Minus, Table,
+  Link, Image as ImageIcon, Minus,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -157,6 +157,80 @@ function ColorPanel({ editor, triggerRef, onClose }: ColorPanelProps) {
   )
 }
 
+// ── LineHeightMenu ────────────────────────────────────────────────────────────
+interface LineHeightMenuProps {
+  editor: Editor
+  activeLineHeight: string | null
+}
+
+function LineHeightMenu({ editor, activeLineHeight }: LineHeightMenuProps) {
+  const [customValue, setCustomValue] = useState('')
+
+  function applyCustom() {
+    const n = parseFloat(customValue)
+    if (!customValue || isNaN(n) || n < 0.5 || n > 10) return
+    editor.chain().focus().setLineHeight(String(n)).run()
+    setCustomValue('')
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className="inline-flex items-center justify-between h-8 px-2 text-xs min-w-[52px] rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground gap-1"
+        title="Line spacing"
+      >
+        <span>↕</span>
+        <span>{activeLineHeight ?? 'Default'}</span>
+        <span className="opacity-50">▾</span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="min-w-[120px] w-auto">
+        <DropdownMenuItem onSelect={() => editor.chain().focus().unsetLineHeight().run()}>
+          <span className={!activeLineHeight ? 'font-semibold' : ''}>Default</span>
+        </DropdownMenuItem>
+        {LINE_HEIGHTS.map((lh) => (
+          <DropdownMenuItem key={lh} onSelect={() => {
+            if (activeLineHeight === lh) {
+              editor.chain().focus().unsetLineHeight().run()
+            } else {
+              editor.chain().focus().setLineHeight(lh).run()
+            }
+          }}>
+            <span className={activeLineHeight === lh ? 'font-semibold' : ''}>{lh}</span>
+          </DropdownMenuItem>
+        ))}
+        {/* Custom input — stop propagation so the menu stays open */}
+        <div
+          className="px-2 pt-1 pb-2 border-t border-border mt-1"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Custom</p>
+          <div className="flex gap-1">
+            <input
+              type="number"
+              min={0.5}
+              max={10}
+              step={0.1}
+              placeholder="e.g. 1.8"
+              value={customValue}
+              onChange={(e) => setCustomValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyCustom() }}
+              className="h-7 w-full rounded border border-input bg-background px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            <button
+              type="button"
+              onClick={applyCustom}
+              className="h-7 px-2 rounded bg-primary text-primary-foreground text-xs hover:bg-primary/90"
+            >
+              Set
+            </button>
+          </div>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 // ── Toolbar ───────────────────────────────────────────────────────────────────
 export function Toolbar({ editor }: ToolbarProps) {
   const [colorPanelOpen, setColorPanelOpen] = useState(false)
@@ -289,35 +363,14 @@ export function Toolbar({ editor }: ToolbarProps) {
       <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={addImage} title="Image">
         <ImageIcon className="h-4 w-4" />
       </Button>
-      <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Insert Table">
-        <Table className="h-4 w-4" />
-      </Button>
-      <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal Rule">
+<Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal Rule">
         <Minus className="h-4 w-4" />
       </Button>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
-      {/* Group 7: Line height */}
-      <span className="text-muted-foreground text-xs">↕</span>
-      <div className="flex border border-border rounded-md overflow-hidden">
-        {LINE_HEIGHTS.map((lh) => (
-          <Button
-            key={lh}
-            type="button"
-            variant={activeLineHeight === lh ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-8 px-2 text-xs rounded-none border-0"
-            onClick={() =>
-              activeLineHeight === lh
-                ? editor.chain().focus().unsetLineHeight().run()
-                : editor.chain().focus().setLineHeight(lh).run()
-            }
-          >
-            {lh}
-          </Button>
-        ))}
-      </div>
+      {/* Group 7: Line height dropdown */}
+      <LineHeightMenu editor={editor} activeLineHeight={activeLineHeight} />
 
     </div>
   )

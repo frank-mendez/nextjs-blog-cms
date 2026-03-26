@@ -11,7 +11,11 @@ interface TipTapNode {
   text?: string
 }
 
-const ALLOWED_LINE_HEIGHTS = ['1', '1.5', '2', '2.5', '3']
+function isValidLineHeight(value: unknown): boolean {
+  if (typeof value !== 'string' && typeof value !== 'number') return false
+  const n = parseFloat(String(value))
+  return !isNaN(n) && n >= 0.5 && n <= 10
+}
 const ALLOWED_ALIGNS = ['left', 'center', 'right', 'justify']
 const ALLOWED_LINK_PROTOCOLS = ['http:', 'https:', 'mailto:']
 const ALLOWED_SRC_PROTOCOLS = ['http:', 'https:']
@@ -87,7 +91,7 @@ function renderNode(node: TipTapNode): string {
     case 'paragraph': {
       const parts: string[] = []
       const lh = node.attrs?.lineHeight
-      if (lh && ALLOWED_LINE_HEIGHTS.includes(String(lh))) parts.push(`line-height:${lh}`)
+      if (lh && isValidLineHeight(lh)) parts.push(`line-height:${lh}`)
       const align = node.attrs?.textAlign
       if (align && ALLOWED_ALIGNS.includes(String(align))) parts.push(`text-align: ${align}`)
       const style = parts.length ? ` style="${parts.join('; ')}"` : ''
@@ -99,7 +103,7 @@ function renderNode(node: TipTapNode): string {
       const level = node.attrs?.level ?? 2
       const parts: string[] = []
       const lh = node.attrs?.lineHeight
-      if (lh && ALLOWED_LINE_HEIGHTS.includes(String(lh))) parts.push(`line-height:${lh}`)
+      if (lh && isValidLineHeight(lh)) parts.push(`line-height:${lh}`)
       const align = node.attrs?.textAlign
       if (align && ALLOWED_ALIGNS.includes(String(align))) parts.push(`text-align: ${align}`)
       const style = parts.length ? ` style="${parts.join('; ')}"` : ''

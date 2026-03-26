@@ -59,6 +59,11 @@ export function Editor({ value, onChange, className }: EditorProps) {
     <div className={`border rounded-md overflow-hidden ${className ?? ''}`}>
       <Toolbar editor={editor} />
       <TipTapContent editor={editor} />
+      <div className="px-4 py-1.5 border-t text-xs text-muted-foreground text-right select-none">
+        {editor.storage.characterCount?.words() ?? 0} words
+        {' · '}
+        {editor.storage.characterCount?.characters() ?? 0} characters
+      </div>
     </div>
   )
 }

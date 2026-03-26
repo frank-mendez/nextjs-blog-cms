@@ -74,7 +74,8 @@ describe('EditorContent — link href sanitization', () => {
   it('allows https links', () => {
     const json = doc([p('click', [{ type: 'link', attrs: { href: 'https://example.com' } }])])
     const { container } = render(<EditorContent content={json} />)
-    expect(container.querySelector('a[href="https://example.com"]')).not.toBeNull()
+    // URL normalization adds trailing slash to bare origins
+    expect(container.querySelector('a[href="https://example.com/"]')).not.toBeNull()
   })
 
   it('allows mailto links', () => {

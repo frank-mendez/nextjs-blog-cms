@@ -30,8 +30,8 @@ function sanitizeColor(value: unknown): string | null {
 function sanitizeHref(href: unknown): string | null {
   if (typeof href !== 'string') return null
   try {
-    const protocol = new URL(href).protocol
-    return ALLOWED_LINK_PROTOCOLS.includes(protocol) ? href : null
+    const url = new URL(href)
+    return ALLOWED_LINK_PROTOCOLS.includes(url.protocol) ? url.href : null
   } catch {
     return null
   }
@@ -40,8 +40,8 @@ function sanitizeHref(href: unknown): string | null {
 function sanitizeSrc(src: unknown): string | null {
   if (typeof src !== 'string') return null
   try {
-    const protocol = new URL(src).protocol
-    return ALLOWED_SRC_PROTOCOLS.includes(protocol) ? src : null
+    const url = new URL(src)
+    return ALLOWED_SRC_PROTOCOLS.includes(url.protocol) ? url.href : null
   } catch {
     return null
   }
@@ -67,7 +67,8 @@ function renderMark(mark: TipTapMark, inner: string): string {
     case 'link': {
       const href = sanitizeHref(mark.attrs?.href)
       if (!href) return inner
-      return `<a href="${href}" rel="noopener noreferrer" class="text-primary underline">${inner}</a>`
+      const safeHref = href.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
+      return `<a href="${safeHref}" rel="noopener noreferrer" class="text-primary underline">${inner}</a>`
     }
     default: return inner
   }
@@ -126,8 +127,9 @@ function renderNode(node: TipTapNode): string {
     case 'image': {
       const src = sanitizeSrc(node.attrs?.src)
       if (!src) return ''
-      const alt = node.attrs?.alt ?? ''
-      return `<img src="${src}" alt="${alt}" class="max-w-full rounded my-4" />`
+      const safeSrc = src.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
+      const safeAlt = String(node.attrs?.alt ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
+      return `<img src="${safeSrc}" alt="${safeAlt}" class="max-w-full rounded my-4" />`
     }
     default: return inner
   }

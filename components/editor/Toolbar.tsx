@@ -1,139 +1,304 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { type Editor } from '@tiptap/react'
 import {
-  Bold, Italic, Heading1, Heading2, Heading3,
-  List, ListOrdered, Quote, Code, Link, Image as ImageIcon, Minus
+  Bold, Italic, Underline, Strikethrough,
+  AlignLeft, AlignCenter, AlignRight, AlignJustify,
+  List, ListOrdered, ListTodo, Quote, Code,
+  Link, Image as ImageIcon, Minus, Table,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface ToolbarProps {
   editor: Editor
 }
 
+// ── Color palettes ────────────────────────────────────────────────────────────
+const TEXT_COLORS = [
+  { hex: '#000000', label: 'Black' },
+  { hex: '#ef4444', label: 'Red' },
+  { hex: '#f97316', label: 'Orange' },
+  { hex: '#eab308', label: 'Yellow' },
+  { hex: '#22c55e', label: 'Green' },
+  { hex: '#3b82f6', label: 'Blue' },
+  { hex: '#8b5cf6', label: 'Purple' },
+  { hex: '#ec4899', label: 'Pink' },
+  { hex: '#6b7280', label: 'Gray' },
+  { hex: '#92400e', label: 'Brown' },
+  { hex: '#166534', label: 'Dark Green' },
+  { hex: '#1e3a8a', label: 'Navy' },
+  { hex: '#4c1d95', label: 'Dark Purple' },
+  { hex: '#9f1239', label: 'Dark Red' },
+  { hex: '#d1d5db', label: 'Light Gray' },
+  { hex: '#ffffff', label: 'White' },
+]
+
+const HIGHLIGHT_COLORS = [
+  { hex: '#fef9c3', label: 'Yellow' },
+  { hex: '#fee2e2', label: 'Red' },
+  { hex: '#dcfce7', label: 'Green' },
+  { hex: '#dbeafe', label: 'Blue' },
+  { hex: '#ede9fe', label: 'Purple' },
+  { hex: '#fce7f3', label: 'Pink' },
+  { hex: '#ffedd5', label: 'Orange' },
+  { hex: '#e0f2fe', label: 'Sky' },
+]
+
+const LINE_HEIGHTS = ['1', '1.5', '2', '2.5', '3']
+
+// ── Heading helpers ───────────────────────────────────────────────────────────
+const HEADING_OPTIONS = [
+  { label: 'Normal', action: (e: Editor) => e.chain().focus().setParagraph().run() },
+  { label: 'Heading 1', action: (e: Editor) => e.chain().focus().toggleHeading({ level: 1 }).run() },
+  { label: 'Heading 2', action: (e: Editor) => e.chain().focus().toggleHeading({ level: 2 }).run() },
+  { label: 'Heading 3', action: (e: Editor) => e.chain().focus().toggleHeading({ level: 3 }).run() },
+  { label: 'Heading 4', action: (e: Editor) => e.chain().focus().toggleHeading({ level: 4 }).run() },
+]
+
+function getHeadingLabel(editor: Editor): string {
+  for (let level = 1; level <= 4; level++) {
+    if (editor.isActive('heading', { level })) return `Heading ${level}`
+  }
+  return 'Normal'
+}
+
+// ── ColorPanel (portal) ───────────────────────────────────────────────────────
+interface ColorPanelProps {
+  editor: Editor
+  triggerRef: React.RefObject<HTMLDivElement | null>
+  onClose: () => void
+}
+
+function ColorPanel({ editor, triggerRef, onClose }: ColorPanelProps) {
+  const panelRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+
+  // Position below trigger
+  useEffect(() => {
+    if (!triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    setPos({ top: rect.bottom + window.scrollY + 4, left: rect.left + window.scrollX })
+  }, [triggerRef])
+
+  // Close on outside mousedown — guard with contains() so swatch clicks don't close early
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (panelRef.current?.contains(e.target as Node)) return
+      if (triggerRef.current?.contains(e.target as Node)) return
+      onClose()
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [onClose, triggerRef])
+
+  const activeColor = editor.getAttributes('textStyle').color ?? null
+  const activeHighlight = editor.getAttributes('highlight').color ?? null
+
+  return createPortal(
+    <div
+      ref={panelRef}
+      style={{ position: 'absolute', top: pos.top, left: pos.left, zIndex: 9999 }}
+      className="bg-popover border border-border rounded-lg shadow-lg p-3 w-64"
+    >
+      {/* Text color section */}
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Text Color</p>
+      <div className="grid grid-cols-8 gap-1 mb-3">
+        {TEXT_COLORS.map(({ hex, label }) => (
+          <button
+            key={hex}
+            type="button"
+            title={label}
+            style={{ background: hex }}
+            className={`w-6 h-6 rounded cursor-pointer border ${hex === '#ffffff' ? 'border-border' : 'border-transparent'} ${activeColor === hex ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+            onClick={() => {
+              if (activeColor === hex) {
+                editor.chain().focus().unsetColor().run()
+              } else {
+                editor.chain().focus().setColor(hex).run()
+              }
+              onClose()
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Highlight section */}
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Highlight</p>
+      <div className="grid grid-cols-8 gap-1">
+        {HIGHLIGHT_COLORS.map(({ hex, label }) => (
+          <button
+            key={hex}
+            type="button"
+            title={label}
+            style={{ background: hex }}
+            className={`w-6 h-6 rounded cursor-pointer border border-border ${activeHighlight === hex ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+            onClick={() => {
+              if (activeHighlight === hex) {
+                editor.chain().focus().unsetHighlight().run()
+              } else {
+                editor.chain().focus().toggleHighlight({ color: hex }).run()
+              }
+              onClose()
+            }}
+          />
+        ))}
+      </div>
+    </div>,
+    document.body
+  )
+}
+
+// ── Toolbar ───────────────────────────────────────────────────────────────────
 export function Toolbar({ editor }: ToolbarProps) {
+  const [colorPanelOpen, setColorPanelOpen] = useState(false)
+  const colorTriggerRef = useRef<HTMLDivElement | null>(null)
+
   function addLink() {
     const url = window.prompt('Enter URL')
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run()
-    }
+    if (url) editor.chain().focus().setLink({ href: url }).run()
   }
 
   function addImage() {
     const url = window.prompt('Enter image URL')
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
-    }
+    if (url) editor.chain().focus().setImage({ src: url }).run()
   }
-
-  const tools = [
-    {
-      icon: Bold,
-      action: () => editor.chain().focus().toggleBold().run(),
-      isActive: editor.isActive('bold'),
-      title: 'Bold',
-    },
-    {
-      icon: Italic,
-      action: () => editor.chain().focus().toggleItalic().run(),
-      isActive: editor.isActive('italic'),
-      title: 'Italic',
-    },
-    null, // separator
-    {
-      icon: Heading1,
-      action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-      isActive: editor.isActive('heading', { level: 1 }),
-      title: 'Heading 1',
-    },
-    {
-      icon: Heading2,
-      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-      isActive: editor.isActive('heading', { level: 2 }),
-      title: 'Heading 2',
-    },
-    {
-      icon: Heading3,
-      action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
-      isActive: editor.isActive('heading', { level: 3 }),
-      title: 'Heading 3',
-    },
-    null,
-    {
-      icon: List,
-      action: () => editor.chain().focus().toggleBulletList().run(),
-      isActive: editor.isActive('bulletList'),
-      title: 'Bullet List',
-    },
-    {
-      icon: ListOrdered,
-      action: () => editor.chain().focus().toggleOrderedList().run(),
-      isActive: editor.isActive('orderedList'),
-      title: 'Ordered List',
-    },
-    {
-      icon: Quote,
-      action: () => editor.chain().focus().toggleBlockquote().run(),
-      isActive: editor.isActive('blockquote'),
-      title: 'Blockquote',
-    },
-    {
-      icon: Code,
-      action: () => editor.chain().focus().toggleCodeBlock().run(),
-      isActive: editor.isActive('codeBlock'),
-      title: 'Code Block',
-    },
-    null,
-    {
-      icon: Link,
-      action: addLink,
-      isActive: editor.isActive('link'),
-      title: 'Link',
-    },
-    {
-      icon: ImageIcon,
-      action: addImage,
-      isActive: false,
-      title: 'Image',
-    },
-    {
-      icon: Minus,
-      action: () => editor.chain().focus().setHorizontalRule().run(),
-      isActive: false,
-      title: 'Horizontal Rule',
-    },
-  ]
-
-  const LINE_HEIGHTS = ['1', '1.5', '2', '2.5', '3']
 
   const activeLineHeight =
     editor.getAttributes('paragraph').lineHeight ??
     editor.getAttributes('heading').lineHeight ??
     null
 
+  const activeColor = editor.getAttributes('textStyle').color ?? '#000000'
+  const activeHighlight = editor.getAttributes('highlight').color ?? '#fef9c3'
+
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/30">
-      {tools.map((tool, idx) => {
-        if (tool === null) {
-          return <Separator key={idx} orientation="vertical" className="h-6 mx-1" />
-        }
-        const Icon = tool.icon
-        return (
-          <Button
-            key={idx}
-            type="button"
-            variant={tool.isActive ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={tool.action}
-            title={tool.title}
-          >
-            <Icon className="h-4 w-4" />
-          </Button>
-        )
-      })}
+
+      {/* Group 1: Heading dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger className="inline-flex items-center justify-between h-8 px-2 text-xs min-w-[90px] rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground">
+          {getHeadingLabel(editor)}
+          <span className="ml-1 opacity-50">▾</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="min-w-[140px] w-auto">
+          {HEADING_OPTIONS.map(({ label, action }) => (
+            <DropdownMenuItem key={label} onSelect={() => action(editor)}>
+              {label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <Separator orientation="vertical" className="h-6 mx-1" />
+
+      {/* Group 2: Inline formatting */}
+      {[
+        { icon: Bold, action: () => editor.chain().focus().toggleBold().run(), isActive: editor.isActive('bold'), title: 'Bold' },
+        { icon: Italic, action: () => editor.chain().focus().toggleItalic().run(), isActive: editor.isActive('italic'), title: 'Italic' },
+        { icon: Underline, action: () => editor.chain().focus().toggleUnderline().run(), isActive: editor.isActive('underline'), title: 'Underline' },
+        { icon: Strikethrough, action: () => editor.chain().focus().toggleStrike().run(), isActive: editor.isActive('strike'), title: 'Strikethrough' },
+      ].map(({ icon: Icon, action, isActive, title }) => (
+        <Button key={title} type="button" variant={isActive ? 'secondary' : 'ghost'} size="sm" className="h-8 w-8 p-0" onClick={action} title={title}>
+          <Icon className="h-4 w-4" />
+        </Button>
+      ))}
+      {/* Subscript / Superscript as compact text buttons */}
+      <Button type="button" variant={editor.isActive('subscript') ? 'secondary' : 'ghost'} size="sm" className="h-8 w-8 p-0 text-xs" onClick={() => editor.chain().focus().toggleSubscript().run()} title="Subscript">
+        X<sub>2</sub>
+      </Button>
+      <Button type="button" variant={editor.isActive('superscript') ? 'secondary' : 'ghost'} size="sm" className="h-8 w-8 p-0 text-xs" onClick={() => editor.chain().focus().toggleSuperscript().run()} title="Superscript">
+        X<sup>2</sup>
+      </Button>
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
+
+      {/* Group 3: Color & Highlight — both buttons share one panel anchored to a wrapper ref */}
+      <div ref={colorTriggerRef} className="flex items-center">
+        <button
+          type="button"
+          title="Text color"
+          className="h-8 w-auto px-1.5 rounded hover:bg-accent flex flex-col items-center justify-center gap-0.5"
+          onClick={() => setColorPanelOpen(o => !o)}
+        >
+          <span className="text-xs font-semibold leading-none">A</span>
+          <span className="block h-0.5 w-4 rounded" style={{ background: activeColor }} />
+        </button>
+        <button
+          type="button"
+          title="Highlight"
+          className="h-8 w-auto px-1.5 rounded hover:bg-accent flex flex-col items-center justify-center gap-0.5"
+          onClick={() => setColorPanelOpen(o => !o)}
+        >
+          <span className="text-xs font-semibold leading-none" style={{ background: activeHighlight, padding: '0 2px', borderRadius: 2 }}>A</span>
+          <span className="block h-0.5 w-4 rounded" style={{ background: activeHighlight }} />
+        </button>
+      </div>
+
+      {colorPanelOpen && (
+        <ColorPanel
+          editor={editor}
+          triggerRef={colorTriggerRef}
+          onClose={() => setColorPanelOpen(false)}
+        />
+      )}
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
+
+      {/* Group 4: Alignment */}
+      {[
+        { icon: AlignLeft, align: 'left', title: 'Align Left' },
+        { icon: AlignCenter, align: 'center', title: 'Align Center' },
+        { icon: AlignRight, align: 'right', title: 'Align Right' },
+        { icon: AlignJustify, align: 'justify', title: 'Justify' },
+      ].map(({ icon: Icon, align, title }) => (
+        <Button key={align} type="button" variant={editor.isActive({ textAlign: align }) ? 'secondary' : 'ghost'} size="sm" className="h-8 w-8 p-0" onClick={() => editor.chain().focus().setTextAlign(align).run()} title={title}>
+          <Icon className="h-4 w-4" />
+        </Button>
+      ))}
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
+
+      {/* Group 5: Blocks */}
+      {[
+        { icon: List, action: () => editor.chain().focus().toggleBulletList().run(), isActive: editor.isActive('bulletList'), title: 'Bullet List' },
+        { icon: ListOrdered, action: () => editor.chain().focus().toggleOrderedList().run(), isActive: editor.isActive('orderedList'), title: 'Ordered List' },
+        { icon: ListTodo, action: () => editor.chain().focus().toggleTaskList().run(), isActive: editor.isActive('taskList'), title: 'Task List' },
+        { icon: Quote, action: () => editor.chain().focus().toggleBlockquote().run(), isActive: editor.isActive('blockquote'), title: 'Blockquote' },
+        { icon: Code, action: () => editor.chain().focus().toggleCodeBlock().run(), isActive: editor.isActive('codeBlock'), title: 'Code Block' },
+      ].map(({ icon: Icon, action, isActive, title }) => (
+        <Button key={title} type="button" variant={isActive ? 'secondary' : 'ghost'} size="sm" className="h-8 w-8 p-0" onClick={action} title={title}>
+          <Icon className="h-4 w-4" />
+        </Button>
+      ))}
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
+
+      {/* Group 6: Insert */}
+      <Button type="button" variant={editor.isActive('link') ? 'secondary' : 'ghost'} size="sm" className="h-8 w-8 p-0" onClick={addLink} title="Link">
+        <Link className="h-4 w-4" />
+      </Button>
+      <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={addImage} title="Image">
+        <ImageIcon className="h-4 w-4" />
+      </Button>
+      <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Insert Table">
+        <Table className="h-4 w-4" />
+      </Button>
+      <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal Rule">
+        <Minus className="h-4 w-4" />
+      </Button>
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
+
+      {/* Group 7: Line height */}
       <span className="text-muted-foreground text-xs">↕</span>
       <div className="flex border border-border rounded-md overflow-hidden">
         {LINE_HEIGHTS.map((lh) => (
@@ -153,6 +318,7 @@ export function Toolbar({ editor }: ToolbarProps) {
           </Button>
         ))}
       </div>
+
     </div>
   )
 }

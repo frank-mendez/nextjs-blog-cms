@@ -101,7 +101,8 @@ function renderNode(node: TipTapNode): string {
     case 'hardBreak': return '<br />'
     case 'horizontalRule': return '<hr />'
     case 'heading': {
-      const level = node.attrs?.level ?? 2
+      const rawLevel = Number(node.attrs?.level)
+      const level = Number.isInteger(rawLevel) && rawLevel >= 1 && rawLevel <= 6 ? rawLevel : 2
       const parts: string[] = []
       const lh = node.attrs?.lineHeight
       if (lh && isValidLineHeight(lh)) parts.push(`line-height:${lh}`)

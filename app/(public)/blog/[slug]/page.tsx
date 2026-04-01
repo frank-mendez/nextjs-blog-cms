@@ -1,66 +1,75 @@
-import { notFound } from 'next/navigation'
-import Image from 'next/image'
-import Link from 'next/link'
-import { format } from 'date-fns'
-import type { Metadata } from 'next'
-import { getPostBySlug, getAllPublishedSlugs } from '@/features/posts/queries'
-import { EditorContent } from '@/components/editor/EditorContent'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { BackToTopButton } from '@/components/BackToTopButton'
-import { CommentSection } from '@/features/comments/components/CommentSection'
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { format } from "date-fns";
+import type { Metadata } from "next";
+import { getPostBySlug, getAllPublishedSlugs } from "@/features/posts/queries";
+import { EditorContent } from "@/components/editor/EditorContent";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { BackToTopButton } from "@/components/BackToTopButton";
+import { CommentSection } from "@/features/comments/components/CommentSection";
+import { ShareButton } from "@/components/ShareButton";
+import { ChevronLeftIcon } from "lucide-react";
 
-export const revalidate = 3600
+export const revalidate = 3600;
 
 interface PostPageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  const slugs = await getAllPublishedSlugs()
-  return slugs.map((slug) => ({ slug }))
+  const slugs = await getAllPublishedSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
-  const { slug } = await params
-  const post = await getPostBySlug(slug)
-  if (!post) return {}
+export async function generateMetadata({
+  params,
+}: PostPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  if (!post) return {};
 
   return {
     title: post.seo_title || post.title,
-    description: post.seo_description || post.excerpt || '',
+    description: post.seo_description || post.excerpt || "",
     openGraph: {
       title: post.seo_title || post.title,
-      description: post.seo_description || post.excerpt || '',
+      description: post.seo_description || post.excerpt || "",
       images: post.cover_image ? [post.cover_image] : [],
-      type: 'article',
+      type: "article",
       publishedTime: post.published_at ?? undefined,
       authors: post.author?.full_name ? [post.author.full_name] : undefined,
     },
-  }
+  };
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const { slug } = await params
-  const post = await getPostBySlug(slug)
-  if (!post) notFound()
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  if (!post) notFound();
 
   const initials = post.author?.full_name
-    ? post.author.full_name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-    : post.author?.email?.[0]?.toUpperCase() ?? '?'
+    ? post.author.full_name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : (post.author?.email?.[0]?.toUpperCase() ?? "?");
 
   const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
+    "@context": "https://schema.org",
+    "@type": "Article",
     headline: post.title,
-    description: post.excerpt ?? post.seo_description ?? '',
+    description: post.excerpt ?? post.seo_description ?? "",
     image: post.cover_image ? [post.cover_image] : [],
     datePublished: post.published_at,
     dateModified: post.updated_at,
     author: post.author?.full_name
-      ? [{ '@type': 'Person', name: post.author.full_name }]
+      ? [{ "@type": "Person", name: post.author.full_name }]
       : [],
-  }
+  };
 
   return (
     <>
@@ -74,12 +83,14 @@ export default async function PostPage({ params }: PostPageProps) {
             href="/blog"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-            Back to Blog
+            <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
+            Back to Articles
           </Link>
           {post.category && (
             <Link href={`/blog/category/${post.category.slug}`}>
-              <Badge className="rounded-full px-3 text-xs">{post.category.name}</Badge>
+              <Badge className="rounded-full px-3 text-xs">
+                {post.category.name}
+              </Badge>
             </Link>
           )}
         </div>
@@ -95,10 +106,16 @@ export default async function PostPage({ params }: PostPageProps) {
             <>
               <span>·</span>
               <time dateTime={post.published_at}>
-                {format(new Date(post.published_at), 'MMMM d, yyyy')}
+                {format(new Date(post.published_at), "MMMM d, yyyy")}
               </time>
             </>
           )}
+          <div className="ml-auto">
+            <ShareButton
+              url={`${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/blog/${post.slug}`}
+              title={post.title}
+            />
+          </div>
         </div>
 
         {post.cover_image && (
@@ -119,13 +136,18 @@ export default async function PostPage({ params }: PostPageProps) {
           </p>
         )}
 
-        <EditorContent content={post.content ?? ''} />
+        <EditorContent content={post.content ?? ""} />
 
         {post.tags && post.tags.length > 0 && (
           <div className="mt-12 flex flex-wrap gap-2">
             {post.tags.map((tag) => (
               <Link key={tag.id} href={`/blog/tag/${tag.slug}`}>
-                <Badge variant="secondary" className="rounded-full px-3 text-xs">#{tag.name}</Badge>
+                <Badge
+                  variant="secondary"
+                  className="rounded-full px-3 text-xs"
+                >
+                  #{tag.name}
+                </Badge>
               </Link>
             ))}
           </div>
@@ -135,5 +157,5 @@ export default async function PostPage({ params }: PostPageProps) {
       </article>
       <BackToTopButton />
     </>
-  )
+  );
 }

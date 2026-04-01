@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { BackToTopButton } from '@/components/BackToTopButton'
 import { CommentSection } from '@/features/comments/components/CommentSection'
+import { ShareButton } from '@/components/ShareButton'
+import { ChevronLeftIcon } from 'lucide-react'
 
 export const revalidate = 3600
 
@@ -49,6 +51,8 @@ export default async function PostPage({ params }: PostPageProps) {
     ? post.author.full_name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : post.author?.email?.[0]?.toUpperCase() ?? '?'
 
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/+$/, '')
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -74,7 +78,7 @@ export default async function PostPage({ params }: PostPageProps) {
             href="/blog"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
             Back to Blog
           </Link>
           {post.category && (
@@ -99,6 +103,12 @@ export default async function PostPage({ params }: PostPageProps) {
               </time>
             </>
           )}
+          <div className="ml-auto">
+            <ShareButton
+              url={`${baseUrl}/blog/${post.slug}`}
+              title={post.title}
+            />
+          </div>
         </div>
 
         {post.cover_image && (

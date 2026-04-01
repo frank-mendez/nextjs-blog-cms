@@ -58,6 +58,13 @@ interface ShareButtonProps {
 
 export function ShareButton({ url, title }: ShareButtonProps) {
   const [copied, setCopied] = React.useState(false)
+  const copyTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  React.useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+    }
+  }, [])
 
   const encodedUrl = encodeURIComponent(url)
   const encodedTitle = encodeURIComponent(title)
@@ -93,19 +100,27 @@ export function ShareButton({ url, title }: ShareButtonProps) {
   async function handleCopyLink() {
     try {
       await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
     } catch {
-      // fallback for environments without clipboard API
-      const el = document.createElement("textarea")
+      const el = document.createElement('textarea')
       el.value = url
+      el.setAttribute('readonly', '')
+      el.style.position = 'absolute'
+      el.style.left = '-9999px'
       document.body.appendChild(el)
       el.select()
-      document.execCommand("copy")
-      document.body.removeChild(el)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      let success = false
+      try {
+        success = document.execCommand('copy')
+      } catch (err) {
+        console.error('Fallback: unable to copy to clipboard', err)
+      } finally {
+        document.body.removeChild(el)
+      }
+      if (!success) return
     }
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+    setCopied(true)
+    copyTimerRef.current = setTimeout(() => setCopied(false), 2000)
   }
 
   return (

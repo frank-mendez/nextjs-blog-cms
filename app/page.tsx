@@ -3,33 +3,45 @@ import Link from 'next/link'
 const pillars = [
   {
     num: '01',
+    icon: '⚒️',
     title: 'System Design',
     desc: 'Architecture decisions, trade-offs, and the thinking behind systems that scale and survive production.',
+    color: '#5DECF5',
   },
   {
     num: '02',
+    icon: '🔧',
     title: 'Engineering Craft',
     desc: 'Clean code, testing, debugging strategies, and the fundamentals that separate good engineers from great ones.',
+    color: '#5D9E1F',
   },
   {
     num: '03',
+    icon: '⚡',
     title: 'Performance',
     desc: 'Making software faster. Profiling, optimization, and measuring what actually matters at scale.',
+    color: '#FCBA03',
   },
   {
     num: '04',
+    icon: '🛠️',
     title: 'Tooling & DX',
     desc: 'The tools, configurations, and workflows that compound over time and make engineers dramatically more productive.',
+    color: '#17DD62',
   },
   {
     num: '05',
+    icon: '📈',
     title: 'Career & Growth',
     desc: 'Getting better at the craft over time. Technical leadership, communication, and leveling up deliberately.',
+    color: '#FF8C00',
   },
   {
     num: '06',
+    icon: '🌐',
     title: 'Open Source',
     desc: 'Building, contributing, and maintaining software in the open. What it takes and why it matters.',
+    color: '#C040FF',
   },
 ]
 
@@ -40,664 +52,761 @@ const stats = [
   { value: 'No fluff', label: 'Direct and honest' },
 ]
 
+const floatingBlocks: Array<{
+  color: string
+  shadow: string
+  size: string
+  dur: string
+  delay: string
+  top: string
+  left?: string
+  right?: string
+}> = [
+  { color: '#5D9E1F', shadow: '#2D5A0A', top: '12%', left: '6%',  dur: '9s',  delay: '0s',   size: '32px' },
+  { color: '#FCBA03', shadow: '#7A5800', top: '22%', right: '8%', dur: '11s', delay: '-3s',  size: '28px' },
+  { color: '#5DECF5', shadow: '#003B42', top: '55%', left: '4%',  dur: '13s', delay: '-6s',  size: '36px' },
+  { color: '#7F7F7F', shadow: '#3F3F3F', top: '68%', right: '6%', dur: '10s', delay: '-2s',  size: '24px' },
+  { color: '#8B6340', shadow: '#3C2210', top: '38%', left: '10%', dur: '12s', delay: '-5s',  size: '20px' },
+  { color: '#17DD62', shadow: '#0A6E30', top: '78%', right: '12%',dur: '8s',  delay: '-1s',  size: '32px' },
+  { color: '#1947A3', shadow: '#0D2560', top: '88%', left: '18%', dur: '15s', delay: '-8s',  size: '28px' },
+  { color: '#C01010', shadow: '#600808', top: '45%', right: '15%',dur: '10s', delay: '-4s',  size: '24px' },
+]
+
 export default function Home() {
   return (
-    <div className="tpe-root">
-      {/* Graph-paper texture overlay */}
-      <div className="tpe-texture" aria-hidden />
-      {/* Amber glow */}
-      <div className="tpe-glow" aria-hidden />
+    <>
+      <style>{`
+        /* ─────────────────────────────────────────────
+           Pixel / Minecraft Design System
+           ───────────────────────────────────────────── */
 
-      {/* ── Nav ── */}
-      <nav className="tpe-nav">
-        <div className="tpe-nav-inner">
-          <Link href="/" className="tpe-logo">
-            <span className="tpe-logo-accent">✦</span>
-            <span className="tpe-logo-text">The Practical Engineer</span>
-          </Link>
-          <div className="tpe-nav-links">
-            <Link href="/blog" className="tpe-nav-ghost">Articles</Link>
-            <Link href="/dashboard" className="tpe-nav-solid">Dashboard →</Link>
-          </div>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        .mc-root {
+          background: #0A0A0F;
+          min-height: 100vh;
+          color: #E8E8E8;
+          overflow-x: hidden;
+          position: relative;
+        }
+
+        /* 16px pixel grid overlay */
+        .mc-bg-grid {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          background-image:
+            linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+          background-size: 16px 16px;
+        }
+
+        /* ── Floating blocks layer ── */
+        .mc-blocks-layer {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          overflow: hidden;
+        }
+
+        .mc-fblock {
+          position: absolute;
+          border: 2px solid rgba(0,0,0,0.55);
+          animation: mc-float linear infinite;
+          opacity: 0.4;
+        }
+
+        @keyframes mc-float {
+          0%   { transform: translateY(0px)   rotate(0deg);  }
+          25%  { transform: translateY(-22px)  rotate(6deg);  }
+          60%  { transform: translateY(-6px)   rotate(-3deg); }
+          80%  { transform: translateY(14px)   rotate(4deg);  }
+          100% { transform: translateY(0px)   rotate(0deg);  }
+        }
+
+        /* ── NAV ── */
+        .mc-nav {
+          position: relative;
+          z-index: 100;
+          background: #161618;
+          border-bottom: 4px solid #000;
+          box-shadow: 0 4px 0 #2A2A2A;
+        }
+
+        .mc-nav-inner {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 14px 32px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .mc-logo {
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-family: var(--font-pixel, monospace);
+          font-size: 10px;
+          color: #FCBA03;
+          text-shadow: 2px 2px 0 #7A5800;
+          letter-spacing: 0.5px;
+          line-height: 1;
+        }
+
+        .mc-logo-grass {
+          width: 28px;
+          height: 28px;
+          flex-shrink: 0;
+          border: 2px solid #000;
+          background: #5D9E1F;
+          box-shadow:
+            inset -5px -5px 0 #2D5A0A,
+            inset 5px 5px 0 rgba(255,255,255,0.28);
+        }
+
+        .mc-nav-links {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        /* ── Minecraft-style buttons ── */
+        .mc-btn {
+          font-family: var(--font-pixel, monospace);
+          font-size: 8px;
+          padding: 10px 20px;
+          text-decoration: none;
+          display: inline-block;
+          cursor: pointer;
+          background: #636363;
+          color: #E0E0E0;
+          border: none;
+          letter-spacing: 0.5px;
+          line-height: 1;
+          white-space: nowrap;
+          box-shadow:
+            inset 3px 3px 0 #9B9B9B,
+            inset -3px -3px 0 #2D2D2D,
+            3px 3px 0 #000;
+          transition: background 0.08s, color 0.08s, transform 0.08s, box-shadow 0.08s;
+        }
+
+        .mc-btn:hover {
+          background: #7E98CF;
+          color: #FFFF55;
+          transform: translate(-1px, -1px);
+          box-shadow:
+            inset 3px 3px 0 #A4B8E0,
+            inset -3px -3px 0 #3A4D6E,
+            4px 4px 0 #000;
+        }
+
+        .mc-btn:active {
+          transform: translate(1px, 1px);
+          box-shadow:
+            inset -3px -3px 0 #9B9B9B,
+            inset 3px 3px 0 #2D2D2D,
+            2px 2px 0 #000;
+        }
+
+        .mc-btn-primary {
+          background: #2C5614;
+          color: #AAFF88;
+          box-shadow:
+            inset 3px 3px 0 #4A8824,
+            inset -3px -3px 0 #0E1E06,
+            3px 3px 0 #000;
+        }
+
+        .mc-btn-primary:hover {
+          background: #3A7018;
+          color: #CCFFAA;
+          transform: translate(-1px, -1px);
+          box-shadow:
+            inset 3px 3px 0 #60A030,
+            inset -3px -3px 0 #162806,
+            4px 4px 0 #000;
+        }
+
+        /* ── HERO ── */
+        .mc-hero {
+          position: relative;
+          z-index: 1;
+          min-height: calc(100vh - 60px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 80px 32px 100px;
+          text-align: center;
+        }
+
+        .mc-hero-badge {
+          font-family: var(--font-pixel, monospace);
+          font-size: 8px;
+          color: #17DD62;
+          background: rgba(23,221,98,0.07);
+          border: 2px solid #17DD62;
+          padding: 8px 20px;
+          display: inline-block;
+          margin-bottom: 44px;
+          letter-spacing: 2px;
+          text-shadow: 1px 1px 0 #064020;
+          animation: mc-badge-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes mc-badge-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(23,221,98,0); }
+          50%       { box-shadow: 0 0 12px 4px rgba(23,221,98,0.12); }
+        }
+
+        .mc-hero-title {
+          margin: 0 0 36px;
+          line-height: 1;
+          font-style: normal;
+        }
+
+        .mc-title-the {
+          display: block;
+          font-family: var(--font-pixel, monospace);
+          font-size: clamp(11px, 1.5vw, 16px);
+          color: #444;
+          text-shadow: 1px 1px 0 #000;
+          margin-bottom: 14px;
+          letter-spacing: 10px;
+        }
+
+        .mc-title-practical {
+          display: block;
+          font-family: var(--font-pixel, monospace);
+          font-size: clamp(22px, 4vw, 44px);
+          color: #FCBA03;
+          text-shadow:
+            3px 3px 0 #7A5800,
+            6px 6px 0 #000;
+          margin-bottom: 18px;
+          letter-spacing: 2px;
+        }
+
+        .mc-title-engineer {
+          display: block;
+          font-family: var(--font-pixel, monospace);
+          font-size: clamp(16px, 3vw, 30px);
+          color: #5DECF5;
+          text-shadow:
+            2px 2px 0 #003B42,
+            5px 5px 0 #000;
+          letter-spacing: 2px;
+        }
+
+        .mc-cursor {
+          display: inline-block;
+          width: 3px;
+          height: 1em;
+          background: #5DECF5;
+          margin-left: 8px;
+          vertical-align: middle;
+          animation: mc-blink 1s step-end infinite;
+        }
+
+        @keyframes mc-blink {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0; }
+        }
+
+        .mc-hero-sub {
+          font-family: var(--font-vt323, monospace);
+          font-size: clamp(18px, 2.2vw, 23px);
+          color: #777;
+          max-width: 580px;
+          line-height: 1.65;
+          margin: 0 auto 56px;
+          letter-spacing: 0.5px;
+        }
+
+        .mc-hero-actions {
+          display: flex;
+          gap: 16px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+
+        /* ── GRASS DIVIDER ── */
+        .mc-grass-divider {
+          position: relative;
+          z-index: 1;
+          height: 24px;
+          background: linear-gradient(
+            to bottom,
+            #5D9E1F 0%,
+            #5D9E1F 40%,
+            #7B4F2E 40%
+          );
+          border-top: 3px solid #2D5A0A;
+          border-bottom: 3px solid #3C2210;
+        }
+
+        /* ── STATS STRIP ── */
+        .mc-stats {
+          position: relative;
+          z-index: 1;
+          background: #0E0E13;
+          border-bottom: 4px solid #1A1A1A;
+          padding: 32px;
+        }
+
+        .mc-stats-inner {
+          max-width: 1100px;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 2px;
+        }
+
+        .mc-stat {
+          text-align: center;
+          padding: 22px 16px;
+          border: 2px solid #1C1C1C;
+          background: #111116;
+          box-shadow: inset 1px 1px 0 rgba(255,255,255,0.03);
+        }
+
+        .mc-stat-value {
+          font-family: var(--font-pixel, monospace);
+          font-size: 9px;
+          color: #FCBA03;
+          text-shadow: 1px 1px 0 #7A5800;
+          display: block;
+          margin-bottom: 10px;
+          letter-spacing: 0.5px;
+        }
+
+        .mc-stat-label {
+          font-family: var(--font-vt323, monospace);
+          font-size: 18px;
+          color: #444;
+          letter-spacing: 1px;
+        }
+
+        /* ── TOPICS / BIOMES ── */
+        .mc-topics-section {
+          position: relative;
+          z-index: 1;
+          padding: 80px 32px;
+          background: #0D0D12;
+        }
+
+        .mc-topics-inner {
+          max-width: 1100px;
+          margin: 0 auto;
+        }
+
+        .mc-section-header {
+          text-align: center;
+          margin-bottom: 56px;
+        }
+
+        .mc-section-eyebrow {
+          font-family: var(--font-pixel, monospace);
+          font-size: 7px;
+          color: #3A3A3A;
+          letter-spacing: 5px;
+          margin-bottom: 20px;
+          display: block;
+        }
+
+        .mc-section-title {
+          font-family: var(--font-pixel, monospace);
+          font-size: clamp(12px, 2vw, 18px);
+          color: #FCBA03;
+          text-shadow: 2px 2px 0 #7A5800, 4px 4px 0 #000;
+          margin: 0 0 14px;
+          letter-spacing: 1px;
+        }
+
+        .mc-section-sub {
+          font-family: var(--font-vt323, monospace);
+          font-size: 20px;
+          color: #444;
+          letter-spacing: 1px;
+        }
+
+        .mc-topics-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+          gap: 3px;
+        }
+
+        /* Inventory slot / item frame */
+        .mc-card {
+          background: #111116;
+          border: 3px solid #2A2A2A;
+          box-shadow:
+            inset 2px 2px 0 rgba(255,255,255,0.05),
+            inset -2px -2px 0 rgba(0,0,0,0.5);
+          padding: 28px 24px;
+          transition: border-color 0.12s, background 0.12s;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .mc-card::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: var(--card-accent, #555);
+          opacity: 0;
+          transition: opacity 0.12s;
+        }
+
+        .mc-card:hover {
+          background: #18181F;
+          border-color: var(--card-accent, #FCBA03);
+        }
+
+        .mc-card:hover::after { opacity: 1; }
+
+        .mc-card-num {
+          font-family: var(--font-pixel, monospace);
+          font-size: 7px;
+          color: #2A2A2A;
+          display: block;
+          margin-bottom: 16px;
+          letter-spacing: 1px;
+          transition: color 0.12s;
+        }
+
+        .mc-card:hover .mc-card-num { color: var(--card-accent, #555); }
+
+        .mc-card-icon {
+          font-size: 34px;
+          display: block;
+          margin-bottom: 14px;
+          line-height: 1;
+        }
+
+        .mc-card-title {
+          font-family: var(--font-pixel, monospace);
+          font-size: 9px;
+          color: #E8E8E8;
+          display: block;
+          margin-bottom: 14px;
+          text-shadow: 1px 1px 0 #000;
+          letter-spacing: 0.5px;
+        }
+
+        .mc-card-desc {
+          font-family: var(--font-vt323, monospace);
+          font-size: 18px;
+          color: #555;
+          line-height: 1.55;
+        }
+
+        /* ── BOOK QUOTE ── */
+        .mc-quote-section {
+          position: relative;
+          z-index: 1;
+          padding: 80px 32px;
+          background: #0A0A0F;
+          border-top: 4px solid #111;
+          border-bottom: 4px solid #111;
+        }
+
+        .mc-book {
+          max-width: 620px;
+          margin: 0 auto;
+          background: #EDD9A3;
+          border: 6px solid #5C3D11;
+          box-shadow: 8px 8px 0 #000, inset 0 0 0 3px rgba(92,61,17,0.18);
+          padding: 48px 52px 48px 72px;
+          position: relative;
+        }
+
+        /* Spine */
+        .mc-book::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          width: 22px;
+          background: #5C3D11;
+          border-right: 4px solid #7A5018;
+        }
+
+        .mc-book-header {
+          font-family: var(--font-pixel, monospace);
+          font-size: 7px;
+          color: #7A5018;
+          letter-spacing: 4px;
+          text-align: center;
+          margin-bottom: 20px;
+        }
+
+        .mc-book-rule {
+          border: none;
+          border-top: 2px solid #C4AA7A;
+          margin: 20px 0;
+        }
+
+        .mc-book-quote {
+          font-family: var(--font-pixel, monospace);
+          font-size: 9px;
+          color: #1A0E00;
+          line-height: 2.4;
+          text-align: center;
+          margin: 0;
+          letter-spacing: 0.5px;
+        }
+
+        .mc-book-sig {
+          font-family: var(--font-vt323, monospace);
+          font-size: 20px;
+          color: #7A5018;
+          text-align: center;
+          letter-spacing: 3px;
+          font-style: italic;
+          margin-top: 6px;
+        }
+
+        /* ── CTA ── */
+        .mc-cta {
+          position: relative;
+          z-index: 1;
+          padding: 96px 32px;
+          text-align: center;
+          background: #0D0D12;
+          border-top: 4px solid #1A1A1A;
+        }
+
+        .mc-cta-inner { max-width: 640px; margin: 0 auto; }
+
+        .mc-cta-title {
+          font-family: var(--font-pixel, monospace);
+          font-size: clamp(13px, 2.5vw, 20px);
+          color: #E8E8E8;
+          text-shadow: 3px 3px 0 #000;
+          margin: 0 0 18px;
+          letter-spacing: 1px;
+          line-height: 1.7;
+        }
+
+        .mc-cta-sub {
+          font-family: var(--font-vt323, monospace);
+          font-size: 21px;
+          color: #555;
+          margin: 0 0 52px;
+          line-height: 1.65;
+        }
+
+        .mc-cta-actions {
+          display: flex;
+          gap: 16px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+
+        /* ── FOOTER ── */
+        .mc-footer {
+          position: relative;
+          z-index: 1;
+          background: #080808;
+          border-top: 4px solid #000;
+          padding: 28px 32px;
+          text-align: center;
+        }
+
+        .mc-footer-links {
+          display: flex;
+          gap: 28px;
+          justify-content: center;
+          margin-bottom: 16px;
+        }
+
+        .mc-footer-link {
+          font-family: var(--font-pixel, monospace);
+          font-size: 7px;
+          color: #333;
+          text-decoration: none;
+          letter-spacing: 1px;
+          transition: color 0.1s;
+        }
+
+        .mc-footer-link:hover { color: #FCBA03; }
+
+        .mc-footer-copy {
+          font-family: var(--font-pixel, monospace);
+          font-size: 6px;
+          color: #272727;
+          letter-spacing: 1px;
+          line-height: 2.5;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+          .mc-stats-inner {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .mc-nav-inner { padding: 12px 16px; }
+          .mc-hero { padding: 48px 16px 64px; }
+          .mc-topics-section { padding: 48px 16px; }
+          .mc-book { padding: 40px 32px 40px 56px; }
+          .mc-cta { padding: 64px 16px; }
+        }
+      `}</style>
+
+      <div className="mc-root">
+        {/* Pixel grid */}
+        <div className="mc-bg-grid" aria-hidden />
+
+        {/* Floating Minecraft blocks */}
+        <div className="mc-blocks-layer" aria-hidden>
+          {floatingBlocks.map((b, i) => (
+            <div
+              key={i}
+              className="mc-fblock"
+              style={{
+                width: b.size,
+                height: b.size,
+                background: b.color,
+                boxShadow: `inset -5px -5px 0 ${b.shadow}, inset 5px 5px 0 rgba(255,255,255,0.22)`,
+                top: b.top,
+                left: b.left,
+                right: b.right,
+                animationDuration: b.dur,
+                animationDelay: b.delay,
+              } as React.CSSProperties}
+            />
+          ))}
         </div>
-      </nav>
 
-      {/* ── Hero ── */}
-      <section className="tpe-hero">
-        {/* Vertical rule + issue label */}
-        <div className="tpe-issue-label" aria-hidden>
-          <span className="tpe-issue-rule" />
-          <span className="tpe-issue-text">Engineering Knowledge</span>
-        </div>
+        {/* ── Nav ── */}
+        <nav className="mc-nav">
+          <div className="mc-nav-inner">
+            <Link href="/" className="mc-logo">
+              <div className="mc-logo-grass" aria-hidden />
+              THE PRACTICAL ENGINEER
+            </Link>
+            <div className="mc-nav-links">
+              <Link href="/blog" className="mc-btn">Articles</Link>
+              <Link href="/dashboard" className="mc-btn mc-btn-primary">Dashboard</Link>
+            </div>
+          </div>
+        </nav>
 
-        <div className="tpe-hero-content">
-          <div className="tpe-hero-badge">
-            <span className="tpe-badge-pip" aria-hidden />
-            <span>Practical · Honest · Opinionated</span>
+        {/* ── Hero ── */}
+        <section className="mc-hero">
+          <div className="mc-hero-badge">
+            ▶&nbsp; Practical · Honest · Opinionated &nbsp;◀
           </div>
 
-          <h1 className="tpe-hero-title">
-            <span className="tpe-title-the">The</span>
-            <span className="tpe-title-practical">Practical</span>
-            <span className="tpe-title-engineer">Engineer<span className="tpe-title-dot">.</span></span>
+          <h1 className="mc-hero-title">
+            <span className="mc-title-the">THE</span>
+            <span className="mc-title-practical">PRACTICAL</span>
+            <span className="mc-title-engineer">
+              ENGINEER<span className="mc-cursor" aria-hidden />
+            </span>
           </h1>
 
-          <p className="tpe-hero-sub">
+          <p className="mc-hero-sub">
             In-depth technical writing for engineers who care about craft.
             No padding, no filler — just hard-won knowledge from real engineering work.
           </p>
 
-          <div className="tpe-hero-actions">
-            <Link href="/blog" className="tpe-btn-primary">
-              Read Articles <span aria-hidden>→</span>
-            </Link>
-            <Link href="/dashboard" className="tpe-btn-ghost">
-              Open Dashboard
-            </Link>
+          <div className="mc-hero-actions">
+            <Link href="/blog" className="mc-btn mc-btn-primary">▶ Read Articles</Link>
+            <Link href="/dashboard" className="mc-btn">Open Dashboard</Link>
+          </div>
+        </section>
+
+        {/* Grass/dirt block divider */}
+        <div className="mc-grass-divider" aria-hidden />
+
+        {/* ── Stats ── */}
+        <div className="mc-stats">
+          <div className="mc-stats-inner">
+            {stats.map((s) => (
+              <div key={s.value} className="mc-stat">
+                <span className="mc-stat-value">{s.value}</span>
+                <span className="mc-stat-label">{s.label}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Decorative large number */}
-        <div className="tpe-deco-num" aria-hidden>01</div>
-      </section>
-
-      {/* ── Pillars strip ── */}
-      <div className="tpe-strip">
-        <div className="tpe-strip-inner">
-          {stats.map((s, i) => (
-            <div key={i} className={`tpe-strip-item${i < stats.length - 1 ? ' tpe-strip-item--sep' : ''}`}>
-              <div className="tpe-strip-value">{s.value}</div>
-              <div className="tpe-strip-label">{s.label}</div>
+        {/* ── Topics / Biomes ── */}
+        <section className="mc-topics-section">
+          <div className="mc-topics-inner">
+            <div className="mc-section-header">
+              <span className="mc-section-eyebrow">▪ SELECT YOUR PATH ▪</span>
+              <h2 className="mc-section-title">CHOOSE A BIOME</h2>
+              <p className="mc-section-sub">Six areas of engineering knowledge. Zero fluff.</p>
             </div>
-          ))}
-        </div>
+
+            <div className="mc-topics-grid">
+              {pillars.map((p) => (
+                <div
+                  key={p.num}
+                  className="mc-card"
+                  style={{ '--card-accent': p.color } as React.CSSProperties}
+                >
+                  <span className="mc-card-num"># {p.num}</span>
+                  <span className="mc-card-icon">{p.icon}</span>
+                  <span className="mc-card-title">{p.title.toUpperCase()}</span>
+                  <p className="mc-card-desc">{p.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Written Book Quote ── */}
+        <section className="mc-quote-section">
+          <div className="mc-book">
+            <p className="mc-book-header">📖 &nbsp; WRITTEN IN STONE &nbsp; 📖</p>
+            <hr className="mc-book-rule" />
+            <p className="mc-book-quote">
+              &ldquo;The goal is not to write about engineering.<br />
+              The goal is to make you a better engineer.&rdquo;
+            </p>
+            <hr className="mc-book-rule" />
+            <p className="mc-book-sig">— The Practical Engineer</p>
+          </div>
+        </section>
+
+        {/* ── CTA ── */}
+        <section className="mc-cta">
+          <div className="mc-cta-inner">
+            <h2 className="mc-cta-title">READY TO LEVEL UP?</h2>
+            <p className="mc-cta-sub">
+              Start with any article. Each one is designed to make you a sharper,
+              more intentional engineer.
+            </p>
+            <div className="mc-cta-actions">
+              <Link href="/blog" className="mc-btn mc-btn-primary">▶ Browse Articles</Link>
+              <Link href="/dashboard" className="mc-btn">Open Dashboard</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Footer ── */}
+        <footer className="mc-footer">
+          <div className="mc-footer-links">
+            <Link href="/blog" className="mc-footer-link">Articles</Link>
+            <Link href="/dashboard" className="mc-footer-link">Dashboard</Link>
+          </div>
+          <p className="mc-footer-copy">
+            © {new Date().getFullYear()} THE PRACTICAL ENGINEER. ALL RIGHTS RESERVED.
+          </p>
+        </footer>
       </div>
-
-      {/* ── Topics ── */}
-      <section className="tpe-topics">
-        <div className="tpe-topics-header">
-          <div className="tpe-section-eye">What you&apos;ll find</div>
-          <h2 className="tpe-section-title">
-            Six pillars of<br className="tpe-br-md" /> practical engineering.
-          </h2>
-        </div>
-
-        <div className="tpe-topics-grid">
-          {pillars.map((p) => (
-            <div key={p.num} className="tpe-topic-card">
-              <span className="tpe-topic-num">{p.num}</span>
-              <h3 className="tpe-topic-title">{p.title}</h3>
-              <p className="tpe-topic-desc">{p.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Pull quote ── */}
-      <section className="tpe-quote-section">
-        <div className="tpe-quote-rule" aria-hidden />
-        <blockquote className="tpe-quote">
-          &ldquo;The goal is not to write about engineering.
-          <br className="tpe-br-md" /> The goal is to make you a better engineer.&rdquo;
-        </blockquote>
-        <div className="tpe-quote-rule" aria-hidden />
-      </section>
-
-      {/* ── CTA ── */}
-      <section className="tpe-cta">
-        <div className="tpe-cta-hatch" aria-hidden />
-        <div className="tpe-cta-inner">
-          <div className="tpe-section-eye tpe-eye-dark">Start reading</div>
-          <h2 className="tpe-cta-title">Engineering insights,<br /> delivered with intent.</h2>
-          <p className="tpe-cta-body">
-            Every article is written to give you something you can use.
-            No fluff, no filler — just knowledge that compounds.
-          </p>
-          <Link href="/blog" className="tpe-btn-dark">
-            Browse All Articles →
-          </Link>
-        </div>
-      </section>
-
-      {/* ── Footer ── */}
-      <footer className="tpe-footer">
-        <div className="tpe-footer-inner">
-          <span className="tpe-footer-logo">
-            <span className="tpe-logo-accent">✦</span> The Practical Engineer
-          </span>
-          <p className="tpe-footer-copy">
-            © {new Date().getFullYear()} The Practical Engineer. Built with Next.js &amp; Supabase.
-          </p>
-          <div className="tpe-footer-links">
-            <Link href="/blog" className="tpe-footer-link">Articles</Link>
-            <Link href="/dashboard" className="tpe-footer-link">Dashboard</Link>
-          </div>
-        </div>
-      </footer>
-
-      <style>{`
-        /* ── Root ── */
-        .tpe-root {
-          background-color: #070707;
-          color: #ede8df;
-          font-family: var(--font-dm-sans, sans-serif);
-          min-height: 100vh;
-          position: relative;
-          overflow-x: hidden;
-        }
-
-        /* ── Graph-paper texture ── */
-        .tpe-texture {
-          position: fixed;
-          inset: 0;
-          background-image:
-            linear-gradient(rgba(245,158,11,0.025) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(245,158,11,0.025) 1px, transparent 1px);
-          background-size: 40px 40px;
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        /* ── Amber glow ── */
-        .tpe-glow {
-          position: fixed;
-          top: -10%;
-          right: -5%;
-          width: min(800px, 120vw);
-          height: min(800px, 120vw);
-          background: radial-gradient(circle at 70% 30%, rgba(245,158,11,0.06) 0%, transparent 60%);
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        /* ── Nav ── */
-        .tpe-nav {
-          position: relative;
-          z-index: 10;
-        }
-        .tpe-nav-inner {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 28px 48px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-        .tpe-logo {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          text-decoration: none;
-        }
-        .tpe-logo-accent { color: #f59e0b; font-size: 16px; }
-        .tpe-logo-text {
-          font-family: var(--font-playfair, serif);
-          font-size: 18px;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          color: #ede8df;
-        }
-        .tpe-nav-links {
-          display: flex;
-          align-items: center;
-          gap: 32px;
-        }
-        .tpe-nav-ghost {
-          font-size: 11px;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: #5a5550;
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-        .tpe-nav-ghost:hover { color: #ede8df; }
-        .tpe-nav-solid {
-          font-size: 11px;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          font-weight: 700;
-          color: #070707;
-          background-color: #ede8df;
-          padding: 10px 24px;
-          text-decoration: none;
-          transition: background-color 0.2s;
-        }
-        .tpe-nav-solid:hover { background-color: #f59e0b; }
-
-        /* ── Hero ── */
-        .tpe-hero {
-          position: relative;
-          z-index: 2;
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 80px 48px 120px;
-          display: flex;
-          align-items: flex-start;
-          gap: 48px;
-        }
-
-        /* Vertical rule + rotated label */
-        .tpe-issue-label {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 16px;
-          padding-top: 8px;
-          flex-shrink: 0;
-        }
-        .tpe-issue-rule {
-          display: block;
-          width: 1px;
-          height: 80px;
-          background: linear-gradient(to bottom, transparent, rgba(245,158,11,0.5));
-        }
-        .tpe-issue-text {
-          font-size: 10px;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: #3a3530;
-          writing-mode: vertical-rl;
-          text-orientation: mixed;
-        }
-
-        .tpe-hero-content { flex: 1; max-width: 780px; }
-
-        .tpe-hero-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 44px;
-          padding: 7px 16px;
-          border: 1px solid rgba(245,158,11,0.3);
-        }
-        .tpe-badge-pip {
-          width: 6px; height: 6px;
-          background-color: #f59e0b;
-          border-radius: 50%;
-          flex-shrink: 0;
-        }
-        .tpe-hero-badge span:last-child {
-          font-size: 11px;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: #f59e0b;
-        }
-
-        /* Title stack */
-        .tpe-hero-title {
-          margin: 0 0 36px;
-          line-height: 0.92;
-          letter-spacing: -0.04em;
-        }
-        .tpe-title-the {
-          display: block;
-          font-family: var(--font-playfair, serif);
-          font-style: italic;
-          font-size: clamp(28px, 4.5vw, 56px);
-          font-weight: 400;
-          color: #5a5550;
-        }
-        .tpe-title-practical {
-          display: block;
-          font-family: var(--font-playfair, serif);
-          font-size: clamp(68px, 11vw, 140px);
-          font-weight: 700;
-          color: #ede8df;
-        }
-        .tpe-title-engineer {
-          display: block;
-          font-family: var(--font-playfair, serif);
-          font-size: clamp(68px, 11vw, 140px);
-          font-weight: 700;
-          background-image: linear-gradient(90deg, #f59e0b 0%, #fde68a 45%, #f59e0b 90%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          animation: tpe-shimmer 5s linear infinite;
-        }
-        .tpe-title-dot {
-          color: #f59e0b;
-          -webkit-text-fill-color: #f59e0b;
-        }
-
-        .tpe-hero-sub {
-          font-size: 19px;
-          line-height: 1.75;
-          color: #5a5550;
-          max-width: 560px;
-          margin: 0 0 44px;
-        }
-
-        .tpe-hero-actions {
-          display: flex;
-          gap: 14px;
-          flex-wrap: wrap;
-        }
-        .tpe-btn-primary {
-          padding: 15px 36px;
-          background-color: #f59e0b;
-          color: #070707;
-          text-decoration: none;
-          font-weight: 700;
-          font-size: 13px;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          transition: background-color 0.2s, transform 0.15s;
-        }
-        .tpe-btn-primary:hover {
-          background-color: #fbbf24;
-          transform: translateY(-2px);
-        }
-        .tpe-btn-ghost {
-          padding: 15px 36px;
-          border: 1px solid rgba(237,232,223,0.15);
-          color: #ede8df;
-          text-decoration: none;
-          font-weight: 500;
-          font-size: 13px;
-          letter-spacing: 0.06em;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          transition: border-color 0.2s, color 0.2s;
-        }
-        .tpe-btn-ghost:hover {
-          border-color: rgba(237,232,223,0.4);
-          color: #fff;
-        }
-
-        /* Decorative oversized number */
-        .tpe-deco-num {
-          position: absolute;
-          bottom: 40px;
-          right: 48px;
-          font-family: var(--font-playfair, serif);
-          font-size: clamp(120px, 18vw, 260px);
-          font-weight: 700;
-          color: rgba(245,158,11,0.04);
-          line-height: 1;
-          pointer-events: none;
-          user-select: none;
-          letter-spacing: -0.06em;
-        }
-
-        /* ── Strip ── */
-        .tpe-strip {
-          position: relative;
-          z-index: 2;
-          border-top: 1px solid rgba(237,232,223,0.07);
-          border-bottom: 1px solid rgba(237,232,223,0.07);
-        }
-        .tpe-strip-inner {
-          max-width: 1280px;
-          margin: 0 auto;
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-        }
-        .tpe-strip-item {
-          padding: 28px 48px;
-        }
-        .tpe-strip-item--sep {
-          border-right: 1px solid rgba(237,232,223,0.07);
-        }
-        .tpe-strip-value {
-          font-family: var(--font-playfair, serif);
-          font-size: 20px;
-          font-weight: 600;
-          color: #ede8df;
-          margin-bottom: 6px;
-          letter-spacing: -0.01em;
-        }
-        .tpe-strip-label {
-          font-size: 11px;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: #3a3530;
-        }
-
-        /* ── Topics ── */
-        .tpe-topics {
-          position: relative;
-          z-index: 2;
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 108px 48px;
-        }
-        .tpe-topics-header { margin-bottom: 64px; }
-        .tpe-section-eye {
-          font-size: 11px;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: #f59e0b;
-          margin-bottom: 18px;
-        }
-        .tpe-section-title {
-          font-family: var(--font-playfair, serif);
-          font-size: clamp(32px, 5vw, 56px);
-          font-weight: 700;
-          letter-spacing: -0.03em;
-          color: #ede8df;
-          margin: 0;
-          line-height: 1.1;
-        }
-
-        .tpe-topics-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1px;
-          background-color: rgba(237,232,223,0.06);
-          border: 1px solid rgba(237,232,223,0.06);
-        }
-        .tpe-topic-card {
-          padding: 44px;
-          background-color: #070707;
-          transition: background-color 0.25s;
-          position: relative;
-        }
-        .tpe-topic-card:hover { background-color: #0f0e0c; }
-        .tpe-topic-num {
-          display: block;
-          font-family: var(--font-playfair, serif);
-          font-size: 11px;
-          letter-spacing: 0.14em;
-          color: #f59e0b;
-          margin-bottom: 20px;
-        }
-        .tpe-topic-title {
-          font-family: var(--font-playfair, serif);
-          font-size: 21px;
-          font-weight: 600;
-          color: #ede8df;
-          margin: 0 0 14px;
-          letter-spacing: -0.02em;
-        }
-        .tpe-topic-desc {
-          font-size: 14px;
-          line-height: 1.8;
-          color: #3a3530;
-          margin: 0;
-        }
-
-        /* ── Pull quote ── */
-        .tpe-quote-section {
-          position: relative;
-          z-index: 2;
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 48px 100px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 32px;
-          text-align: center;
-        }
-        .tpe-quote-rule {
-          width: 60px;
-          height: 1px;
-          background-color: rgba(245,158,11,0.35);
-        }
-        .tpe-quote {
-          font-family: var(--font-playfair, serif);
-          font-style: italic;
-          font-size: clamp(20px, 3vw, 30px);
-          line-height: 1.5;
-          color: #5a5550;
-          margin: 0;
-          max-width: 700px;
-          letter-spacing: -0.01em;
-        }
-
-        /* ── CTA ── */
-        .tpe-cta {
-          position: relative;
-          z-index: 2;
-          background-color: #ede8df;
-          margin: 0 48px 80px;
-          overflow: hidden;
-        }
-        .tpe-cta-hatch {
-          position: absolute;
-          inset: 0;
-          background-image: repeating-linear-gradient(
-            -45deg,
-            rgba(7,7,7,0.025) 0px,
-            rgba(7,7,7,0.025) 1px,
-            transparent 1px,
-            transparent 20px
-          );
-          pointer-events: none;
-        }
-        .tpe-cta-inner {
-          position: relative;
-          z-index: 1;
-          padding: 80px 64px;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          max-width: 640px;
-        }
-        .tpe-eye-dark {
-          color: #a09880;
-        }
-        .tpe-cta-title {
-          font-family: var(--font-playfair, serif);
-          font-size: clamp(30px, 5vw, 54px);
-          font-weight: 700;
-          color: #070707;
-          letter-spacing: -0.03em;
-          line-height: 1.1;
-          margin: 0 0 22px;
-        }
-        .tpe-cta-body {
-          font-size: 16px;
-          color: #6b6560;
-          line-height: 1.7;
-          margin: 0 0 44px;
-          max-width: 460px;
-        }
-        .tpe-btn-dark {
-          padding: 16px 40px;
-          background-color: #070707;
-          color: #ede8df;
-          text-decoration: none;
-          font-weight: 700;
-          font-size: 12px;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          transition: background-color 0.2s, transform 0.15s;
-        }
-        .tpe-btn-dark:hover {
-          background-color: #1a1a18;
-          transform: translateY(-2px);
-        }
-
-        /* ── Footer ── */
-        .tpe-footer {
-          position: relative;
-          z-index: 2;
-          border-top: 1px solid rgba(237,232,223,0.06);
-        }
-        .tpe-footer-inner {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 32px 48px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-        }
-        .tpe-footer-logo {
-          font-family: var(--font-playfair, serif);
-          font-size: 15px;
-          font-weight: 600;
-          color: #3a3530;
-          letter-spacing: -0.01em;
-        }
-        .tpe-footer-copy { font-size: 12px; color: #2a2825; margin: 0; }
-        .tpe-footer-links { display: flex; gap: 24px; }
-        .tpe-footer-link {
-          font-size: 12px;
-          color: #3a3530;
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-        .tpe-footer-link:hover { color: #ede8df; }
-
-        /* ── Animations ── */
-        @keyframes tpe-shimmer {
-          0%   { background-position: 0% center; }
-          100% { background-position: 200% center; }
-        }
-
-        /* ── Tablet ── */
-        @media (max-width: 960px) {
-          .tpe-nav-inner { padding: 22px 28px; }
-          .tpe-logo-text { font-size: 15px; }
-          .tpe-hero { padding: 60px 28px 90px; flex-direction: column; gap: 0; }
-          .tpe-issue-label { display: none; }
-          .tpe-deco-num { display: none; }
-          .tpe-strip-inner { grid-template-columns: repeat(2, 1fr); }
-          .tpe-strip-item--sep:nth-child(2) { border-right: none; }
-          .tpe-strip-item:nth-child(1),
-          .tpe-strip-item:nth-child(2) { border-bottom: 1px solid rgba(237,232,223,0.07); }
-          .tpe-strip-item { padding: 24px 28px; }
-          .tpe-topics { padding: 80px 28px; }
-          .tpe-topics-grid { grid-template-columns: repeat(2, 1fr); }
-          .tpe-quote-section { padding: 0 28px 80px; }
-          .tpe-cta { margin: 0 28px 64px; }
-          .tpe-cta-inner { padding: 60px 40px; }
-          .tpe-footer-inner { flex-direction: column; text-align: center; gap: 12px; }
-          .tpe-footer-inner { padding: 28px; }
-          .tpe-br-md { display: none; }
-        }
-
-        /* ── Mobile ── */
-        @media (max-width: 600px) {
-          .tpe-nav-inner { padding: 18px 20px; }
-          .tpe-nav-ghost { display: none; }
-          .tpe-logo-text { font-size: 13px; }
-          .tpe-hero { padding: 40px 20px 64px; }
-          .tpe-hero-badge { margin-bottom: 32px; }
-          .tpe-hero-sub { font-size: 16px; }
-          .tpe-hero-actions { flex-direction: column; }
-          .tpe-btn-primary, .tpe-btn-ghost { width: 100%; justify-content: center; }
-          .tpe-topics { padding: 64px 20px; }
-          .tpe-topics-grid { grid-template-columns: 1fr; }
-          .tpe-topic-card { padding: 32px 28px; }
-          .tpe-quote-section { padding: 0 20px 64px; }
-          .tpe-cta { margin: 0 20px 56px; }
-          .tpe-cta-inner { padding: 48px 28px; }
-          .tpe-footer-inner { padding: 24px 20px; }
-          .tpe-footer-links { gap: 16px; }
-        }
-      `}</style>
-    </div>
+    </>
   )
 }

@@ -20,7 +20,7 @@ import type { ApiKeyListItem } from '@/features/api-keys/types'
 import { format } from 'date-fns'
 
 interface ApiKeysManagerProps {
-  initialKeys: ApiKeyListItem[]
+  readonly initialKeys: ApiKeyListItem[]
 }
 
 export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
@@ -106,7 +106,7 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
             </div>
             <div>
               <h2 className="text-sm font-semibold text-gray-900">API Keys</h2>
-              <p className="text-xs text-muted-foreground">{keys.length} key{keys.length !== 1 ? 's' : ''}</p>
+              <p className="text-xs text-muted-foreground">{keys.length} key{keys.length === 1 ? '' : 's'}</p>
             </div>
           </div>
           <Button
@@ -218,30 +218,7 @@ Content-Type: application/json
             </DialogDescription>
           </DialogHeader>
 
-          {!revealedKey ? (
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="key-name">Key Name</Label>
-                <Input
-                  id="key-name"
-                  value={newKeyName}
-                  onChange={(e) => setNewKeyName(e.target.value)}
-                  placeholder="e.g. n8n workflow, Postman test"
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleCreate() }}
-                />
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={handleDialogClose}>Cancel</Button>
-                <Button
-                  onClick={handleCreate}
-                  disabled={isCreating || !newKeyName.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white border-0"
-                >
-                  {isCreating ? 'Generating…' : 'Generate Key'}
-                </Button>
-              </DialogFooter>
-            </div>
-          ) : (
+          {revealedKey ? (
             <div className="space-y-4">
               <div className="flex items-start gap-2.5 rounded-lg bg-amber-50 border border-amber-200 p-3">
                 <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
@@ -268,6 +245,29 @@ Content-Type: application/json
               <DialogFooter>
                 <Button onClick={handleDialogClose} className="bg-blue-600 hover:bg-blue-700 text-white border-0">
                   I&apos;ve copied my key
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="key-name">Key Name</Label>
+                <Input
+                  id="key-name"
+                  value={newKeyName}
+                  onChange={(e) => setNewKeyName(e.target.value)}
+                  placeholder="e.g. n8n workflow, Postman test"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleCreate() }}
+                />
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={handleDialogClose}>Cancel</Button>
+                <Button
+                  onClick={handleCreate}
+                  disabled={isCreating || !newKeyName.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-0"
+                >
+                  {isCreating ? 'Generating…' : 'Generate Key'}
                 </Button>
               </DialogFooter>
             </div>

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { generateApiKey, hashApiKey } from '@/features/api-keys/apiKeyService'
 
 vi.mock('@/lib/supabase/service', () => ({
@@ -60,6 +60,8 @@ describe('validateApiKey', () => {
     const { validateApiKey } = await import('@/features/api-keys/apiKeyService')
     const result = await validateApiKey(fakeKey)
     expect(result).toBe('user-123')
+    expect(mockSingle).toHaveBeenCalledOnce()
+    expect(mockUpdateEq).toHaveBeenCalledOnce()
   })
 
   it('returns null for a revoked key', async () => {

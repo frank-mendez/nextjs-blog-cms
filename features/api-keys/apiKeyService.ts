@@ -27,7 +27,7 @@ export async function createApiKey(
     .select('id, name, key_preview, user_id, created_at, last_used_at, is_active')
     .single()
 
-  if (error) throw new Error(error.message)
+  if (error || !data) throw new Error(error?.message ?? 'Failed to create key')
 
   return { key: data as ApiKeyListItem, rawKey }
 }
@@ -123,13 +123,23 @@ export async function resolveCategoryId(
 ): Promise<string | null> {
   const slug = slugify(category, { lower: true, strict: true })
 
-  const { data } = await supabase
+  // Try slug match first
+  const { data: bySlug } = await supabase
     .from('categories')
     .select('id')
-    .or(`slug.eq.${slug},name.ilike.${category}`)
+    .eq('slug', slug)
     .single()
 
-  return data?.id ?? null
+  if (bySlug) return bySlug.id
+
+  // Fallback: case-insensitive name match
+  const { data: byName } = await supabase
+    .from('categories')
+    .select('id')
+    .ilike('name', category)
+    .single()
+
+  return byName?.id ?? null
 }
 
 export async function generateUniqueSlugForApi(

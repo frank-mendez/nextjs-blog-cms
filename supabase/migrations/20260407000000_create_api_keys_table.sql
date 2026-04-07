@@ -1,3 +1,8 @@
+-- ============================================
+-- Migration: create_api_keys_table
+-- Created: 2026-04-07
+-- ============================================
+
 -- Create api_keys table for developer API access
 CREATE TABLE public.api_keys (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -12,7 +17,7 @@ CREATE TABLE public.api_keys (
 
 ALTER TABLE public.api_keys ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage own api keys"
+CREATE POLICY "Users can manage own api keys"
   ON public.api_keys
   FOR ALL
   USING (auth.uid() = user_id);

@@ -6,7 +6,6 @@ import {
   generateUniqueSlugForApi,
 } from '@/features/api-keys/apiKeyService'
 import { createServiceClient } from '@/lib/supabase/service'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
 type PostBody = {
   title: string
@@ -21,11 +20,15 @@ type PostBody = {
   image_url?: string
 }
 
-function parsePostBody(raw: Record<string, unknown>): PostBody | null {
+function parsePostBody(raw: Record<string, unknown>): { body: PostBody } | { error: string } {
   const { title, content } = raw
-  if (!title || typeof title !== 'string' || !title.trim()) return null
-  if (!content || typeof content !== 'string' || !content.trim()) return null
-  return raw as unknown as PostBody
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    return { error: 'title is required' }
+  }
+  if (!content || typeof content !== 'string' || !content.trim()) {
+    return { error: 'content is required' }
+  }
+  return { body: raw as unknown as PostBody }
 }
 
 function buildPostPayload(body: PostBody, slug: string, categoryId: string | null, userId: string) {
@@ -60,7 +63,10 @@ async function insertPostWithTags(
     .select()
     .single()
 
-  if (postError) return { post: null, error: postError.message }
+  if (postError) {
+    console.error('[API] Failed to insert post:', postError.message)
+    return { post: null, error: 'Failed to create post' }
+  }
 
   if (Array.isArray(tags) && tags.length > 0) {
     const tagNames = tags.filter((t) => typeof t === 'string' && t.trim())
@@ -98,11 +104,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const body = parsePostBody(rawBody)
-  if (!body) {
-    const missingField = !rawBody.title ? 'title' : 'content'
-    return NextResponse.json({ error: `${missingField} is required` }, { status: 400 })
+  const parsed = parsePostBody(rawBody)
+  if ('error' in parsed) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 })
   }
+  const body = parsed.body
 
   // 3. Resolve slug and category
   const supabase = createServiceClient()
@@ -116,7 +122,6 @@ export async function POST(request: Request) {
   const { post, error } = await insertPostWithTags(supabase, payload, body.tags)
 
   if (error) {
-    console.error('[API] Failed to create post:', error)
     return NextResponse.json({ error }, { status: 500 })
   }
 

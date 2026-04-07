@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X, MessageSquare, Loader2,
+  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X, MessageSquare, Loader2, Code,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { can } from '@/lib/permissions'
@@ -45,6 +45,7 @@ export function Sidebar({ profile }: SidebarProps) {
     { href: '/dashboard/admin/categories', icon: FolderOpen, label: 'Categories', show: can(role, 'categories:write') },
     { href: '/dashboard/admin/tags', icon: Tag, label: 'Tags', show: can(role, 'tags:write') },
     { href: '/dashboard/comments', icon: MessageSquare, label: 'Comments', show: can(role, 'comments:delete:all') },
+    { href: '/dashboard/developer', icon: Code, label: 'Developer', show: can(role, 'api_keys:write') },
   ]
 
   const initials = profile.full_name

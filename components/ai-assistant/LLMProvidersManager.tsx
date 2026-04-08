@@ -38,7 +38,7 @@ export function LLMProvidersManager() {
   const [keys, setKeys] = useState<LLMProviderKeyRecord[]>([])
   const [editing, setEditing] = useState<LLMProvider | null>(null)
   const [inputValues, setInputValues] = useState<Partial<Record<LLMProvider, string>>>({})
-  const [saving, setSaving] = useState(false)
+  const [saving, setSaving] = useState<LLMProvider | null>(null)
   const [deleting, setDeleting] = useState<LLMProvider | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -56,7 +56,7 @@ export function LLMProvidersManager() {
 
   async function handleSave(provider: LLMProvider) {
     if (!(inputValues[provider] ?? '').trim()) return
-    setSaving(true)
+    setSaving(provider)
     try {
       const res = await fetch('/api/developer/llm-keys', {
         method: 'POST',
@@ -75,7 +75,7 @@ export function LLMProvidersManager() {
     } catch {
       toast.error('Failed to save key')
     } finally {
-      setSaving(false)
+      setSaving(null)
     }
   }
 
@@ -184,9 +184,9 @@ export function LLMProvidersManager() {
                       <Button
                         size="sm" className="h-8 shrink-0 bg-blue-600 hover:bg-blue-700 text-white border-0"
                         onClick={() => handleSave(provider)}
-                        disabled={saving || !(inputValues[provider] ?? '').trim()}
+                        disabled={saving === provider || !(inputValues[provider] ?? '').trim()}
                       >
-                        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save'}
+                        {saving === provider ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save'}
                       </Button>
                       {keyRecord && (
                         <Button

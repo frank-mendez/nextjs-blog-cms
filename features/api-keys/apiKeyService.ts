@@ -78,10 +78,17 @@ export async function validateApiKey(rawKey: string): Promise<string | null> {
 
   if (error || !data || !data.is_active) return null
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('api_keys')
     .update({ last_used_at: new Date().toISOString() })
     .eq('id', data.id)
+
+  if (updateError) {
+    console.error('Failed to update api_keys.last_used_at during API key validation', {
+      apiKeyId: data.id,
+      error: updateError.message,
+    })
+  }
 
   return data.user_id
 }

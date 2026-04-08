@@ -220,7 +220,7 @@ If you find this useful, give it a star ⭐
 
 If you want to level this up even more, next move is:
 
-👉 Add a **”Live Demo + Screenshots + Architecture Diagram”** section — that’s what turns this from “nice repo” into “hire this guy.”
+👉 Add a **"Live Demo + Screenshots + Architecture Diagram"** section — that's what turns this from "nice repo" into "hire this guy."
 ```
 
 ---
@@ -261,32 +261,32 @@ Content-Type: application/json
 | `excerpt`          | string                  | No       | Plain-text summary                                    |
 | `meta_title`       | string                  | No       | SEO title — defaults to `title`                       |
 | `meta_description` | string                  | No       | SEO description — defaults to `excerpt`               |
-| `tags`             | string[]                | No       | Tag names — created automatically if they don’t exist |
+| `tags`             | string[]                | No       | Tag names — created automatically if they don't exist |
 | `category`         | string                  | No       | Category name — matched by name or slug               |
 | `image_url`        | string                  | No       | Featured/cover image URL                              |
 
 **curl example:**
 ```bash
 curl -X POST https://blog.frankmendez.site/api/posts/create \
-  -H “Authorization: Bearer fmblog_your_key_here” \
-  -H “Content-Type: application/json” \
-  -d ‘{
-    “title”: “Hello from n8n”,
-    “content”: “<p>This post was created via the API.</p>”,
-    “status”: “draft”,
-    “tags”: [“automation”, “n8n”],
-    “category”: “Technology”
-  }’
+  -H "Authorization: Bearer fmblog_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Hello from n8n",
+    "content": "<p>This post was created via the API.</p>",
+    "status": "draft",
+    "tags": ["automation", "n8n"],
+    "category": "Technology"
+  }'
 ```
 
 **Response (201):**
 ```json
 {
-  “post”: {
-    “id”: “uuid”,
-    “title”: “Hello from n8n”,
-    “slug”: “hello-from-n8n”,
-    “status”: “draft”
+  "post": {
+    "id": "uuid",
+    "title": "Hello from n8n",
+    "slug": "hello-from-n8n",
+    "status": "draft"
   }
 }
 ```

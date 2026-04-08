@@ -72,9 +72,14 @@ async function insertPostWithTags(
     const tagNames = tags.filter((t) => typeof t === 'string' && t.trim())
     const tagIds = await resolveTagIds(tagNames, supabase)
     if (tagIds.length > 0) {
-      await supabase
+      const { error: postTagsError } = await supabase
         .from('post_tags')
         .insert(tagIds.map((tag_id) => ({ post_id: post.id, tag_id })))
+
+      if (postTagsError) {
+        console.error('[API] Failed to insert post tags:', postTagsError.message)
+        return { post: null, error: 'Failed to create post tags' }
+      }
     }
   }
 

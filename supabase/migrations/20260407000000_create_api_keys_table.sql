@@ -17,10 +17,26 @@ CREATE TABLE public.api_keys (
 
 ALTER TABLE public.api_keys ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can manage own api keys"
+CREATE POLICY "Admins can manage own api keys"
   ON public.api_keys
   FOR ALL
-  USING (auth.uid() = user_id);
+  USING (
+    auth.uid() = user_id
+    AND EXISTS (
+      SELECT 1
+      FROM public.profiles
+      WHERE profiles.id = auth.uid()
+        AND profiles.role = 'admin'
+    )
+  )
+  WITH CHECK (
+    auth.uid() = user_id
+    AND EXISTS (
+      SELECT 1
+      FROM public.profiles
+      WHERE profiles.id = auth.uid()
+        AND profiles.role = 'admin'
+    )
+  );
 
 CREATE INDEX api_keys_user_id_idx ON public.api_keys(user_id);
-CREATE INDEX api_keys_key_hash_idx ON public.api_keys(key_hash);

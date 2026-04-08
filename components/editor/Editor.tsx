@@ -11,6 +11,16 @@ interface EditorProps {
   className?: string
 }
 
+/** Returns parsed TipTap JSON object when value is JSON, otherwise returns the
+ *  raw string so TipTap can treat it as HTML. */
+export function parseEditorContent(value: string): object | string {
+  try {
+    return JSON.parse(value) as object
+  } catch {
+    return value
+  }
+}
+
 export function Editor({ value, onChange, className }: EditorProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isInternalUpdate = useRef(false)
@@ -28,7 +38,7 @@ export function Editor({ value, onChange, className }: EditorProps) {
 
   const editor = useEditor({
     extensions,
-    content: value ? JSON.parse(value) : '',
+    content: value ? parseEditorContent(value) : '',
     onUpdate: handleUpdate,
     editorProps: {
       attributes: {
@@ -37,20 +47,17 @@ export function Editor({ value, onChange, className }: EditorProps) {
     },
   })
 
-  // Sync external value changes (e.g. form reset)
+  // Sync external value changes (e.g. form reset or switching posts)
   useEffect(() => {
     if (!editor || !value) return
-    try {
-      const parsed = JSON.parse(value)
-      const current = JSON.stringify(editor.getJSON())
-      if (JSON.stringify(parsed) !== current) {
-        isInternalUpdate.current = true
-        editor.commands.setContent(parsed)
-        isInternalUpdate.current = false
-      }
-    } catch {
-      // ignore invalid JSON
+    const parsed = parseEditorContent(value)
+    if (typeof parsed === 'object') {
+      // JSON content: skip if editor already contains the same data
+      if (JSON.stringify(parsed) === JSON.stringify(editor.getJSON())) return
     }
+    isInternalUpdate.current = true
+    editor.commands.setContent(parsed)
+    isInternalUpdate.current = false
   }, [editor, value])
 
   if (!editor) return null

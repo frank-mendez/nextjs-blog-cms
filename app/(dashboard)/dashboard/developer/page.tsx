@@ -15,7 +15,7 @@ export default async function DeveloperPage() {
 
   const { data: profileData } = await supabase
     .from('profiles')
-    .select('*')
+    .select('role')
     .eq('id', user.id)
     .single()
 

@@ -30,6 +30,7 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
   const [isCreating, setIsCreating] = useState(false)
   const [revealedKey, setRevealedKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [pendingId, setPendingId] = useState<string | null>(null)
 
   async function handleCreate() {
     if (!newKeyName.trim()) return
@@ -74,25 +75,35 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
   }
 
   async function handleRevoke(id: string) {
-    const res = await fetch(`/api/developer/keys/${id}`, { method: 'PATCH' })
-    if (!res.ok) {
-      toast.error('Failed to revoke key')
-      return
+    setPendingId(id)
+    try {
+      const res = await fetch(`/api/developer/keys/${id}`, { method: 'PATCH' })
+      if (!res.ok) {
+        toast.error('Failed to revoke key')
+        return
+      }
+      setKeys((prev) =>
+        prev.map((k) => (k.id === id ? { ...k, is_active: false } : k))
+      )
+      toast.success('Key revoked')
+    } finally {
+      setPendingId(null)
     }
-    setKeys((prev) =>
-      prev.map((k) => (k.id === id ? { ...k, is_active: false } : k))
-    )
-    toast.success('Key revoked')
   }
 
   async function handleDelete(id: string) {
-    const res = await fetch(`/api/developer/keys/${id}`, { method: 'DELETE' })
-    if (!res.ok) {
-      toast.error('Failed to delete key')
-      return
+    setPendingId(id)
+    try {
+      const res = await fetch(`/api/developer/keys/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        toast.error('Failed to delete key')
+        return
+      }
+      setKeys((prev) => prev.filter((k) => k.id !== id))
+      toast.success('Key deleted')
+    } finally {
+      setPendingId(null)
     }
-    setKeys((prev) => prev.filter((k) => k.id !== id))
-    toast.success('Key deleted')
   }
 
   return (
@@ -160,6 +171,7 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRevoke(key.id)}
+                            disabled={pendingId === key.id}
                             className="h-7 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
                           >
                             <Ban className="h-3 w-3 mr-1" />
@@ -170,6 +182,7 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(key.id)}
+                          disabled={pendingId === key.id}
                           className="h-7 px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
                         >
                           <Trash2 className="h-3 w-3 mr-1" />

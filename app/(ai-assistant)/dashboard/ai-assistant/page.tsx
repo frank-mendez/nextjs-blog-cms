@@ -2,11 +2,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Bot } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NewChatModal } from '@/components/ai-assistant/NewChatModal'
 
 export default function AIAssistantPage() {
+  const router = useRouter()
   const [modalOpen, setModalOpen] = useState(false)
 
   return (
@@ -32,7 +34,7 @@ export default function AIAssistantPage() {
         onClose={() => setModalOpen(false)}
         onChatCreated={(chatId) => {
           setModalOpen(false)
-          window.location.href = `/dashboard/ai-assistant/${chatId}`
+          router.push(`/dashboard/ai-assistant/${chatId}`)
         }}
       />
     </>

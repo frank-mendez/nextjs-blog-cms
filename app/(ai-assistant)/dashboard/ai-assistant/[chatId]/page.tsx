@@ -157,7 +157,7 @@ export default function ChatPage({ params }: Props) {
       <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-800 bg-slate-950 shrink-0">
         <FileText className="h-4 w-4 text-slate-500 shrink-0" />
         <span className="text-sm font-medium text-slate-200 truncate flex-1">
-          {(chat as any).book?.title ?? 'Document'}
+          {chat.book?.title ?? 'Document'}
         </span>
         {modelInfo && (
           <Badge variant="secondary" className="text-[10px] shrink-0">

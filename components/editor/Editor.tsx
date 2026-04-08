@@ -28,7 +28,7 @@ export function Editor({ value, onChange, className }: EditorProps) {
 
   const editor = useEditor({
     extensions,
-    content: value ? JSON.parse(value) : '',
+    content: value ? (() => { try { return JSON.parse(value) } catch { return value } })() : '',
     onUpdate: handleUpdate,
     editorProps: {
       attributes: {

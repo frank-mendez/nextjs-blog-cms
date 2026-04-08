@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X, MessageSquare, Loader2, Code,
+  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X, MessageSquare, Loader2, Code, Bot,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { can } from '@/lib/permissions'
@@ -41,6 +41,7 @@ export function Sidebar({ profile }: SidebarProps) {
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', show: true },
     { href: '/dashboard/posts', icon: FileText, label: 'Posts', show: true },
     { href: '/dashboard/posts/new', icon: PlusCircle, label: 'New Post', show: true },
+    { href: '/dashboard/ai-assistant', icon: Bot, label: 'AI Assistant', show: true },
     { href: '/dashboard/admin/users', icon: Users, label: 'Users', show: can(role, 'users:read') },
     { href: '/dashboard/admin/categories', icon: FolderOpen, label: 'Categories', show: can(role, 'categories:write') },
     { href: '/dashboard/admin/tags', icon: Tag, label: 'Tags', show: can(role, 'tags:write') },
@@ -53,8 +54,8 @@ export function Sidebar({ profile }: SidebarProps) {
     : profile.email[0].toUpperCase()
 
   const visibleItems = navItems.filter((item) => item.show)
-  const mainItems = visibleItems.slice(0, 3)
-  const adminItems = visibleItems.slice(3)
+  const mainItems = visibleItems.slice(0, 4)
+  const adminItems = visibleItems.slice(4)
 
   const sidebarContent = (
     <>

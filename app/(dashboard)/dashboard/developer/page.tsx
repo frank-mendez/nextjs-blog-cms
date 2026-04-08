@@ -5,6 +5,7 @@ import { can } from '@/lib/permissions'
 import type { Role } from '@/lib/permissions'
 import { listApiKeys } from '@/features/api-keys/apiKeyService'
 import { ApiKeysManager } from './ApiKeysManager'
+import { LLMProvidersManager } from '@/components/ai-assistant/LLMProvidersManager'
 
 export const metadata: Metadata = { title: 'Developer Settings' }
 
@@ -34,6 +35,7 @@ export default async function DeveloperPage() {
         </p>
       </div>
       <ApiKeysManager initialKeys={keys} />
+      <LLMProvidersManager />
     </div>
   )
 }

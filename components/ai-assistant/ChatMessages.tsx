@@ -88,9 +88,8 @@ export function ChatMessages({ messages, streamingContent, isStreaming, onSugges
           </div>
           <div className="max-w-[75%] rounded-2xl px-4 py-3 text-sm bg-slate-800 text-slate-100 rounded-bl-sm">
             {streamingContent ? (
-              <div className="prose prose-sm prose-invert max-w-none">
-                <ReactMarkdown>{streamingContent}</ReactMarkdown>
-              </div>
+              // Render as plain text during streaming to avoid ReactMarkdown jitter on incomplete markdown
+              <p className="whitespace-pre-wrap">{streamingContent}</p>
             ) : (
               <div className="flex items-center gap-1 py-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce [animation-delay:-0.3s]" />

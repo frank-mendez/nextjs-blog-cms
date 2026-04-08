@@ -42,20 +42,21 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
       setBooks(booksData.books ?? [])
       const keys: LLMProviderKeyRecord[] = keysData.keys ?? []
       setProviderKeys(keys)
-      // Auto-select default model
-      const hasClaudeKey = keys.some((k) => k.provider === 'claude' && k.is_valid)
-      const hasGeminiKey = keys.some((k) => k.provider === 'gemini' && k.is_valid)
+      // Auto-select default model (prefer verified keys, fall back to unverified)
+      const hasClaudeKey = keys.some((k) => k.provider === 'claude' && k.is_valid !== false)
+      const hasGeminiKey = keys.some((k) => k.provider === 'gemini' && k.is_valid !== false)
       const defaultModel = hasClaudeKey
         ? AVAILABLE_MODELS.find((m) => m.id === 'claude-sonnet-4-6') ?? null
         : hasGeminiKey
           ? AVAILABLE_MODELS.find((m) => m.provider === 'gemini') ?? null
           : null
       setSelectedModel(defaultModel)
-    })
+    }).catch(() => toast.error('Failed to load data — please try again'))
   }, [open])
 
   function isProviderEnabled(provider: LLMProvider) {
-    return providerKeys.some((k) => k.provider === provider && k.is_valid)
+    // Allow keys that are valid (true) or unverified (null); block only explicitly invalid (false)
+    return providerKeys.some((k) => k.provider === provider && k.is_valid !== false)
   }
 
   function getDisabledReason(model: LLMModel): string | null {
@@ -96,6 +97,7 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
       toast.error('Upload failed')
     } finally {
       setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -122,7 +124,7 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
     }
   }
 
-  const noKeysConfigured = !providerKeys.some((k) => k.is_valid)
+  const noKeysConfigured = !providerKeys.some((k) => k.is_valid !== false)
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>

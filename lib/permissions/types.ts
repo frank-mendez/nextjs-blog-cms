@@ -15,3 +15,4 @@ export type Permission =
   | 'tags:write'
   | 'comments:delete:own'
   | 'comments:delete:all'
+  | 'api_keys:write'

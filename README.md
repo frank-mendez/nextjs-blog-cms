@@ -220,5 +220,81 @@ If you find this useful, give it a star ⭐
 
 If you want to level this up even more, next move is:
 
-👉 Add a **“Live Demo + Screenshots + Architecture Diagram”** section — that’s what turns this from “nice repo” into “hire this guy.”
+👉 Add a **"Live Demo + Screenshots + Architecture Diagram"** section — that's what turns this from "nice repo" into "hire this guy."
 ```
+
+---
+
+## Developer API
+
+Admins can generate API keys in the dashboard to allow external tools (n8n, Postman, scripts) to create posts without a browser session.
+
+### Accessing Developer Settings
+
+1. Log in as an Admin
+2. Navigate to **Dashboard → Developer** in the sidebar
+3. Click **Generate New Key**, give it a name, and copy the key — it is shown only once
+
+### API Key Format
+
+Keys are prefixed with `fmblog_` followed by 64 hex characters, e.g. `fmblog_a1b2c3d4...`. Only a SHA-256 hash of the key is stored in the database — the raw key is never persisted.
+
+### POST /api/posts/create
+
+Create a new post from any HTTP client.
+
+**Endpoint:** `POST /api/posts/create`
+
+**Headers:**
+```
+Authorization: Bearer fmblog_your_key_here
+Content-Type: application/json
+```
+
+**Body:**
+| Field              | Type                    | Required | Description                                           |
+|--------------------|-------------------------|----------|-------------------------------------------------------|
+| `title`            | string                  | Yes      | Post title                                            |
+| `content`          | string                  | Yes      | HTML content (TipTap-compatible)                      |
+| `slug`             | string                  | No       | URL slug — auto-generated from title if omitted       |
+| `status`           | `draft` \| `published`  | No       | Defaults to `draft`                                   |
+| `excerpt`          | string                  | No       | Plain-text summary                                    |
+| `meta_title`       | string                  | No       | SEO title — defaults to `title`                       |
+| `meta_description` | string                  | No       | SEO description — defaults to `excerpt`               |
+| `tags`             | string[]                | No       | Tag names — created automatically if they don't exist |
+| `category`         | string                  | No       | Category name — matched by name or slug               |
+| `image_url`        | string                  | No       | Featured/cover image URL                              |
+
+**curl example:**
+```bash
+curl -X POST https://blog.frankmendez.site/api/posts/create \
+  -H "Authorization: Bearer fmblog_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Hello from n8n",
+    "content": "<p>This post was created via the API.</p>",
+    "status": "draft",
+    "tags": ["automation", "n8n"],
+    "category": "Technology"
+  }'
+```
+
+**Response (201):**
+```json
+{
+  "post": {
+    "id": "uuid",
+    "title": "Hello from n8n",
+    "slug": "hello-from-n8n",
+    "status": "draft"
+  }
+}
+```
+
+### Security Notes
+
+- Raw API keys are **never stored** — only SHA-256 hashes
+- The key is shown to the user **exactly once** after generation
+- Keys can be revoked (deactivated) or deleted at any time from Developer Settings
+- The `/api/posts/create` endpoint is excluded from Supabase session middleware
+- `author_id` is always set to the user who owns the API key

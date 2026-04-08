@@ -40,8 +40,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // Protect /dashboard/admin routes — require admin role
-    if (pathname.startsWith('/dashboard/admin')) {
+    // Protect /dashboard/admin and /dashboard/developer routes — require admin role
+    if (pathname.startsWith('/dashboard/admin') || pathname.startsWith('/dashboard/developer')) {
       const { data: profileData } = await supabase
         .from('profiles')
         .select('role')

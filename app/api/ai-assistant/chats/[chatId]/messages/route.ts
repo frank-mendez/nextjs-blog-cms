@@ -4,7 +4,7 @@ import {
   getMessages, addMessage, updateChatLastMessage, updateChatTitle, getChat,
 } from '@/features/ai-assistant/chatService'
 import { sendMessage, generateChatTitle } from '@/features/ai-assistant/llmService'
-import { getDecryptedApiKey } from '@/app/api/developer/llm-keys/route'
+import { getDecryptedApiKey } from '@/features/ai-assistant/llmKeyService'
 import type { LLMProvider } from '@/features/ai-assistant/types'
 
 type Params = { params: Promise<{ chatId: string }> }

@@ -55,7 +55,7 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
   }, [open])
 
   function isProviderEnabled(provider: LLMProvider) {
-    return providerKeys.some((k) => k.provider === provider)
+    return providerKeys.some((k) => k.provider === provider && k.is_valid)
   }
 
   function getDisabledReason(model: LLMModel): string | null {
@@ -122,7 +122,7 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
     }
   }
 
-  const noKeysConfigured = providerKeys.length === 0
+  const noKeysConfigured = !providerKeys.some((k) => k.is_valid)
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import sanitizeHtml from 'sanitize-html'
 import { createClient } from '@/lib/supabase/server'
 import { getMessages, getChat } from '@/features/ai-assistant/chatService'
 import { generateBlogPost } from '@/features/ai-assistant/llmService'
@@ -7,7 +8,7 @@ import { resolveTagIds, resolveCategoryId, generateUniqueSlugForApi } from '@/fe
 import { createServiceClient } from '@/lib/supabase/service'
 import type { LLMProvider } from '@/features/ai-assistant/types'
 
-type Params = { params: Promise<{ chatId: string }> }
+type Params = { params: { chatId: string } }
 
 /**
  * POST /api/ai-assistant/chats/[chatId]/generate-post
@@ -15,7 +16,7 @@ type Params = { params: Promise<{ chatId: string }> }
  * Returns: { post_id: string, post_slug: string }
  */
 export async function POST(_req: NextRequest, { params }: Params) {
-  const { chatId } = await params
+  const { chatId } = params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -40,7 +41,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     )
   }
 
-  const bookFileUrl = (chat as any).book?.file_url as string | undefined
+  const bookFileUrl = chat.book?.file_url
   if (!bookFileUrl) {
     return NextResponse.json({ error: 'Book file not found' }, { status: 500 })
   }
@@ -83,13 +84,20 @@ export async function POST(_req: NextRequest, { params }: Params) {
     generateUniqueSlugForApi(postData.title, serviceClient),
   ])
 
+  const safeContent = postData.content
+    ? sanitizeHtml(postData.content, {
+        allowedTags: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'blockquote', 'br', 'hr'],
+        allowedAttributes: { a: ['href', 'title', 'target'] },
+      })
+    : null
+
   const { data: post, error: postError } = await supabase
     .from('posts')
     .insert({
       title: postData.title,
       slug,
       excerpt: postData.excerpt ?? null,
-      content: postData.content ?? null,
+      content: safeContent,
       seo_title: postData.meta_title ?? null,
       seo_description: postData.meta_description ?? null,
       author_id: profile.id,
@@ -105,14 +113,30 @@ export async function POST(_req: NextRequest, { params }: Params) {
   }
 
   if (tagIds.length > 0) {
-    await supabase
+    const { error: postTagsError } = await supabase
       .from('post_tags')
       .insert(tagIds.map((tag_id) => ({ post_id: post.id, tag_id })))
+
+    if (postTagsError) {
+      await supabase.from('posts').delete().eq('id', post.id)
+      return NextResponse.json(
+        { error: postTagsError.message ?? 'Failed to create post tags' },
+        { status: 500 }
+      )
+    }
   }
 
-  await supabase
+  const { error: aiGeneratedPostError } = await supabase
     .from('ai_generated_posts')
     .insert({ chat_id: chatId, post_id: post.id })
+
+  if (aiGeneratedPostError) {
+    await supabase.from('posts').delete().eq('id', post.id)
+    return NextResponse.json(
+      { error: aiGeneratedPostError.message ?? 'Failed to link generated post to chat' },
+      { status: 500 }
+    )
+  }
 
   return NextResponse.json({ post_id: post.id, post_slug: post.slug })
 }

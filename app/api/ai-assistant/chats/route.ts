@@ -25,8 +25,11 @@ export async function POST(req: NextRequest) {
   if (!llm_provider || !['claude', 'gemini'].includes(llm_provider)) {
     return NextResponse.json({ error: 'Invalid llm_provider' }, { status: 400 })
   }
-  if (!llm_model || !AVAILABLE_MODELS.some((m) => m.id === llm_model)) {
-    return NextResponse.json({ error: 'Invalid llm_model' }, { status: 400 })
+  if (
+    !llm_model ||
+    !AVAILABLE_MODELS.some((m) => m.id === llm_model && m.provider === llm_provider)
+  ) {
+    return NextResponse.json({ error: 'Invalid llm_model for llm_provider' }, { status: 400 })
   }
 
   // Verify the book belongs to this user

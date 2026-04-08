@@ -38,6 +38,15 @@ Return ONLY a valid JSON object with NO markdown formatting, NO code blocks, jus
 
 The post should be well-structured, SEO-friendly, and between 800-1500 words.`
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+async function fetchPdfAsBase64(signedUrl: string): Promise<string> {
+  const response = await fetch(signedUrl)
+  if (!response.ok) throw new Error('Failed to fetch PDF')
+  const buffer = await response.arrayBuffer()
+  return Buffer.from(buffer).toString('base64')
+}
+
 // ─── Claude streaming ─────────────────────────────────────────────────────────
 
 async function* streamClaude(params: SendMessageParams): AsyncGenerator<string> {
@@ -85,10 +94,7 @@ async function* streamGemini(params: SendMessageParams): AsyncGenerator<string> 
     systemInstruction: CHAT_SYSTEM_PROMPT,
   })
 
-  const pdfResponse = await fetch(params.bookSignedUrl)
-  if (!pdfResponse.ok) throw new Error('Failed to fetch PDF for Gemini')
-  const pdfBuffer = await pdfResponse.arrayBuffer()
-  const pdfBase64 = Buffer.from(pdfBuffer).toString('base64')
+  const pdfBase64 = await fetchPdfAsBase64(params.bookSignedUrl)
 
   const contents = params.messages.map((msg, idx) => {
     if (idx === 0 && msg.role === 'user') {
@@ -158,9 +164,7 @@ export async function generateBlogPost(
   } else {
     const genAI = new GoogleGenerativeAI(params.apiKey)
     const geminiModel = genAI.getGenerativeModel({ model: params.model })
-    const pdfResponse = await fetch(params.bookSignedUrl)
-    const pdfBuffer = await pdfResponse.arrayBuffer()
-    const pdfBase64 = Buffer.from(pdfBuffer).toString('base64')
+    const pdfBase64 = await fetchPdfAsBase64(params.bookSignedUrl)
 
     const result = await geminiModel.generateContent({
       contents: [

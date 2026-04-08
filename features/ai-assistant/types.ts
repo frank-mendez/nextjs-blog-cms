@@ -47,8 +47,8 @@ export type AIBook = {
   file_url: string   // storage path within 'ai-books' bucket
   file_size: number | null
   page_count: number | null
-  created_at: string
-  updated_at: string
+  created_at: string | null
+  updated_at: string | null
 }
 
 export type AIChat = {
@@ -58,10 +58,10 @@ export type AIChat = {
   title: string
   llm_provider: LLMProvider
   llm_model: string
-  created_at: string
-  updated_at: string
-  last_message_at: string
-  book?: Pick<AIBook, 'id' | 'title' | 'file_name'>
+  created_at: string | null
+  updated_at: string | null
+  last_message_at: string | null
+  book?: Pick<AIBook, 'id' | 'title' | 'file_name' | 'file_url'>
 }
 
 export type AIMessage = {
@@ -69,7 +69,7 @@ export type AIMessage = {
   chat_id: string
   role: 'user' | 'assistant'
   content: string
-  created_at: string
+  created_at: string | null
 }
 
 export type GeneratedPostData = {

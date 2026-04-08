@@ -85,7 +85,7 @@ export async function getChat(chatId: string): Promise<AIChat | null> {
     .single()
 
   if (error) return null
-  return data as AIChat & { book: AIBook }
+  return data as AIChat
 }
 
 export async function updateChatTitle(chatId: string, title: string): Promise<void> {

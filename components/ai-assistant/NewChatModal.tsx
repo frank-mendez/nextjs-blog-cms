@@ -198,7 +198,7 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{book.title}</p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {book.file_name} · {format(new Date(book.created_at), 'MMM d, yyyy')}
+                          {book.file_name}{book.created_at ? ` · ${format(new Date(book.created_at), 'MMM d, yyyy')}` : ''}
                         </p>
                       </div>
                       <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />

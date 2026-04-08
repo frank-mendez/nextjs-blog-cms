@@ -4,8 +4,8 @@ const ALGORITHM = 'aes-256-gcm'
 
 function getKey(): Buffer {
   const secret = process.env.LLM_KEY_ENCRYPTION_SECRET
-  if (!secret || secret.length !== 32) {
-    throw new Error('LLM_KEY_ENCRYPTION_SECRET must be exactly 32 characters')
+  if (!secret || Buffer.byteLength(secret, 'utf8') !== 32) {
+    throw new Error('LLM_KEY_ENCRYPTION_SECRET must be exactly 32 bytes when UTF-8 encoded')
   }
   return Buffer.from(secret, 'utf8')
 }

@@ -7,13 +7,13 @@ import { sendMessage, generateChatTitle } from '@/features/ai-assistant/llmServi
 import { getDecryptedApiKey } from '@/features/ai-assistant/llmKeyService'
 import type { LLMProvider } from '@/features/ai-assistant/types'
 
-type Params = { params: Promise<{ chatId: string }> }
+type Params = { params: { chatId: string } }
 
 /**
  * GET /api/ai-assistant/chats/[chatId]/messages
  */
 export async function GET(_req: NextRequest, { params }: Params) {
-  const { chatId } = await params
+  const { chatId } = params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -33,7 +33,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
  * Returns a streaming text/plain response (LLM reply chunks).
  */
 export async function POST(req: NextRequest, { params }: Params) {
-  const { chatId } = await params
+  const { chatId } = params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   // Generate signed URL for the PDF (1 hour TTL)
   // chat.book.file_url is the storage path (set by getChat which selects book with file_url)
-  const bookFileUrl = (chat as any).book?.file_url as string | undefined
+  const bookFileUrl = chat.book?.file_url
   if (!bookFileUrl) {
     return NextResponse.json({ error: 'Book file not found' }, { status: 500 })
   }

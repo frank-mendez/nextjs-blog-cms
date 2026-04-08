@@ -81,7 +81,15 @@ export async function POST(req: NextRequest) {
 
   const isValid = await validateProviderKey(llmProvider, trimmedKey)
 
-  const encrypted = encryptSecret(trimmedKey)
+  let encrypted: string
+  try {
+    encrypted = encryptSecret(trimmedKey)
+  } catch {
+    return NextResponse.json(
+      { error: 'Server encryption is not configured correctly. Set LLM_KEY_ENCRYPTION_SECRET and try again.' },
+      { status: 500 }
+    )
+  }
   const key_preview = `...${trimmedKey.slice(-4)}`
 
   const supabase = await createClient()

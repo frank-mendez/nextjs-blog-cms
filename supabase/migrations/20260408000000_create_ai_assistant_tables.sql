@@ -104,9 +104,22 @@ CREATE TABLE IF NOT EXISTS public.llm_provider_keys (
 
 ALTER TABLE public.llm_provider_keys ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can manage own llm keys"
+CREATE POLICY "Admins can manage own llm keys"
   ON public.llm_provider_keys FOR ALL
-  USING (auth.uid() = user_id);
+  USING (
+    auth.uid() = user_id
+    AND EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  )
+  WITH CHECK (
+    auth.uid() = user_id
+    AND EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
 
 DROP TRIGGER IF EXISTS llm_provider_keys_updated_at ON public.llm_provider_keys;
 CREATE TRIGGER llm_provider_keys_updated_at

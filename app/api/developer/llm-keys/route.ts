@@ -52,6 +52,18 @@ export async function GET() {
     }
   }
 
+  // Also surface providers configured via environment variables (no DB row required)
+  const envProviders: Array<{ provider: LLMProvider; envValue?: string }> = [
+    { provider: 'claude', envValue: process.env.ANTHROPIC_API_KEY },
+    { provider: 'gemini', envValue: process.env.GOOGLE_GENERATIVE_AI_KEY },
+  ]
+  for (const { provider, envValue } of envProviders) {
+    if (envValue && !seen.has(provider)) {
+      seen.add(provider)
+      records.push({ provider, key_preview: null, is_valid: null, last_verified_at: null })
+    }
+  }
+
   return NextResponse.json({ keys: records })
 }
 

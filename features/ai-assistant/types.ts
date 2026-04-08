@@ -84,7 +84,7 @@ export type GeneratedPostData = {
 
 export type LLMProviderKeyRecord = {
   provider: LLMProvider
-  key_preview: string
+  key_preview: string | null
   is_valid: boolean | null
   last_verified_at: string | null
 }

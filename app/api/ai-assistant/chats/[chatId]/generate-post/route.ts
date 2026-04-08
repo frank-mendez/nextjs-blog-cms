@@ -87,7 +87,15 @@ export async function POST(_req: NextRequest, { params }: Params) {
   const safeContent = postData.content
     ? sanitizeHtml(postData.content, {
         allowedTags: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'blockquote', 'br', 'hr'],
-        allowedAttributes: { a: ['href', 'title', 'target'] },
+        allowedAttributes: { a: ['href', 'title', 'target', 'rel'] },
+        transformTags: {
+          a: (tagName, attribs) => ({
+            tagName,
+            attribs: attribs.target === '_blank'
+              ? { ...attribs, rel: 'noopener noreferrer' }
+              : attribs,
+          }),
+        },
       })
     : null
 

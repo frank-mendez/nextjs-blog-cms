@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
   }
 
   const bookId = crypto.randomUUID()
-  const storagePath = `${user.id}/${bookId}/${file.name}`
+  const safeFileName = file.name.replace(/[/\\?%*:|"<>\x00-\x1f]/g, '_')
+  const storagePath = `${user.id}/${bookId}/${safeFileName}`
 
   const { error: uploadError } = await supabase.storage
     .from('ai-books')
@@ -41,9 +42,10 @@ export async function POST(req: NextRequest) {
   const title = titleOverride?.trim() || file.name.replace(/\.pdf$/i, '')
 
   const book = await createBook({
+    id: bookId,
     user_id: user.id,
     title,
-    file_name: file.name,
+    file_name: safeFileName,
     file_url: storagePath,
     file_size: file.size,
   })

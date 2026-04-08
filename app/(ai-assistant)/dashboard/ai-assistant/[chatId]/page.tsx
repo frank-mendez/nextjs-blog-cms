@@ -1,7 +1,7 @@
 // app/(ai-assistant)/dashboard/ai-assistant/[chatId]/page.tsx
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { FileText, Sparkles, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,15 +9,16 @@ import { Badge } from '@/components/ui/badge'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog'
+import { useParams } from 'next/navigation'
 import { ChatMessages } from '@/components/ai-assistant/ChatMessages'
 import { ChatInput } from '@/components/ai-assistant/ChatInput'
 import { AVAILABLE_MODELS } from '@/features/ai-assistant/types'
 import type { AIChat, AIMessage } from '@/features/ai-assistant/types'
 
-type Props = { params: Promise<{ chatId: string }> }
+type Props = Record<string, never>
 
-export default function ChatPage({ params }: Props) {
-  const { chatId } = use(params)
+export default function ChatPage(_props: Props) {
+  const { chatId } = useParams<{ chatId: string }>()
 
   const [chat, setChat] = useState<AIChat | null>(null)
   const [messages, setMessages] = useState<AIMessage[]>([])

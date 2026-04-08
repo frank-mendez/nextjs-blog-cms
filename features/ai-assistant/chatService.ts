@@ -4,6 +4,7 @@ import type { AIBook, AIChat, AIMessage, LLMProvider } from './types'
 // ─── Books ────────────────────────────────────────────────────────────────────
 
 export async function createBook(data: {
+  id?: string
   user_id: string
   title: string
   file_name: string

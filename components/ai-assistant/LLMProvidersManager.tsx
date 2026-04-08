@@ -37,7 +37,7 @@ const PROVIDERS: ProviderConfig[] = [
 export function LLMProvidersManager() {
   const [keys, setKeys] = useState<LLMProviderKeyRecord[]>([])
   const [editing, setEditing] = useState<LLMProvider | null>(null)
-  const [inputValue, setInputValue] = useState('')
+  const [inputValues, setInputValues] = useState<Partial<Record<LLMProvider, string>>>({})
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<LLMProvider | null>(null)
   const [loading, setLoading] = useState(true)
@@ -55,13 +55,13 @@ export function LLMProvidersManager() {
   }
 
   async function handleSave(provider: LLMProvider) {
-    if (!inputValue.trim()) return
+    if (!(inputValues[provider] ?? '').trim()) return
     setSaving(true)
     try {
       const res = await fetch('/api/developer/llm-keys', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, api_key: inputValue.trim() }),
+        body: JSON.stringify({ provider, api_key: (inputValues[provider] ?? '').trim() }),
       })
       const data = await res.json()
       if (!res.ok) { toast.error(data.error ?? 'Failed to save key'); return }
@@ -71,7 +71,7 @@ export function LLMProvidersManager() {
       })
       toast.success(data.is_valid ? 'Key saved and verified' : 'Key saved (verification failed — check the key)')
       setEditing(null)
-      setInputValue('')
+      setInputValues((prev) => ({ ...prev, [provider]: '' }))
     } catch {
       toast.error('Failed to save key')
     } finally {
@@ -150,7 +150,7 @@ export function LLMProvidersManager() {
                         <Button
                           variant="ghost" size="sm"
                           className="h-6 px-1.5 text-xs"
-                          onClick={() => { setEditing(provider); setInputValue('') }}
+                          onClick={() => { setEditing(provider); setInputValues((prev) => ({ ...prev, [provider]: '' })) }}
                         >
                           <Pencil className="h-3 w-3" />
                         </Button>
@@ -175,8 +175,8 @@ export function LLMProvidersManager() {
                     <div className="flex gap-2">
                       <Input
                         type="password"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
+                        value={inputValues[provider] ?? ''}
+                        onChange={(e) => setInputValues((prev) => ({ ...prev, [provider]: e.target.value }))}
                         placeholder={`Paste your ${label} API key`}
                         className="text-xs font-mono h-8"
                         onKeyDown={(e) => { if (e.key === 'Enter') handleSave(provider) }}
@@ -184,14 +184,14 @@ export function LLMProvidersManager() {
                       <Button
                         size="sm" className="h-8 shrink-0 bg-blue-600 hover:bg-blue-700 text-white border-0"
                         onClick={() => handleSave(provider)}
-                        disabled={saving || !inputValue.trim()}
+                        disabled={saving || !(inputValues[provider] ?? '').trim()}
                       >
                         {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save'}
                       </Button>
                       {keyRecord && (
                         <Button
                           size="sm" variant="ghost" className="h-8 shrink-0"
-                          onClick={() => { setEditing(null); setInputValue('') }}
+                          onClick={() => { setEditing(null); setInputValues((prev) => ({ ...prev, [provider]: '' })) }}
                         >
                           Cancel
                         </Button>

@@ -15,7 +15,7 @@ export default async function AIAssistantLayout({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id')
     .eq('id', user.id)
     .single()
 

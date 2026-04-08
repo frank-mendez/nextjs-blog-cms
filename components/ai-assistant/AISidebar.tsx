@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Bot, Plus, ChevronDown, ChevronRight, ArrowLeft, FileText, MessageSquare } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -12,6 +12,7 @@ import type { AIChat, AIBook } from '@/features/ai-assistant/types'
 
 export function AISidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [chats, setChats] = useState<AIChat[]>([])
   const [books, setBooks] = useState<AIBook[]>([])
   const [expandedBooks, setExpandedBooks] = useState<Set<string>>(new Set())
@@ -111,7 +112,7 @@ export function AISidebar() {
                           'text-[10px] truncate',
                           currentChatId === chat.id ? 'text-blue-200' : 'text-slate-600'
                         )}>
-                          {chat.book?.title} · {formatDistanceToNow(new Date(chat.last_message_at), { addSuffix: true })}
+                          {chat.book?.title}{chat.last_message_at ? ` · ${formatDistanceToNow(new Date(chat.last_message_at), { addSuffix: true })}` : ''}
                         </span>
                       </Link>
                     ))}
@@ -188,7 +189,7 @@ export function AISidebar() {
         onChatCreated={(chatId: string) => {
           setModalOpen(false)
           loadData()
-          window.location.href = `/dashboard/ai-assistant/${chatId}`
+          router.push(`/dashboard/ai-assistant/${chatId}`)
         }}
       />
     </>

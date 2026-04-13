@@ -30,3 +30,26 @@ export async function getDecryptedApiKey(provider: LLMProvider): Promise<string>
     `No API key configured for ${provider}. Add your key in Developer Settings.`
   )
 }
+
+/**
+ * Fetches the decrypted LLM API key for a specific user and provider.
+ * Returns null (instead of throwing) when no key is found — lets callers try multiple providers.
+ */
+export async function getDecryptedApiKeyForUser(
+  provider: LLMProvider,
+  userId: string
+): Promise<string | null> {
+  const serviceClient = createServiceClient()
+  const { data } = await serviceClient
+    .from('llm_provider_keys')
+    .select('encrypted_key')
+    .eq('provider', provider)
+    .eq('user_id', userId)
+    .single()
+
+  if (data?.encrypted_key) {
+    return decryptSecret(data.encrypted_key)
+  }
+
+  return null
+}

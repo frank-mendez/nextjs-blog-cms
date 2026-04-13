@@ -189,6 +189,68 @@ export async function generateBlogPost(
   }
 }
 
+export type HeadlessGenerateParams = {
+  topic: string
+  context?: string
+  tone: string
+  wordCount: number
+  model: string
+  apiKey: string
+}
+
+export async function generateBlogPostHeadless(
+  params: HeadlessGenerateParams
+): Promise<GeneratedPostData> {
+  const provider: LLMProvider = params.model.startsWith('gemini') ? 'gemini' : 'claude'
+
+  const contextLine = params.context ? `Additional context:\n${params.context}\n\n` : ''
+
+  const prompt = `Write a complete, SEO-optimized blog post about the following topic:
+
+Topic: ${params.topic}
+
+${contextLine}Tone: ${params.tone}
+Target word count: ${params.wordCount} words
+
+Return ONLY a valid JSON object with NO markdown, NO code blocks:
+{
+  "title": "Compelling blog post title",
+  "meta_title": "SEO meta title (max 60 chars)",
+  "meta_description": "SEO meta description (max 160 chars)",
+  "excerpt": "2-3 sentence plain text summary",
+  "content": "Full post content as HTML using <h2>, <p>, <ul>, <strong> tags. Minimum ${params.wordCount} words.",
+  "tags": ["tag1", "tag2", "tag3"],
+  "category": "most appropriate category"
+}`
+
+  let rawJson: string
+
+  if (provider === 'claude') {
+    const client = new Anthropic({ apiKey: params.apiKey })
+    const response = await client.messages.create({
+      model: params.model,
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: prompt }],
+    })
+    const block = response.content.find((b) => b.type === 'text')
+    if (!block || block.type !== 'text') throw new Error('No text in Claude response')
+    rawJson = block.text
+  } else {
+    const genAI = new GoogleGenerativeAI(params.apiKey)
+    const geminiModel = genAI.getGenerativeModel({ model: params.model })
+    const result = await geminiModel.generateContent(prompt)
+    rawJson = result.response.text()
+  }
+
+  const cleaned = rawJson.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
+
+  try {
+    return JSON.parse(cleaned) as GeneratedPostData
+  } catch {
+    throw new Error(`LLM returned invalid JSON: ${cleaned.slice(0, 200)}`)
+  }
+}
+
 export async function generateChatTitle(
   firstMessage: string,
   model: string,

@@ -22,6 +22,7 @@ export async function GET() {
   const { data: rows } = await serviceClient
     .from('llm_provider_keys')
     .select('provider, key_preview, is_valid, last_verified_at')
+    .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
 
   // One record per provider (take most recent if multiple)

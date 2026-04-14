@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { getAdminUser } from '@/lib/api/auth'
+import { getAdminProfile } from '@/lib/api/auth'
 import { createApiKey, listApiKeys } from '@/features/api-keys/apiKeyService'
 
 export async function GET() {
-  const user = await getAdminUser()
+  const user = await getAdminProfile()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
@@ -16,7 +16,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getAdminUser()
+  const user = await getAdminProfile()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let body: unknown

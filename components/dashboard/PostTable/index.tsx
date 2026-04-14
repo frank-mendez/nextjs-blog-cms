@@ -68,8 +68,15 @@ export function PostTable({ posts }: PostTableProps) {
 
   async function handleDelete(id: string, title: string) {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return
-    await deletePost(id)
-    toast.success('Post deleted')
+    try {
+      const result = await deletePost(id)
+      if (result?.error) {
+        toast.error(result.error)
+      }
+      // On success deletePost redirects, so toast won't be reached; that's expected.
+    } catch {
+      // Next.js redirect throws internally — not a real error.
+    }
   }
 
   if (posts.length === 0) return <PostEmptyState />

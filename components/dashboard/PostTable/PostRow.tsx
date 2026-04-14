@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { MoreHorizontal, Pencil, Trash2, Eye, EyeOff } from 'lucide-react'
 import {
@@ -17,6 +18,7 @@ interface PostRowProps {
 }
 
 export function PostRow({ post, onPublish, onUnpublish, onDelete }: PostRowProps) {
+  const router = useRouter()
   const authorName = post.author?.full_name ?? post.author?.email ?? '—'
   const authorInitial = authorName[0]?.toUpperCase() ?? '?'
 
@@ -81,11 +83,11 @@ export function PostRow({ post, onPublish, onUnpublish, onDelete }: PostRowProps
 
       <td className="px-5 py-4 text-right">
         <DropdownMenu>
-          <DropdownMenuTrigger className="inline-flex items-center justify-center h-8 w-8 rounded-lg hover:bg-gray-100 transition-colors opacity-40 group-hover:opacity-100">
+          <DropdownMenuTrigger aria-label="Post actions" className="inline-flex items-center justify-center h-8 w-8 rounded-lg hover:bg-gray-100 transition-colors opacity-40 group-hover:opacity-100">
             <MoreHorizontal className="h-4 w-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuItem onClick={() => { window.location.href = `/dashboard/posts/${post.id}/edit` }}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/posts/${post.id}/edit`)}>
               <Pencil className="h-4 w-4 mr-2" /> Edit post
             </DropdownMenuItem>
             {post.status === 'draft' ? (

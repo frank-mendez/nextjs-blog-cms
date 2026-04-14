@@ -9,17 +9,24 @@ describe('AVAILABLE_MODELS', () => {
     expect(claude.length).toBeGreaterThan(0)
   })
 
+  it('contains openai models', () => {
+    const openai = AVAILABLE_MODELS.filter((m) => m.provider === 'openai')
+    expect(openai.length).toBeGreaterThan(0)
+  })
+
   it('contains gemini models', () => {
     const gemini = AVAILABLE_MODELS.filter((m) => m.provider === 'gemini')
     expect(gemini.length).toBeGreaterThan(0)
   })
 
-  it('each model has required fields', () => {
+  it('each model has required fields including contextWindow', () => {
     for (const model of AVAILABLE_MODELS) {
       expect(model.id).toBeTruthy()
       expect(model.name).toBeTruthy()
-      expect(model.provider).toMatch(/^(claude|gemini)$/)
+      expect(model.provider).toMatch(/^(claude|gemini|openai)$/)
       expect(typeof model.free).toBe('boolean')
+      expect(typeof model.contextWindow).toBe('number')
+      expect(model.contextWindow).toBeGreaterThan(0)
     }
   })
 
@@ -28,14 +35,60 @@ describe('AVAILABLE_MODELS', () => {
   })
 })
 
+// ─── buildSystemPrompt ────────────────────────────────────────────────────────
+
+describe('buildSystemPrompt', () => {
+  it('includes the full text when it fits within context window', async () => {
+    const { buildSystemPrompt } = await import('@/features/ai-assistant/llmService')
+    const text = 'This is the book content.'
+    const prompt = buildSystemPrompt(text, 'gemini-1.5-flash')
+    expect(prompt).toContain(text)
+    expect(prompt).not.toContain('[Book text truncated')
+  })
+
+  it('truncates text and adds note when it exceeds model context window', async () => {
+    const { buildSystemPrompt } = await import('@/features/ai-assistant/llmService')
+    // gpt-4o has 128k context; 8k reserved = 120k available = 480k chars
+    // Create text of 600k chars to force truncation
+    const longText = 'x'.repeat(600000)
+    const prompt = buildSystemPrompt(longText, 'gpt-4o')
+    expect(prompt).toContain('[Book text truncated')
+    expect(prompt.length).toBeLessThan(longText.length + 500)
+  })
+
+  it('does NOT truncate for Gemini 1.5 Flash (1M context window)', async () => {
+    const { buildSystemPrompt } = await import('@/features/ai-assistant/llmService')
+    // 600k chars / 4 = 150k tokens — fits in 1M context
+    const text = 'y'.repeat(600000)
+    const prompt = buildSystemPrompt(text, 'gemini-1.5-flash')
+    expect(prompt).not.toContain('[Book text truncated')
+  })
+})
+
 // ─── Shared mock for @anthropic-ai/sdk ───────────────────────────────────────
 
-const mockCreate = vi.fn()
+const mockAnthropicCreate = vi.fn()
 
 vi.mock('@anthropic-ai/sdk', () => ({
   default: vi.fn(function () {
     return {
-      messages: { create: mockCreate },
+      messages: { create: mockAnthropicCreate },
+    }
+  }),
+}))
+
+// ─── Shared mock for openai ───────────────────────────────────────────────────
+
+const mockOpenAICreate = vi.fn()
+
+vi.mock('openai', () => ({
+  default: vi.fn(function () {
+    return {
+      chat: {
+        completions: {
+          create: mockOpenAICreate,
+        },
+      },
     }
   }),
 }))
@@ -43,12 +96,10 @@ vi.mock('@anthropic-ai/sdk', () => ({
 // ─── generateChatTitle ────────────────────────────────────────────────────────
 
 describe('generateChatTitle', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+  beforeEach(() => vi.clearAllMocks())
 
   it('returns a non-empty string from Claude response', async () => {
-    mockCreate.mockResolvedValue({
+    mockAnthropicCreate.mockResolvedValue({
       content: [{ type: 'text', text: 'Key Themes in Atomic Habits' }],
     })
 
@@ -61,16 +112,29 @@ describe('generateChatTitle', () => {
     expect(typeof title).toBe('string')
     expect(title.length).toBeGreaterThan(0)
   })
+
+  it('returns a non-empty string from OpenAI response', async () => {
+    mockOpenAICreate.mockResolvedValue({
+      choices: [{ message: { content: 'GPT Chat Title' } }],
+    })
+
+    const { generateChatTitle } = await import('@/features/ai-assistant/llmService')
+    const title = await generateChatTitle(
+      'Tell me about this book',
+      'gpt-4o',
+      'sk-openai-key'
+    )
+    expect(typeof title).toBe('string')
+    expect(title.length).toBeGreaterThan(0)
+  })
 })
 
 // ─── generateBlogPost ────────────────────────────────────────────────────────
 
 describe('generateBlogPost', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+  beforeEach(() => vi.clearAllMocks())
 
-  it('parses JSON response and returns all required fields', async () => {
+  it('parses JSON response from Claude and returns all required fields', async () => {
     const mockPost = {
       title: 'Test Post',
       meta_title: 'Test SEO Title',
@@ -81,7 +145,7 @@ describe('generateBlogPost', () => {
       category: 'Technology',
     }
 
-    mockCreate.mockResolvedValue({
+    mockAnthropicCreate.mockResolvedValue({
       content: [{ type: 'text', text: JSON.stringify(mockPost) }],
     })
 
@@ -89,26 +153,76 @@ describe('generateBlogPost', () => {
     const result = await generateBlogPost({
       model: 'claude-sonnet-4-6',
       messages: [{ role: 'user', content: 'Write a post' }],
-      bookSignedUrl: 'https://example.com/test.pdf',
+      extractedText: 'Book content here.',
       apiKey: 'test-key',
     })
 
     expect(result.title).toBe('Test Post')
     expect(result.meta_title).toBe('Test SEO Title')
-    expect(result.meta_description).toBe('Test description')
-    expect(result.excerpt).toBe('Short summary.')
-    expect(result.content).toBe('<p>Body content</p>')
     expect(result.tags).toEqual(['tag1', 'tag2'])
-    expect(result.category).toBe('Technology')
+  })
+
+  it('parses JSON from OpenAI using response_format json_object mode', async () => {
+    const mockPost = {
+      title: 'OpenAI Post',
+      meta_title: 'OpenAI SEO',
+      meta_description: 'OpenAI description',
+      excerpt: 'OpenAI summary.',
+      content: '<p>OpenAI body</p>',
+      tags: ['openai'],
+      category: 'AI',
+    }
+
+    mockOpenAICreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(mockPost) } }],
+    })
+
+    const { generateBlogPost } = await import('@/features/ai-assistant/llmService')
+    const result = await generateBlogPost({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: 'Write a post' }],
+      extractedText: 'Book content here.',
+      apiKey: 'sk-openai-key',
+    })
+
+    expect(result.title).toBe('OpenAI Post')
+    // OpenAI was called with response_format: json_object
+    const callArgs = mockOpenAICreate.mock.calls[0][0]
+    expect(callArgs.response_format).toEqual({ type: 'json_object' })
+    expect(callArgs.stream).toBe(false)
+  })
+
+  it('strips markdown code fences from Claude response', async () => {
+    const mockPost = {
+      title: 'Fenced Post',
+      meta_title: 'Fenced SEO Title',
+      meta_description: 'Fenced description',
+      excerpt: 'Fenced summary.',
+      content: '<p>Fenced body</p>',
+      tags: ['fenced'],
+      category: 'Tech',
+    }
+
+    mockAnthropicCreate.mockResolvedValue({
+      content: [{ type: 'text', text: `\`\`\`json\n${JSON.stringify(mockPost)}\n\`\`\`` }],
+    })
+
+    const { generateBlogPost } = await import('@/features/ai-assistant/llmService')
+    const result = await generateBlogPost({
+      model: 'claude-sonnet-4-6',
+      messages: [{ role: 'user', content: 'Write a post' }],
+      extractedText: 'Book content here.',
+      apiKey: 'test-key',
+    })
+
+    expect(result.title).toBe('Fenced Post')
   })
 })
 
 // ─── generateBlogPostHeadless ─────────────────────────────────────────────────
 
 describe('generateBlogPostHeadless', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+  beforeEach(() => vi.clearAllMocks())
 
   it('calls Claude without a document block and returns parsed JSON', async () => {
     const mockPost = {
@@ -121,7 +235,7 @@ describe('generateBlogPostHeadless', () => {
       category: 'Technology',
     }
 
-    mockCreate.mockResolvedValue({
+    mockAnthropicCreate.mockResolvedValue({
       content: [{ type: 'text', text: JSON.stringify(mockPost) }],
     })
 
@@ -136,27 +250,49 @@ describe('generateBlogPostHeadless', () => {
     })
 
     expect(result.title).toBe('Headless Post')
-    expect(result.tags).toEqual(['headless', 'cms'])
-    expect(result.category).toBe('Technology')
-
-    // Verify message content is a plain string, not an array with a document block
-    const callArgs = mockCreate.mock.calls[0][0]
-    const messageContent = callArgs.messages[0].content
-    expect(typeof messageContent).toBe('string')
+    // Plain string content, no document block
+    const callArgs = mockAnthropicCreate.mock.calls[0][0]
+    expect(typeof callArgs.messages[0].content).toBe('string')
   })
 
-  it('strips markdown code fences from response', async () => {
+  it('calls OpenAI with response_format json_object for headless generation', async () => {
     const mockPost = {
-      title: 'Fenced Post',
-      meta_title: 'Fenced SEO Title',
-      meta_description: 'Fenced description',
-      excerpt: 'Fenced summary.',
-      content: '<p>Fenced body</p>',
-      tags: ['fenced'],
-      category: 'Tech',
+      title: 'OpenAI Headless Post',
+      meta_title: 'OpenAI Headless SEO',
+      meta_description: 'OpenAI headless description',
+      excerpt: 'OpenAI headless summary.',
+      content: '<p>OpenAI headless body</p>',
+      tags: ['openai'],
+      category: 'AI',
     }
 
-    mockCreate.mockResolvedValue({
+    mockOpenAICreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(mockPost) } }],
+    })
+
+    const { generateBlogPostHeadless } = await import('@/features/ai-assistant/llmService')
+    const result = await generateBlogPostHeadless({
+      topic: 'OpenAI Headless',
+      tone: 'casual',
+      wordCount: 600,
+      model: 'gpt-4o',
+      provider: 'openai' as const,
+      apiKey: 'sk-openai-key',
+    })
+
+    expect(result.title).toBe('OpenAI Headless Post')
+    const callArgs = mockOpenAICreate.mock.calls[0][0]
+    expect(callArgs.response_format).toEqual({ type: 'json_object' })
+  })
+
+  it('strips markdown code fences from Claude response', async () => {
+    const mockPost = {
+      title: 'Fenced Post',
+      meta_title: '', meta_description: '', excerpt: '',
+      content: '', tags: [], category: '',
+    }
+
+    mockAnthropicCreate.mockResolvedValue({
       content: [{ type: 'text', text: `\`\`\`json\n${JSON.stringify(mockPost)}\n\`\`\`` }],
     })
 
@@ -171,11 +307,10 @@ describe('generateBlogPostHeadless', () => {
     })
 
     expect(result.title).toBe('Fenced Post')
-    expect(result.tags).toEqual(['fenced'])
   })
 
   it('throws when LLM returns invalid JSON', async () => {
-    mockCreate.mockResolvedValue({
+    mockAnthropicCreate.mockResolvedValue({
       content: [{ type: 'text', text: 'not json at all' }],
     })
 

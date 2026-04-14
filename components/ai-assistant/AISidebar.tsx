@@ -138,8 +138,9 @@ export function AISidebar() {
                           }
                           <FileText className="h-3 w-3 shrink-0" />
                           <span className="truncate font-medium">{book.title}</span>
-                          <span className="ml-auto text-[10px] text-slate-600 shrink-0">
-                            {bookChats.length}
+                          <span className="ml-auto text-[10px] text-slate-600 shrink-0 flex items-center gap-1.5">
+                            {book.word_count ? `~${Math.round(book.word_count / 1000)}k words` : ''}
+                            <span className="text-slate-700">{bookChats.length}</span>
                           </span>
                         </button>
                         {expandedBooks.has(book.id) && (

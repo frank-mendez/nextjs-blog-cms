@@ -1,11 +1,13 @@
+// app/api/ai-assistant/books/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createBook, getBooks } from '@/features/ai-assistant/chatService'
+import { extractTextFromPdf } from '@/features/ai-assistant/pdfService'
 
 /**
  * POST /api/ai-assistant/books
  * Accepts multipart/form-data with a PDF file (max 20MB).
- * Uploads to Supabase Storage and creates an ai_books record.
+ * Extracts text server-side — the PDF file is NOT stored.
  */
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -21,43 +23,72 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'File must be a PDF' }, { status: 400 })
   }
   if (file.size > 20 * 1024 * 1024) {
-    return NextResponse.json({ error: 'File too large (max 20MB)' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'PDF too large. Maximum size is 20MB.' },
+      { status: 400 }
+    )
   }
 
-  const bookId = crypto.randomUUID()
+  const buffer = Buffer.from(await file.arrayBuffer())
+
+  let extracted
+  try {
+    extracted = await extractTextFromPdf(buffer)
+  } catch (err) {
+    console.error('[POST /api/ai-assistant/books] PDF extraction error:', err)
+    return NextResponse.json(
+      { error: 'Failed to parse PDF. Please ensure it is a valid PDF file.' },
+      { status: 400 }
+    )
+  }
+
+  if (!extracted.text.trim() || extracted.text.trim().length < 100) {
+    return NextResponse.json(
+      {
+        error:
+          'Could not extract text from this PDF. It may be a scanned image PDF. Please use a text-based PDF.',
+      },
+      { status: 400 }
+    )
+  }
+
   const safeFileName = file.name.replace(/[/\\?%*:|"<>\x00-\x1f]/g, '_')
-  const storagePath = `${user.id}/${bookId}/${safeFileName}`
-
-  const { error: uploadError } = await supabase.storage
-    .from('ai-books')
-    .upload(storagePath, file, {
-      contentType: 'application/pdf',
-      upsert: false,
-    })
-
-  if (uploadError) {
-    return NextResponse.json({ error: uploadError.message }, { status: 500 })
-  }
-
-  const title = titleOverride?.trim() || file.name.replace(/\.pdf$/i, '')
+  const title =
+    titleOverride?.trim() ||
+    extracted.title ||
+    safeFileName.replace(/\.pdf$/i, '')
 
   const book = await createBook({
-    id: bookId,
     user_id: user.id,
     title,
     file_name: safeFileName,
-    file_url: storagePath,
-    file_size: file.size,
+    page_count: extracted.pageCount,
+    extracted_text: extracted.text,
   })
 
-  return NextResponse.json({ book }, { status: 201 })
+  return NextResponse.json(
+    {
+      success: true,
+      data: {
+        id: book.id,
+        title: book.title,
+        file_name: book.file_name,
+        page_count: book.page_count,
+        word_count: extracted.wordCount,
+        char_count: extracted.charCount,
+        was_truncated: extracted.wasTruncated,
+        created_at: book.created_at,
+      },
+    },
+    { status: 201 }
+  )
 }
 
 /**
  * GET /api/ai-assistant/books
  * Returns all books for the current user.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

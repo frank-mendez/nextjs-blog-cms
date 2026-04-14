@@ -14,10 +14,11 @@ import {
 import { AVAILABLE_MODELS } from '@/features/ai-assistant/types'
 import type { LLMProvider } from '@/features/ai-assistant/types'
 
-const PROVIDER_PRIORITY: LLMProvider[] = ['claude', 'gemini']
+const PROVIDER_PRIORITY: LLMProvider[] = ['claude', 'openai', 'gemini']
 
 const DEFAULT_MODELS: Record<LLMProvider, string> = {
   claude: 'claude-sonnet-4-6',
+  openai: 'gpt-4o',
   gemini: 'gemini-1.5-pro',
 }
 

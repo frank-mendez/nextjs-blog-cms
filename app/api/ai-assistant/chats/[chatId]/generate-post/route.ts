@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import sanitizeHtml from 'sanitize-html'
 import { createClient } from '@/lib/supabase/server'
-import { getMessages, getChat } from '@/features/ai-assistant/chatService'
+import { getMessages, getChat, getBookById } from '@/features/ai-assistant/chatService'
 import { generateBlogPost } from '@/features/ai-assistant/llmService'
 import { getDecryptedApiKey } from '@/features/ai-assistant/llmKeyService'
 import { resolveTagIds, resolveCategoryId, generateUniqueSlugForApi } from '@/features/api-keys/apiKeyService'
@@ -41,17 +41,13 @@ export async function POST(_req: NextRequest, { params }: Params) {
     )
   }
 
-  const bookFileUrl = chat.book?.file_url
-  if (!bookFileUrl) {
-    return NextResponse.json({ error: 'Book file not found' }, { status: 500 })
+  if (!chat.book_id) {
+    return NextResponse.json({ error: 'Chat has no associated book' }, { status: 400 })
   }
 
-  const { data: signedData } = await supabase.storage
-    .from('ai-books')
-    .createSignedUrl(bookFileUrl, 3600)
-
-  if (!signedData?.signedUrl) {
-    return NextResponse.json({ error: 'Failed to access PDF' }, { status: 500 })
+  const book = await getBookById(chat.book_id)
+  if (!book) {
+    return NextResponse.json({ error: 'Book not found' }, { status: 404 })
   }
 
   let postData
@@ -59,7 +55,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     postData = await generateBlogPost({
       model: chat.llm_model,
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
-      bookSignedUrl: signedData.signedUrl,
+      extractedText: book.extracted_text,
       apiKey,
     })
   } catch (err) {

@@ -1,6 +1,7 @@
 .mcp.json
 .worktrees/
 .superpowers/
+/docs/
 /node_modules
 /dist
 /build

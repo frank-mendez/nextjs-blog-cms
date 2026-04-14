@@ -102,3 +102,94 @@ describe('generateBlogPost', () => {
     expect(result.category).toBe('Technology')
   })
 })
+
+// ─── generateBlogPostHeadless ─────────────────────────────────────────────────
+
+describe('generateBlogPostHeadless', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('calls Claude without a document block and returns parsed JSON', async () => {
+    const mockPost = {
+      title: 'Headless Post',
+      meta_title: 'Headless SEO Title',
+      meta_description: 'Headless description',
+      excerpt: 'Short headless summary.',
+      content: '<p>Headless body</p>',
+      tags: ['headless', 'cms'],
+      category: 'Technology',
+    }
+
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: JSON.stringify(mockPost) }],
+    })
+
+    const { generateBlogPostHeadless } = await import('@/features/ai-assistant/llmService')
+    const result = await generateBlogPostHeadless({
+      topic: 'Headless CMS',
+      tone: 'professional',
+      wordCount: 800,
+      model: 'claude-sonnet-4-6',
+      provider: 'claude' as const,
+      apiKey: 'test-key',
+    })
+
+    expect(result.title).toBe('Headless Post')
+    expect(result.tags).toEqual(['headless', 'cms'])
+    expect(result.category).toBe('Technology')
+
+    // Verify message content is a plain string, not an array with a document block
+    const callArgs = mockCreate.mock.calls[0][0]
+    const messageContent = callArgs.messages[0].content
+    expect(typeof messageContent).toBe('string')
+  })
+
+  it('strips markdown code fences from response', async () => {
+    const mockPost = {
+      title: 'Fenced Post',
+      meta_title: 'Fenced SEO Title',
+      meta_description: 'Fenced description',
+      excerpt: 'Fenced summary.',
+      content: '<p>Fenced body</p>',
+      tags: ['fenced'],
+      category: 'Tech',
+    }
+
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: `\`\`\`json\n${JSON.stringify(mockPost)}\n\`\`\`` }],
+    })
+
+    const { generateBlogPostHeadless } = await import('@/features/ai-assistant/llmService')
+    const result = await generateBlogPostHeadless({
+      topic: 'Code fences',
+      tone: 'casual',
+      wordCount: 500,
+      model: 'claude-sonnet-4-6',
+      provider: 'claude' as const,
+      apiKey: 'test-key',
+    })
+
+    expect(result.title).toBe('Fenced Post')
+    expect(result.tags).toEqual(['fenced'])
+  })
+
+  it('throws when LLM returns invalid JSON', async () => {
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: 'not json at all' }],
+    })
+
+    const { generateBlogPostHeadless } = await import('@/features/ai-assistant/llmService')
+
+    await expect(
+      generateBlogPostHeadless({
+        topic: 'Bad response',
+        tone: 'neutral',
+        wordCount: 600,
+        model: 'claude-sonnet-4-6',
+        provider: 'claude' as const,
+        apiKey: 'test-key',
+      })
+    ).rejects.toThrow('LLM returned invalid JSON')
+  })
+})

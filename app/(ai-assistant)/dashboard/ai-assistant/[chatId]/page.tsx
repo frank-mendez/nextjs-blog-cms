@@ -76,7 +76,7 @@ export default function ChatPage(_props: Props) {
       })
 
       if (!res.ok) {
-        const data = await res.json()
+        const data = await res.json().catch(() => ({}))
         const message = res.status === 429
           ? (data.error ?? 'Rate limit exceeded. Please wait a moment and try again.')
           : (data.error ?? 'Failed to send message')
@@ -103,6 +103,7 @@ export default function ChatPage(_props: Props) {
       setMessages(msgData.messages ?? [])
     } catch {
       setSendError('Connection error. Please check your network and try again.')
+      setMessages((prev) => prev.filter((m) => m.id !== tempUserMsg.id))
     } finally {
       setIsStreaming(false)
       setStreamingContent('')

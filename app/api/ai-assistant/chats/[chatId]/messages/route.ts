@@ -109,7 +109,11 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 
   // Pre-flight succeeded — now persist the user message
-  await addMessage({ chat_id: chatId, role: 'user', content: content.trim() })
+  try {
+    await addMessage({ chat_id: chatId, role: 'user', content: content.trim() })
+  } catch {
+    return NextResponse.json({ error: 'Failed to save message. Please try again.' }, { status: 500 })
+  }
 
   let fullResponse = firstChunk ?? ''
 

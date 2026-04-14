@@ -13,8 +13,10 @@ export function AIAssistantShell({ children }: { children: ReactNode }) {
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
+          role="presentation"
           className="fixed inset-0 z-40 bg-black/60 md:hidden"
           onClick={() => setSidebarOpen(false)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setSidebarOpen(false) }}
         />
       )}
 

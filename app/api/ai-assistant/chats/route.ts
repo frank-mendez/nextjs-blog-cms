@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   const { book_id, llm_provider, llm_model } = body
 
   if (!book_id) return NextResponse.json({ error: 'book_id required' }, { status: 400 })
-  if (!llm_provider || !['claude', 'gemini'].includes(llm_provider)) {
+  if (!llm_provider || !['claude', 'gemini', 'openai'].includes(llm_provider)) {
     return NextResponse.json({ error: 'Invalid llm_provider' }, { status: 400 })
   }
   if (

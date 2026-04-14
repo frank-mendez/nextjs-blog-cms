@@ -6,20 +6,7 @@ import { validateProviderKey } from '@/features/ai-assistant/llmService'
 import { can } from '@/lib/permissions'
 import type { Role } from '@/lib/permissions'
 import type { LLMProvider, LLMProviderKeyRecord } from '@/features/ai-assistant/types'
-
-async function getAdminUser() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  return { user, role: profile?.role as Role }
-}
+import { getProfile } from '@/lib/auth/session'
 
 /**
  * GET /api/developer/llm-keys
@@ -74,8 +61,8 @@ export async function GET() {
  * Body: { provider: 'claude' | 'gemini', api_key: string }
  */
 export async function POST(req: NextRequest) {
-  const auth = await getAdminUser()
-  if (!auth || !can(auth.role, 'api_keys:write')) {
+  const profile = await getProfile()
+  if (!profile || !can(profile.role as Role, 'api_keys:write')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -110,7 +97,7 @@ export async function POST(req: NextRequest) {
     .from('llm_provider_keys')
     .upsert(
       {
-        user_id: auth.user.id,
+        user_id: profile.id,
         provider: llmProvider,
         encrypted_key: encrypted,
         key_preview,
@@ -131,8 +118,8 @@ export async function POST(req: NextRequest) {
  * Body: { provider: 'claude' | 'gemini' }
  */
 export async function DELETE(req: NextRequest) {
-  const auth = await getAdminUser()
-  if (!auth || !can(auth.role, 'api_keys:write')) {
+  const profile = await getProfile()
+  if (!profile || !can(profile.role as Role, 'api_keys:write')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -145,7 +132,7 @@ export async function DELETE(req: NextRequest) {
   const { error } = await supabase
     .from('llm_provider_keys')
     .delete()
-    .eq('user_id', auth.user.id)
+    .eq('user_id', profile.id)
     .eq('provider', provider)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

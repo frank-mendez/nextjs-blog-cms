@@ -1,4 +1,4 @@
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { getPostById } from '@/features/posts/queries'
@@ -14,9 +14,6 @@ interface EditPostPageProps {
 export default async function EditPostPage({ params }: EditPostPageProps) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
   const [post, { data: categories }, { data: tags }] = await Promise.all([
     getPostById(id),
     supabase.from('categories').select('*').order('name'),

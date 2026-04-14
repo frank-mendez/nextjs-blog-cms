@@ -1,28 +1,16 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { PenLine } from 'lucide-react'
 import type { Metadata } from 'next'
-import { createClient } from '@/lib/supabase/server'
 import { getAllPostsForDashboard } from '@/features/posts/queries'
 import { PostTable } from '@/components/dashboard/PostTable'
-import type { Profile } from '@/lib/supabase/types'
+import { getProfile } from '@/lib/auth/session'
 
 export const metadata: Metadata = { title: 'Posts' }
 
 export default async function PostsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profileRaw } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
-  const profile = profileRaw as Profile | null
+  const profile = await getProfile()
   const posts = await getAllPostsForDashboard(
-    profile?.role === 'admin' ? undefined : user.id
+    profile?.role === 'admin' ? undefined : profile?.id
   )
 
   return (

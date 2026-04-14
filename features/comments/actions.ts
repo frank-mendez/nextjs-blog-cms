@@ -5,25 +5,12 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { can } from '@/lib/permissions'
 import type { Role } from '@/lib/permissions'
-
-async function getCurrentProfile() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
-  return profile
-}
+import { getProfile } from '@/lib/auth/session'
 
 const MAX_COMMENT_LENGTH = 2000
 
 export async function createComment(postId: string, content: string, postSlug: string) {
-  const profile = await getCurrentProfile()
+  const profile = await getProfile()
   if (!profile) return { error: 'You must be signed in to comment' }
 
   const trimmedContent = content.trim()
@@ -44,7 +31,7 @@ export async function createComment(postId: string, content: string, postSlug: s
 }
 
 export async function deleteComment(id: string, postSlug: string) {
-  const profile = await getCurrentProfile()
+  const profile = await getProfile()
   if (!profile) return { error: 'Unauthorized' }
 
   const canDeleteOwn = can(profile.role as Role, 'comments:delete:own')

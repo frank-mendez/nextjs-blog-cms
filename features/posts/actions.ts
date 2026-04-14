@@ -7,21 +7,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { can } from '@/lib/permissions'
 import type { Role } from '@/lib/permissions'
+import { getProfile } from '@/lib/auth/session'
 import type { PostFormValues } from './types'
-
-async function getCurrentProfile() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
-  return profile
-}
 
 async function generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
   const supabase = await createClient()
@@ -42,7 +29,7 @@ async function generateUniqueSlug(title: string, excludeId?: string): Promise<st
 }
 
 export async function createPost(values: PostFormValues) {
-  const profile = await getCurrentProfile()
+  const profile = await getProfile()
   if (!profile || !can(profile.role as Role, 'posts:create')) {
     return { error: 'Unauthorized' }
   }
@@ -81,7 +68,7 @@ export async function createPost(values: PostFormValues) {
 }
 
 export async function updatePost(id: string, values: PostFormValues) {
-  const profile = await getCurrentProfile()
+  const profile = await getProfile()
   if (!profile) return { error: 'Unauthorized' }
 
   const supabase = await createClient()
@@ -133,7 +120,7 @@ export async function updatePost(id: string, values: PostFormValues) {
 }
 
 export async function publishPost(id: string) {
-  const profile = await getCurrentProfile()
+  const profile = await getProfile()
   if (!profile || !can(profile.role as Role, 'posts:publish')) {
     return { error: 'Unauthorized' }
   }
@@ -155,7 +142,7 @@ export async function publishPost(id: string) {
 }
 
 export async function unpublishPost(id: string) {
-  const profile = await getCurrentProfile()
+  const profile = await getProfile()
   if (!profile || !can(profile.role as Role, 'posts:publish')) {
     return { error: 'Unauthorized' }
   }
@@ -177,7 +164,7 @@ export async function unpublishPost(id: string) {
 }
 
 export async function deletePost(id: string) {
-  const profile = await getCurrentProfile()
+  const profile = await getProfile()
   if (!profile) return { error: 'Unauthorized' }
 
   const supabase = await createClient()

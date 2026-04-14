@@ -1,3 +1,4 @@
+// features/ai-assistant/chatService.ts
 import { createClient } from '@/lib/supabase/server'
 import type { AIBook, AIChat, AIMessage, LLMProvider } from './types'
 
@@ -8,8 +9,8 @@ export async function createBook(data: {
   user_id: string
   title: string
   file_name: string
-  file_url: string
-  file_size?: number
+  page_count?: number
+  extracted_text: string
 }): Promise<AIBook> {
   const supabase = await createClient()
   const { data: book, error } = await supabase
@@ -26,12 +27,24 @@ export async function getBooks(userId: string): Promise<AIBook[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ai_books')
-    .select('*')
+    .select('id, user_id, title, file_name, page_count, word_count, char_count, created_at, updated_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
   return (data ?? []) as AIBook[]
+}
+
+export async function getBookById(bookId: string): Promise<AIBook | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('ai_books')
+    .select('*')
+    .eq('id', bookId)
+    .single()
+
+  if (error) return null
+  return data as AIBook
 }
 
 // ─── Chats ────────────────────────────────────────────────────────────────────
@@ -81,7 +94,7 @@ export async function getChat(chatId: string): Promise<AIChat | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ai_chats')
-    .select('*, book:ai_books(id, title, file_name, file_url)')
+    .select('*, book:ai_books(id, title, file_name)')
     .eq('id', chatId)
     .single()
 

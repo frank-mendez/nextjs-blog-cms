@@ -1,7 +1,8 @@
+// app/api/ai-assistant/chats/[chatId]/messages/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
-  getMessages, addMessage, updateChatLastMessage, updateChatTitle, getChat,
+  getMessages, addMessage, updateChatLastMessage, updateChatTitle, getChat, getBookById,
 } from '@/features/ai-assistant/chatService'
 import { sendMessage, generateChatTitle } from '@/features/ai-assistant/llmService'
 import { getDecryptedApiKey } from '@/features/ai-assistant/llmKeyService'
@@ -66,19 +67,14 @@ export async function POST(req: NextRequest, { params }: Params) {
     )
   }
 
-  // Generate signed URL for the PDF (1 hour TTL)
-  // chat.book.file_url is the storage path (set by getChat which selects book with file_url)
-  const bookFileUrl = chat.book?.file_url
-  if (!bookFileUrl) {
-    return NextResponse.json({ error: 'Book file not found' }, { status: 500 })
+  // Fetch book's extracted text
+  if (!chat.book_id) {
+    return NextResponse.json({ error: 'Chat has no associated book' }, { status: 400 })
   }
 
-  const { data: signedData, error: signedError } = await supabase.storage
-    .from('ai-books')
-    .createSignedUrl(bookFileUrl, 3600)
-
-  if (signedError || !signedData?.signedUrl) {
-    return NextResponse.json({ error: 'Failed to access PDF' }, { status: 500 })
+  const book = await getBookById(chat.book_id)
+  if (!book) {
+    return NextResponse.json({ error: 'Book not found' }, { status: 404 })
   }
 
   // Stream the LLM response
@@ -86,7 +82,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     model: chat.llm_model,
     provider: chat.llm_provider as LLMProvider,
     messages: history,
-    bookSignedUrl: signedData.signedUrl,
+    extractedText: book.extracted_text,
     apiKey,
   })
 

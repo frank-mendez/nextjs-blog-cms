@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { ApiReferenceSection } from '@/components/developer/ApiReferenceSection'
 import {
   Dialog,
   DialogContent,
@@ -198,28 +199,7 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
         )}
       </Card>
 
-      {/* API Usage section */}
-      <Card className="p-6 space-y-4">
-        <div>
-          <h2 className="text-sm font-semibold text-gray-900 mb-1">API Usage</h2>
-          <p className="text-xs text-muted-foreground">Use your API key to create posts from external tools</p>
-        </div>
-        <pre className="bg-slate-950 text-slate-100 rounded-lg p-4 text-xs font-mono overflow-x-auto leading-relaxed whitespace-pre">
-{`POST https://blog.frankmendez.site/api/posts/create
-Authorization: Bearer fmblog_your_key_here
-Content-Type: application/json
-
-{
-  "title": "Your Post Title",
-  "content": "<p>HTML content here</p>",
-  "status": "draft",
-  "excerpt": "Optional short summary",
-  "tags": ["nextjs", "tutorial"],
-  "category": "Technology",
-  "image_url": "https://example.com/image.jpg"
-}`}
-        </pre>
-      </Card>
+      <ApiReferenceSection />
 
       {/* Generate Key Dialog */}
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) handleDialogClose() }}>

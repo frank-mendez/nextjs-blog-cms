@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
     return apiError('Failed to fetch posts.', 500)
   }
 
-  const posts = (data ?? []).map((p) => normalizeListPost(p as RawPostRow))
+  const posts = (data ?? []).map((p) => normalizeListPost(p as unknown as RawPostRow))
   const total = count ?? 0
   const totalPages = Math.ceil(total / limit)
 

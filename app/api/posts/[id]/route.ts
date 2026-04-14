@@ -83,7 +83,7 @@ export async function GET(
 
   if (error || !data) return apiError('Post not found.', 404)
 
-  return apiSuccess({ data: normalizeFullPost(data as RawPostFull) })
+  return apiSuccess({ data: normalizeFullPost(data as unknown as RawPostFull) })
 }
 
 type PatchBody = {
@@ -209,7 +209,7 @@ export async function PATCH(
     }
   }
 
-  return apiSuccess({ data: normalizeFullPost(updated as RawPostFull) })
+  return apiSuccess({ data: normalizeFullPost(updated as unknown as RawPostFull) })
 }
 
 export async function DELETE(

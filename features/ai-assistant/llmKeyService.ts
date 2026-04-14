@@ -20,9 +20,12 @@ export async function getDecryptedApiKey(provider: LLMProvider): Promise<string>
     return decryptSecret(data.encrypted_key)
   }
 
-  const envKey = provider === 'claude'
-    ? process.env.ANTHROPIC_API_KEY
-    : process.env.GOOGLE_GENERATIVE_AI_KEY
+  const envKey =
+    provider === 'claude'
+      ? process.env.ANTHROPIC_API_KEY
+      : provider === 'openai'
+        ? process.env.OPENAI_API_KEY
+        : process.env.GOOGLE_GENERATIVE_AI_KEY
 
   if (envKey) return envKey
 

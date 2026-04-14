@@ -6,7 +6,7 @@ import { extractTextFromPdf } from '@/features/ai-assistant/pdfService'
 
 /**
  * POST /api/ai-assistant/books
- * Accepts multipart/form-data with a PDF file (max 20MB).
+ * Accepts multipart/form-data with a PDF file (max 30MB).
  * Extracts text server-side — the PDF file is NOT stored.
  */
 export async function POST(req: NextRequest) {

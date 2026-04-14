@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AISidebar } from './AISidebar'
 
-export function AIAssistantShell({ children }: { children: React.ReactNode }) {
+export function AIAssistantShell({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (

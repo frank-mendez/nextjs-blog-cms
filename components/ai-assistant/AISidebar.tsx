@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type MouseEvent } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Bot, Plus, ChevronDown, ChevronRight, ArrowLeft, FileText, MessageSquare, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { NewChatModal } from './NewChatModal'
 import type { AIChat, AIBook } from '@/features/ai-assistant/types'
@@ -44,30 +45,32 @@ export function AISidebar({ onClose }: { onClose?: () => void }) {
     })
   }
 
-  async function handleDeleteChat(chatId: string, e: React.MouseEvent) {
+  async function handleDeleteChat(chatId: string, e: MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
     if (!confirm('Delete this chat? This cannot be undone.')) return
     try {
-      await fetch(`/api/ai-assistant/chats/${chatId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/ai-assistant/chats/${chatId}`, { method: 'DELETE' })
+      if (!res.ok) { toast.error('Failed to delete chat'); return }
       if (currentChatId === chatId) { onClose?.(); router.push('/dashboard/ai-assistant') }
       loadData()
     } catch {
-      // silently ignore
+      toast.error('Failed to delete chat')
     }
   }
 
-  async function handleDeleteBook(bookId: string, bookTitle: string, e: React.MouseEvent) {
+  async function handleDeleteBook(bookId: string, bookTitle: string, e: MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
     if (!confirm(`Delete "${bookTitle}"? All chats for this book will also be deleted. This cannot be undone.`)) return
     try {
-      await fetch(`/api/ai-assistant/books/${bookId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/ai-assistant/books/${bookId}`, { method: 'DELETE' })
+      if (!res.ok) { toast.error('Failed to delete book'); return }
       const bookChats = chats.filter((c) => c.book_id === bookId)
       if (bookChats.some((c) => c.id === currentChatId)) { onClose?.(); router.push('/dashboard/ai-assistant') }
       loadData()
     } catch {
-      // silently ignore
+      toast.error('Failed to delete book')
     }
   }
 
@@ -145,6 +148,8 @@ export function AISidebar({ onClose }: { onClose?: () => void }) {
                           </span>
                         </Link>
                         <button
+                          type="button"
+                          aria-label="Delete chat"
                           onClick={(e) => handleDeleteChat(chat.id, e)}
                           className={cn(
                             'absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity',
@@ -187,6 +192,8 @@ export function AISidebar({ onClose }: { onClose?: () => void }) {
                             </span>
                           </button>
                           <button
+                            type="button"
+                            aria-label="Delete book and all its chats"
                             onClick={(e) => handleDeleteBook(book.id, book.title, e)}
                             className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-red-400 hover:bg-slate-700"
                             title="Delete book and all its chats"
@@ -215,6 +222,8 @@ export function AISidebar({ onClose }: { onClose?: () => void }) {
                                     <span className="truncate">{chat.title}</span>
                                   </Link>
                                   <button
+                                    type="button"
+                                    aria-label="Delete chat"
                                     onClick={(e) => handleDeleteChat(chat.id, e)}
                                     className={cn(
                                       'absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover/chat:opacity-100 transition-opacity',

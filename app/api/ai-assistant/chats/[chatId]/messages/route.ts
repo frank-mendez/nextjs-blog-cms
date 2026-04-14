@@ -49,12 +49,15 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'content required' }, { status: 400 })
   }
 
-  // Save user message
-  await addMessage({ chat_id: chatId, role: 'user', content: content.trim() })
-
-  // Fetch full history (including the message just saved)
-  const history = await getMessages(chatId)
-  const isFirstMessage = history.filter((m) => m.role === 'user').length === 1
+  // Build history for the LLM call without saving the user message yet —
+  // we delay the DB write until after the pre-flight so a rate-limit/provider
+  // error doesn't leave an orphaned user message in the database.
+  const existingHistory = await getMessages(chatId)
+  const isFirstMessage = existingHistory.filter((m) => m.role === 'user').length === 0
+  const history: typeof existingHistory = [
+    ...existingHistory,
+    { id: 'pending', chat_id: chatId, role: 'user', content: content.trim(), created_at: new Date().toISOString() },
+  ]
 
   // Get decrypted API key
   let apiKey: string
@@ -101,6 +104,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
     return NextResponse.json({ error: 'Failed to get a response from the AI provider.' }, { status: 502 })
   }
+
+  // Pre-flight succeeded — now persist the user message
+  await addMessage({ chat_id: chatId, role: 'user', content: content.trim() })
 
   let fullResponse = firstChunk ?? ''
 

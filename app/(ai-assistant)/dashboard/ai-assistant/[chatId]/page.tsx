@@ -194,7 +194,7 @@ export default function ChatPage(_props: Props) {
         <div className="flex items-center gap-2.5 px-4 py-2.5 bg-red-950/60 border-t border-red-900/50 text-red-300 text-xs shrink-0">
           <AlertCircle className="h-3.5 w-3.5 shrink-0 text-red-400" />
           <span className="flex-1">{sendError}</span>
-          <button onClick={() => setSendError(null)} className="text-red-500 hover:text-red-300 transition-colors">
+          <button aria-label="Dismiss error" onClick={() => setSendError(null)} className="text-red-500 hover:text-red-300 transition-colors">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>

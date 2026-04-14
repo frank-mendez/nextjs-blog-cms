@@ -1,96 +1,100 @@
 # Next.js Blog CMS
 
-A modern blog CMS vibe-coded with Claude Code using Next.js, Supabase, and TailwindCSS, featuring authentication, role-based access, WYSIWYG editing, and MCP-powered development workflows.
+A full-stack Blog CMS built with Next.js (App Router), Supabase, TailwindCSS, and shadcn/ui. Features Supabase Auth with role-based access control, a WYSIWYG editor, draft/publish workflow, an AI writing assistant, a headless REST API, and MCP-powered development workflows.
 
 ---
 
-## ✨ Features
+## Features
 
-- 🔐 Authentication (Supabase Auth)
-- 👥 Role-Based Access Control (Admin / Author)
-- 📝 WYSIWYG Editor (TipTap / Lexical ready)
-- 📰 Draft & Publish workflow
-- 🏷️ Tags & Categories
-- 💬 Comments (authenticated users, thread-style, admin management)
-- 🌐 SEO-friendly blog pages
-- ⚡ Fast deployment with Vercel
-- 🤖 AI-assisted development via Claude Code + MCP
+- Authentication via Supabase Auth
+- Role-Based Access Control — Admin and Author roles enforced through Supabase RLS
+- WYSIWYG editor powered by TipTap with rich text, images, and formatting
+- Draft and publish workflow
+- Tags and categories
+- Comments — authenticated, thread-style, with admin management
+- SEO-friendly public blog pages with meta title and description support
+- Developer API — generate API keys in the dashboard to create posts from external tools (n8n, Postman, scripts)
+- AI Writing Assistant — chat with uploaded books (PDF) using Claude, Gemini, or OpenAI; generate full blog post drafts from conversation context
+- LLM provider key management — store encrypted API keys (AES-256-GCM) for Claude, Gemini, and OpenAI per user
+- Headless AI post generation via `POST /api/ai-assistant/generate`
+- REST API for posts — list, create, read, update, delete via authenticated endpoints
+- In-memory rate limiting on API routes
+- Favicon support
+- Fast Vercel deployment
 
 ---
 
-## 🧱 Tech Stack
+## Tech Stack
 
 - **Frontend:** Next.js (App Router)
-- **Backend:** Supabase (Postgres + Auth)
+- **Backend:** Supabase (Postgres + Auth + Storage)
 - **Styling:** TailwindCSS + shadcn/ui
-- **Editor:** TipTap (recommended)
+- **Editor:** TipTap
+- **AI Providers:** Anthropic (Claude), Google (Gemini), OpenAI
 - **Deployment:** Vercel
 - **AI Dev Layer:** Claude Code + MCP Servers
 
 ---
 
-## 🤖 MCP Servers Used
+## MCP Servers
 
 This project is optimized for AI-assisted development using MCP servers:
 
-- `github-mcp` – repo management, PRs, commits
-- `supabase-mcp` – database schema, queries, RLS
-- `vercel-mcp` – deployments and env management
-- `filesystem-mcp` – file editing and refactoring
-- `browser-mcp` – UI testing and debugging
-- `postgres-mcp` (optional) – query optimization
+- `github-mcp` — repo management, PRs, commits
+- `supabase-mcp` — database schema, queries, RLS
+- `vercel-mcp` — deployments and env management
+- `filesystem-mcp` — file editing and refactoring
+- `browser-mcp` — UI testing and debugging
+- `postgres-mcp` (optional) — query optimization
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-
 app/
-(public)/        → public blog pages
-(dashboard)/     → admin & author dashboard
-api/             → backend routes
+  (public)/        → public blog pages
+  (dashboard)/     → admin & author dashboard
+  (ai)/            → AI assistant (full-screen layout)
+  api/             → backend routes
 
 components/
-ui/              → reusable UI
-editor/          → WYSIWYG editor
-blog/            → blog components
+  ui/              → reusable UI (shadcn/ui)
+  editor/          → TipTap WYSIWYG editor
+  blog/            → blog components
 
 features/
-posts/
-users/
-auth/
-comments/
+  posts/
+  users/
+  auth/
+  comments/
 
 lib/
-supabase/
-permissions/
-utils/
+  supabase/
+  permissions/
+  utils/
 
 database/
-schema.sql
-migrations/
-policies/
+  schema.sql
+  migrations/
+  policies/
 
 agents/
-frontend.agent.md
-backend.agent.md
-database.agent.md
-
+  frontend.agent.md
+  backend.agent.md
+  database.agent.md
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/your-username/nextjs-blog-cms.git
+git clone https://github.com/frank-mendez/nextjs-blog-cms.git
 cd nextjs-blog-cms
 ```
-
----
 
 ### 2. Install dependencies
 
@@ -98,27 +102,22 @@ cd nextjs-blog-cms
 npm install
 ```
 
----
+### 3. Set up environment variables
 
-### 3. Setup environment variables
-
-Create a `.env.local`:
+Create a `.env.local` file:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+LLM_KEY_ENCRYPTION_SECRET=   # 32-character secret for AES-256-GCM key encryption
 ```
 
----
+### 4. Set up the database
 
-### 4. Setup database
-
-- Run SQL from `database/schema.sql`
-- Apply policies from `database/policies/`
-- (Optional) Seed data from `database/seed.sql`
-
----
+- Run `database/schema.sql` in the Supabase SQL editor
+- Apply RLS policies from `database/policies/`
+- Optionally seed with `database/seed.sql`
 
 ### 5. Run the app
 
@@ -128,122 +127,53 @@ npm run dev
 
 ---
 
-## 🔐 Roles & Permissions
+## Roles and Permissions
 
 | Role   | Access                                          |
 | ------ | ----------------------------------------------- |
-| Admin  | Full control (users, posts, roles, comments)    |
-| Author | Create & manage own posts, delete own comments  |
+| Admin  | Full control (users, posts, roles, comments, developer settings) |
+| Author | Create and manage own posts, delete own comments |
 
-Enforced using **Supabase Row Level Security (RLS)**.
-
----
-
-## ✍️ Writing Posts
-
-- Use the dashboard editor
-- Save as **draft**
-- Publish when ready
-- Supports rich text, images, and formatting
+Enforced using Supabase Row Level Security (RLS).
 
 ---
 
-## 🌐 Deployment
+## AI Writing Assistant
 
-Deploy easily with Vercel:
+The AI assistant allows authors to upload a PDF book, chat with it using their preferred LLM, and generate a full blog post draft from the conversation.
 
-1. Import repo to Vercel
-2. Add environment variables
-3. Add domain (e.g. `blog.yourdomain.com`)
+**Supported providers:** Claude (Anthropic), Gemini (Google), OpenAI
 
----
+**How it works:**
 
-## 🧠 AI Development Workflow
+1. Navigate to **Dashboard → AI Assistant**
+2. Add your LLM API key under **Dashboard → Developer → LLM Providers**
+3. Start a new chat — upload a PDF and select a model
+4. Chat with the book, then click **Generate Post** to create a draft
 
-This project is designed to work seamlessly with **Claude Code**:
-
-- Modular structure for safe refactoring
-- Feature-based architecture
-- Dedicated `agents/` instructions
-- MCP servers for full-stack automation
-
----
-
-## 📌 Roadmap
-
-- [x] Comments system
-- [ ] Analytics dashboard
-- [ ] Scheduled posts
-- [ ] Multi-author collaboration
-- [ ] AI-assisted writing
-- [ ] Headless CMS API
-
----
-
-## 💡 Why This Project
-
-This project demonstrates:
-
-- Full-stack architecture
-- Secure authentication & RBAC
-- Database design with RLS
-- Rich text editor integration
-- AI-assisted development workflows
-
----
-
-## 🛠️ Contributing
-
-PRs are welcome. For major changes, open an issue first.
-
----
-
-## 📄 License
-
-MIT
-
----
-
-## 👤 Author
-
-Frank Mendez
-
----
-
-## ⭐ Support
-
-If you find this useful, give it a star ⭐
-
-```
-
----
-
-If you want to level this up even more, next move is:
-
-👉 Add a **"Live Demo + Screenshots + Architecture Diagram"** section — that's what turns this from "nice repo" into "hire this guy."
-```
+PDF text is extracted on upload and stored as plain text. The LLM receives the extracted text as context. API keys are encrypted with AES-256-GCM and never stored in plaintext.
 
 ---
 
 ## Developer API
 
-Admins can generate API keys in the dashboard to allow external tools (n8n, Postman, scripts) to create posts without a browser session.
+Admins can generate API keys to allow external tools to create posts without a browser session.
 
-### Accessing Developer Settings
+### Access Developer Settings
 
-1. Log in as an Admin
-2. Navigate to **Dashboard → Developer** in the sidebar
-3. Click **Generate New Key**, give it a name, and copy the key — it is shown only once
+1. Log in as Admin
+2. Go to **Dashboard → Developer**
+3. Click **Generate New Key**, name it, and copy the key — shown only once
 
 ### API Key Format
 
-Keys are prefixed with `fmblog_` followed by 64 hex characters, e.g. `fmblog_a1b2c3d4...`. Only a SHA-256 hash of the key is stored in the database — the raw key is never persisted.
+Keys are prefixed with `fmblog_` followed by 64 hex characters. Only a SHA-256 hash is stored in the database.
 
-### POST /api/posts/create
+### Endpoints
+
+#### POST /api/posts/create
 
 Create a new post from any HTTP client.
-
-**Endpoint:** `POST /api/posts/create`
 
 **Headers:**
 ```
@@ -252,22 +182,23 @@ Content-Type: application/json
 ```
 
 **Body:**
-| Field              | Type                    | Required | Description                                           |
-|--------------------|-------------------------|----------|-------------------------------------------------------|
-| `title`            | string                  | Yes      | Post title                                            |
-| `content`          | string                  | Yes      | HTML content (TipTap-compatible)                      |
-| `slug`             | string                  | No       | URL slug — auto-generated from title if omitted       |
-| `status`           | `draft` \| `published`  | No       | Defaults to `draft`                                   |
-| `excerpt`          | string                  | No       | Plain-text summary                                    |
-| `meta_title`       | string                  | No       | SEO title — defaults to `title`                       |
-| `meta_description` | string                  | No       | SEO description — defaults to `excerpt`               |
-| `tags`             | string[]                | No       | Tag names — created automatically if they don't exist |
-| `category`         | string                  | No       | Category name — matched by name or slug               |
-| `image_url`        | string                  | No       | Featured/cover image URL                              |
 
-**curl example:**
+| Field              | Type                   | Required | Description                                            |
+| ------------------ | ---------------------- | -------- | ------------------------------------------------------ |
+| `title`            | string                 | Yes      | Post title                                             |
+| `content`          | string                 | Yes      | HTML content (TipTap-compatible)                       |
+| `slug`             | string                 | No       | URL slug — auto-generated from title if omitted        |
+| `status`           | `draft` \| `published` | No       | Defaults to `draft`                                    |
+| `excerpt`          | string                 | No       | Plain-text summary                                     |
+| `meta_title`       | string                 | No       | SEO title — defaults to `title`                        |
+| `meta_description` | string                 | No       | SEO description — defaults to `excerpt`                |
+| `tags`             | string[]               | No       | Tag names — created automatically if they don't exist  |
+| `category`         | string                 | No       | Category name — matched by name or slug                |
+| `image_url`        | string                 | No       | Featured image URL                                     |
+
+**Example:**
 ```bash
-curl -X POST https://blog.frankmendez.site/api/posts/create \
+curl -X POST https://your-domain.com/api/posts/create \
   -H "Authorization: Bearer fmblog_your_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -282,7 +213,8 @@ curl -X POST https://blog.frankmendez.site/api/posts/create \
 **Response (201):**
 ```json
 {
-  "post": {
+  "success": true,
+  "data": {
     "id": "uuid",
     "title": "Hello from n8n",
     "slug": "hello-from-n8n",
@@ -291,10 +223,115 @@ curl -X POST https://blog.frankmendez.site/api/posts/create \
 }
 ```
 
+#### POST /api/ai-assistant/generate
+
+Generate a blog post headlessly using the AI assistant.
+
+**Headers:**
+```
+Authorization: Bearer fmblog_your_key_here
+Content-Type: application/json
+```
+
+#### GET /api/posts
+
+List posts with pagination and filters.
+
+#### GET /api/posts/[id]
+
+Retrieve a single post by ID.
+
+#### PATCH /api/posts/[id]
+
+Update a post by ID.
+
+#### DELETE /api/posts/[id]
+
+Delete a post by ID.
+
 ### Security Notes
 
-- Raw API keys are **never stored** — only SHA-256 hashes
-- The key is shown to the user **exactly once** after generation
-- Keys can be revoked (deactivated) or deleted at any time from Developer Settings
-- The `/api/posts/create` endpoint is excluded from Supabase session middleware
+- Raw API keys are never stored — only SHA-256 hashes
+- The key is shown exactly once after generation
+- Keys can be revoked or deleted at any time from Developer Settings
 - `author_id` is always set to the user who owns the API key
+- API routes are rate-limited in-memory
+
+---
+
+## Deployment
+
+1. Import repo to Vercel
+2. Add environment variables
+3. Assign a domain (e.g. `blog.yourdomain.com`)
+
+---
+
+## AI Development Workflow
+
+This project is designed to work seamlessly with Claude Code:
+
+- Modular, feature-based architecture for safe refactoring
+- Dedicated `agents/` instruction files
+- MCP servers for full-stack automation
+
+---
+
+## Screenshots
+
+**Public Blog — SEO-friendly article listing**
+
+![Public Blog](public/screenshots/public-blog.png)
+
+**AI Assistant — Chat with books and generate blog posts**
+
+![AI Assistant](public/screenshots/ai-assistant.png)
+
+**Developer Settings — API Key Management and LLM Providers**
+
+![Developer Settings](public/screenshots/developer-settings.png)
+
+---
+
+## Roadmap
+
+- [x] Comments system
+- [x] Developer API with API key management
+- [x] AI Writing Assistant (Claude, Gemini, OpenAI)
+- [x] PDF text extraction and LLM context
+- [x] REST API for posts
+- [ ] Analytics dashboard
+- [ ] Scheduled posts
+- [ ] Multi-author collaboration
+- [ ] Headless CMS API
+
+---
+
+## Contributing
+
+Contributions are welcome. To contribute:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes with clear messages
+4. Open a Pull Request — describe what changed and why
+
+For significant changes, open an issue first to discuss the approach.
+
+---
+
+## Code of Conduct
+
+This project follows the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). By participating, you agree to uphold a respectful and inclusive environment. Report unacceptable behavior to the project maintainer.
+
+---
+
+## License
+
+[MIT](LICENSE)
+
+---
+
+## Author
+
+Frank Mendez

@@ -1,33 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { FileText, Users, Eye, TrendingUp, PenLine, ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
-import type { Profile } from '@/lib/supabase/types'
+import { getProfile } from '@/lib/auth/session'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profileRaw } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
-  const profile = profileRaw as Profile | null
+  const profile = await getProfile()
   const isAdmin = profile?.role === 'admin'
+
+  const supabase = await createClient()
 
   const [{ count: totalPosts }, { count: publishedPosts }] = await Promise.all([
     isAdmin
       ? supabase.from('posts').select('*', { count: 'exact', head: true })
-      : supabase.from('posts').select('*', { count: 'exact', head: true }).eq('author_id', user.id),
+      : supabase.from('posts').select('*', { count: 'exact', head: true }).eq('author_id', profile?.id),
     isAdmin
       ? supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'published')
-      : supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'published').eq('author_id', user.id),
+      : supabase.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'published').eq('author_id', profile?.id),
   ])
 
   const { count: totalUsers } = isAdmin

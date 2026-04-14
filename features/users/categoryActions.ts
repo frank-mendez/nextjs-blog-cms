@@ -5,26 +5,19 @@ import slugify from 'slugify'
 import { createClient } from '@/lib/supabase/server'
 import { can } from '@/lib/permissions'
 import type { Role } from '@/lib/permissions'
+import { getProfile } from '@/lib/auth/session'
 
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { user: null, supabase: null }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!can(profile?.role as Role, 'categories:write')) return { user: null, supabase: null }
-  return { user, supabase }
+async function requireCategoryAdmin() {
+  const profile = await getProfile()
+  if (!profile || !can(profile.role as Role, 'categories:write')) return null
+  return profile
 }
 
 export async function createCategory(formData: FormData) {
-  const { supabase } = await requireAdmin()
-  if (!supabase) return { error: 'Unauthorized' }
+  const profile = await requireCategoryAdmin()
+  if (!profile) return { error: 'Unauthorized' }
 
+  const supabase = await createClient()
   const name = formData.get('name') as string
   const description = formData.get('description') as string
   const slug = slugify(name, { lower: true, strict: true })
@@ -42,10 +35,11 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function deleteCategory(id: string) {
-  const { supabase } = await requireAdmin()
-  if (!supabase) return { error: 'Unauthorized' }
+  const profile = await requireCategoryAdmin()
+  if (!profile) return { error: 'Unauthorized' }
 
-  // Check for posts in this category
+  const supabase = await createClient()
+
   const { count } = await supabase
     .from('posts')
     .select('*', { count: 'exact' })
@@ -63,9 +57,10 @@ export async function deleteCategory(id: string) {
 }
 
 export async function createTag(formData: FormData) {
-  const { supabase } = await requireAdmin()
-  if (!supabase) return { error: 'Unauthorized' }
+  const profile = await requireCategoryAdmin()
+  if (!profile) return { error: 'Unauthorized' }
 
+  const supabase = await createClient()
   const name = formData.get('name') as string
   const slug = slugify(name, { lower: true, strict: true })
 
@@ -82,9 +77,10 @@ export async function createTag(formData: FormData) {
 }
 
 export async function deleteTag(id: string) {
-  const { supabase } = await requireAdmin()
-  if (!supabase) return { error: 'Unauthorized' }
+  const profile = await requireCategoryAdmin()
+  if (!profile) return { error: 'Unauthorized' }
 
+  const supabase = await createClient()
   const { error } = await supabase.from('tags').delete().eq('id', id)
   if (error) return { error: error.message }
 

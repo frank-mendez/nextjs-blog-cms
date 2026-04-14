@@ -1,15 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
+import { getProfile } from '@/lib/auth/session'
+import type { Profile } from '@/lib/supabase/types'
 
-export async function getAdminUser() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  return profile?.role === 'admin' ? user : null
+export async function getAdminProfile(): Promise<Profile | null> {
+  const profile = await getProfile()
+  return profile?.role === 'admin' ? profile : null
 }

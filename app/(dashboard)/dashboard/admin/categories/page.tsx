@@ -1,25 +1,14 @@
-import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
-import { can } from '@/lib/permissions'
-import type { Role } from '@/lib/permissions'
 import { CategoriesManager } from './CategoriesManager'
+import { requirePermission } from '@/lib/auth/session'
 
 export const metadata: Metadata = { title: 'Categories' }
 
 export default async function CategoriesPage() {
+  await requirePermission('categories:write')
+
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profileData } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
-  if (!can((profileData as { role: string } | null)?.role as Role, 'categories:write')) redirect('/dashboard')
-
   const { data: categories } = await supabase
     .from('categories')
     .select('*')

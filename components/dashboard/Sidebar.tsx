@@ -38,24 +38,23 @@ export function Sidebar({ profile }: SidebarProps) {
   }
 
   const navItems = [
-    { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', show: true },
-    { href: '/dashboard/posts', icon: FileText, label: 'Posts', show: true },
-    { href: '/dashboard/posts/new', icon: PlusCircle, label: 'New Post', show: true },
-    { href: '/dashboard/ai-assistant', icon: Bot, label: 'AI Assistant', show: true },
-    { href: '/dashboard/admin/users', icon: Users, label: 'Users', show: can(role, 'users:read') },
-    { href: '/dashboard/admin/categories', icon: FolderOpen, label: 'Categories', show: can(role, 'categories:write') },
-    { href: '/dashboard/admin/tags', icon: Tag, label: 'Tags', show: can(role, 'tags:write') },
-    { href: '/dashboard/comments', icon: MessageSquare, label: 'Comments', show: can(role, 'comments:delete:all') },
-    { href: '/dashboard/developer', icon: Code, label: 'Developer', show: can(role, 'api_keys:write') },
+    { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', show: true, section: 'main' as const },
+    { href: '/dashboard/posts', icon: FileText, label: 'Posts', show: true, section: 'main' as const },
+    { href: '/dashboard/posts/new', icon: PlusCircle, label: 'New Post', show: true, section: 'main' as const },
+    { href: '/dashboard/ai-assistant', icon: Bot, label: 'AI Assistant', show: true, section: 'main' as const },
+    { href: '/dashboard/developer', icon: Code, label: 'Developer', show: can(role, 'api_keys:write'), section: 'main' as const },
+    { href: '/dashboard/admin/users', icon: Users, label: 'Users', show: can(role, 'users:read'), section: 'admin' as const },
+    { href: '/dashboard/admin/categories', icon: FolderOpen, label: 'Categories', show: can(role, 'categories:write'), section: 'admin' as const },
+    { href: '/dashboard/admin/tags', icon: Tag, label: 'Tags', show: can(role, 'tags:write'), section: 'admin' as const },
+    { href: '/dashboard/comments', icon: MessageSquare, label: 'Comments', show: can(role, 'comments:delete:all'), section: 'admin' as const },
   ]
 
   const initials = profile.full_name
     ? profile.full_name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : profile.email[0].toUpperCase()
 
-  const visibleItems = navItems.filter((item) => item.show)
-  const mainItems = visibleItems.slice(0, 4)
-  const adminItems = visibleItems.slice(4)
+  const mainItems = navItems.filter((item) => item.show && item.section === 'main')
+  const adminItems = navItems.filter((item) => item.show && item.section === 'admin')
 
   const sidebarContent = (
     <>

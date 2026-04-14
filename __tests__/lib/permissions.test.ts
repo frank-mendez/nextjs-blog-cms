@@ -68,6 +68,14 @@ describe('can', () => {
   it('author cannot write tags', () => {
     expect(can('author', 'tags:write')).toBe(false)
   })
+
+  it('admin can write api keys', () => {
+    expect(can('admin', 'api_keys:write')).toBe(true)
+  })
+
+  it('author can write api keys', () => {
+    expect(can('author', 'api_keys:write')).toBe(true)
+  })
 })
 
 describe('canAccess', () => {

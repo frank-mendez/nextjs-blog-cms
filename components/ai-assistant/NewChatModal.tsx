@@ -193,7 +193,7 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg overflow-hidden">
         <DialogHeader>
           <DialogTitle>New Chat</DialogTitle>
           <DialogDescription>
@@ -204,7 +204,7 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
         </DialogHeader>
 
         {step === 1 && (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto max-h-[70vh]">
             {/* Drop zone */}
             <div
               className={cn(
@@ -296,7 +296,7 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
         )}
 
         {step === 2 && selectedBook && (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto max-h-[70vh]">
             {/* Uploaded book summary card */}
             {uploadedBookData ? (
               <div className="rounded-lg border border-green-200 bg-green-50 p-3 space-y-1">

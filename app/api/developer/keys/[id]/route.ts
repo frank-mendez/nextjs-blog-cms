@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
-import { getAdminProfile } from '@/lib/api/auth'
+import { getProfile } from '@/lib/auth/session'
 import { revokeApiKey, deleteApiKey } from '@/features/api-keys/apiKeyService'
 
 export async function PATCH(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const user = await getAdminProfile()
+  const user = await getProfile()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   if (!params.id) return NextResponse.json({ error: 'Key ID is required' }, { status: 400 })
@@ -24,7 +24,7 @@ export async function DELETE(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const user = await getAdminProfile()
+  const user = await getProfile()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   if (!params.id) return NextResponse.json({ error: 'Key ID is required' }, { status: 400 })

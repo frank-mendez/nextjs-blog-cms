@@ -42,11 +42,11 @@ export function Sidebar({ profile }: SidebarProps) {
     { href: '/dashboard/posts', icon: FileText, label: 'Posts', show: true },
     { href: '/dashboard/posts/new', icon: PlusCircle, label: 'New Post', show: true },
     { href: '/dashboard/ai-assistant', icon: Bot, label: 'AI Assistant', show: true },
+    { href: '/dashboard/developer', icon: Code, label: 'Developer', show: can(role, 'api_keys:write') },
     { href: '/dashboard/admin/users', icon: Users, label: 'Users', show: can(role, 'users:read') },
     { href: '/dashboard/admin/categories', icon: FolderOpen, label: 'Categories', show: can(role, 'categories:write') },
     { href: '/dashboard/admin/tags', icon: Tag, label: 'Tags', show: can(role, 'tags:write') },
     { href: '/dashboard/comments', icon: MessageSquare, label: 'Comments', show: can(role, 'comments:delete:all') },
-    { href: '/dashboard/developer', icon: Code, label: 'Developer', show: can(role, 'api_keys:write') },
   ]
 
   const initials = profile.full_name
@@ -54,8 +54,8 @@ export function Sidebar({ profile }: SidebarProps) {
     : profile.email[0].toUpperCase()
 
   const visibleItems = navItems.filter((item) => item.show)
-  const mainItems = visibleItems.slice(0, 4)
-  const adminItems = visibleItems.slice(4)
+  const mainItems = visibleItems.slice(0, 5)
+  const adminItems = visibleItems.slice(5)
 
   const sidebarContent = (
     <>

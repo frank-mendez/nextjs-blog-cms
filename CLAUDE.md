@@ -49,7 +49,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ### Auth & Permissions
 - Authentication via **Supabase Auth**
-- Two roles: **Admin** (full control) and **Author** (own posts only)
+- Two roles: **Admin** (full control) and **Author** (own posts + developer settings)
+- **Developer feature** (`/dashboard/developer`) is accessible to both Admin and Author — each user manages their own API keys and LLM provider keys scoped to their `user_id`
 - Access control enforced at the database level via **Supabase Row Level Security (RLS)** policies in `database/policies/`
 - Client-side RBAC logic lives in `lib/permissions/`
 

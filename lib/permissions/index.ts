@@ -25,6 +25,7 @@ const rolePermissions: Record<Role, Permission[]> = {
     'posts:delete:own',
     'posts:publish',
     'comments:delete:own',
+    'api_keys:write',
   ],
 }
 

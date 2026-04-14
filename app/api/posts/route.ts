@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
   let query = supabase
     .from('posts')
     .select(POST_LIST_SELECT, { count: 'exact' })
+    .eq('author_id', auth.userId)
 
   if (filters.status) {
     query = query.eq('status', filters.status) as typeof query

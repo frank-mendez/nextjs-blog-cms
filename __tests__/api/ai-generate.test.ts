@@ -111,6 +111,20 @@ describe('POST /api/ai-assistant/generate', () => {
     expect(json.error).toMatch(/topic/)
   })
 
+  it('returns 422 when llm_model is unknown', async () => {
+    mockGetDecryptedApiKeyForUser.mockImplementation(async (provider) => {
+      if (provider === 'claude') return 'sk-claude-key'
+      return null
+    })
+    const res = await POST(
+      makeReq({ topic: 'AI', llm_model: 'gpt-9000-unknown' }) as unknown as import('next/server').NextRequest
+    )
+    expect(res.status).toBe(422)
+    const json = await res.json()
+    expect(json.success).toBe(false)
+    expect(json.details).toContain('gpt-9000-unknown')
+  })
+
   it('returns 422 when no LLM keys configured for user', async () => {
     mockGetDecryptedApiKeyForUser.mockResolvedValue(null)
     const res = await POST(makeReq({ topic: 'AI in 2026' }) as unknown as import('next/server').NextRequest)

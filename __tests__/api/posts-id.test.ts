@@ -67,8 +67,10 @@ describe('GET /api/posts/[id]', () => {
     mockCreateServiceClient.mockReturnValue({
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
-          or: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116', message: 'Not found' } }),
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116', message: 'Not found' } }),
+            }),
           }),
         }),
       }),
@@ -84,8 +86,10 @@ describe('GET /api/posts/[id]', () => {
     mockCreateServiceClient.mockReturnValue({
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
-          or: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({ data: fakePost, error: null }),
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: fakePost, error: null }),
+            }),
           }),
         }),
       }),
@@ -127,7 +131,9 @@ describe('PATCH /api/posts/[id]', () => {
     const updateSingle = vi.fn().mockResolvedValue({ data: { ...fakePost, status: 'published', published_at: '2026-04-13T00:00:00Z' }, error: null })
     const updateMock = vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({ single: updateSingle }),
+        eq: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({ single: updateSingle }),
+        }),
       }),
     })
     const deleteMock = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
@@ -162,8 +168,10 @@ describe('PATCH /api/posts/[id]', () => {
     const publishedPost = { ...fakePost, status: 'published', published_at: '2026-01-01T00:00:00Z' }
     const updateMock = vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({ data: { ...publishedPost, status: 'draft', published_at: null }, error: null }),
+        eq: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: { ...publishedPost, status: 'draft', published_at: null }, error: null }),
+          }),
         }),
       }),
     })

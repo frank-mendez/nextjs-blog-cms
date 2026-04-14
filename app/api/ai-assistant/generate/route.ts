@@ -102,16 +102,25 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // Resolve model
+  // Resolve and validate model
   if (typeof body.llm_model === 'string' && body.llm_model.trim()) {
-    resolvedModel = body.llm_model.trim()
-  } else {
-    resolvedModel = DEFAULT_MODELS[resolvedProvider]
-  }
+    const requestedModel = body.llm_model.trim()
+    const modelInfo = AVAILABLE_MODELS.find((m) => m.id === requestedModel)
 
-  // Verify model belongs to the resolved provider
-  const modelInfo = AVAILABLE_MODELS.find((m) => m.id === resolvedModel)
-  if (modelInfo && modelInfo.provider !== resolvedProvider) {
+    if (!modelInfo) {
+      return apiError('Unsupported llm_model.', 422, `Unknown model: ${requestedModel}`)
+    }
+
+    if (modelInfo.provider !== resolvedProvider) {
+      return apiError(
+        'The requested llm_model is not available for the resolved provider.',
+        422,
+        `Model ${requestedModel} belongs to provider ${modelInfo.provider}, but resolved provider is ${resolvedProvider}.`
+      )
+    }
+
+    resolvedModel = requestedModel
+  } else {
     resolvedModel = DEFAULT_MODELS[resolvedProvider]
   }
 
@@ -124,6 +133,7 @@ export async function POST(req: NextRequest) {
       tone,
       wordCount,
       model: resolvedModel,
+      provider: resolvedProvider,
       apiKey: resolvedKey,
     })
   } catch (err) {
@@ -214,15 +224,21 @@ export async function POST(req: NextRequest) {
 
   // Store generation messages for auditability
   const generationPrompt = `Generate a blog post. Topic: ${topic}${context ? '. Context: ' + context : ''}. Tone: ${tone}. Word count: ${wordCount}.`
-  await supabase.from('ai_messages').insert([
+  const { error: messagesError } = await supabase.from('ai_messages').insert([
     { chat_id: chat.id, role: 'user', content: generationPrompt },
     { chat_id: chat.id, role: 'assistant', content: JSON.stringify(generated) },
   ])
+  if (messagesError) {
+    console.error('[POST /api/ai-assistant/generate] ai_messages insert failed:', messagesError.message)
+  }
 
   // Link chat to post
-  await supabase
+  const { error: genPostError } = await supabase
     .from('ai_generated_posts')
     .insert({ chat_id: chat.id, post_id: post.id })
+  if (genPostError) {
+    console.error('[POST /api/ai-assistant/generate] ai_generated_posts insert failed:', genPostError.message)
+  }
 
   return apiSuccess(
     {

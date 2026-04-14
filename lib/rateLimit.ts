@@ -20,6 +20,7 @@ export function checkRateLimit(
   const entry = store.get(key)
 
   if (!entry || now > entry.resetAt) {
+    if (entry) store.delete(key)
     store.set(key, { count: 1, resetAt: now + windowMs })
     return { allowed: true }
   }

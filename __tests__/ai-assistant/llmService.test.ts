@@ -131,6 +131,7 @@ describe('generateBlogPostHeadless', () => {
       tone: 'professional',
       wordCount: 800,
       model: 'claude-sonnet-4-6',
+      provider: 'claude' as const,
       apiKey: 'test-key',
     })
 
@@ -165,6 +166,7 @@ describe('generateBlogPostHeadless', () => {
       tone: 'casual',
       wordCount: 500,
       model: 'claude-sonnet-4-6',
+      provider: 'claude' as const,
       apiKey: 'test-key',
     })
 
@@ -185,6 +187,7 @@ describe('generateBlogPostHeadless', () => {
         tone: 'neutral',
         wordCount: 600,
         model: 'claude-sonnet-4-6',
+        provider: 'claude' as const,
         apiKey: 'test-key',
       })
     ).rejects.toThrow('LLM returned invalid JSON')

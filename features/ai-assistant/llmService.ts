@@ -195,13 +195,14 @@ export type HeadlessGenerateParams = {
   tone: string
   wordCount: number
   model: string
+  provider: LLMProvider
   apiKey: string
 }
 
 export async function generateBlogPostHeadless(
   params: HeadlessGenerateParams
 ): Promise<GeneratedPostData> {
-  const provider: LLMProvider = params.model.startsWith('gemini') ? 'gemini' : 'claude'
+  const provider = params.provider
 
   const contextLine = params.context ? `Additional context:\n${params.context}\n\n` : ''
 

@@ -1,6 +1,8 @@
 export function parsePaginationParams(searchParams: URLSearchParams) {
-  const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')))
+  const parsedPage = parseInt(searchParams.get('page') || '1', 10)
+  const page = Math.max(1, Number.isNaN(parsedPage) ? 1 : parsedPage)
+  const parsedLimit = parseInt(searchParams.get('limit') || '20', 10)
+  const limit = Math.min(100, Math.max(1, Number.isNaN(parsedLimit) ? 20 : parsedLimit))
   const offset = (page - 1) * limit
   return { page, limit, offset }
 }

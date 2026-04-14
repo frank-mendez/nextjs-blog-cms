@@ -70,10 +70,15 @@ export async function GET(
   const { id } = await context.params
   const supabase = createServiceClient()
 
+  // Detect UUID vs slug to avoid PostgREST injection via .or() with unvalidated input
+  const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const isUuid = UUID_PATTERN.test(id)
+
   const { data, error } = await supabase
     .from('posts')
     .select(POST_FULL_SELECT)
-    .or(`id.eq.${id},slug.eq.${id}`)
+    .eq(isUuid ? 'id' : 'slug', id)
+    .eq('author_id', auth.userId)
     .single()
 
   if (error || !data) return apiError('Post not found.', 404)
@@ -178,6 +183,7 @@ export async function PATCH(
     .from('posts')
     .update(updatePayload)
     .eq('id', id)
+    .eq('author_id', auth.userId)
     .select(POST_FULL_SELECT)
     .single()
 

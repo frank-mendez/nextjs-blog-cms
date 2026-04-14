@@ -40,12 +40,17 @@ export async function getDecryptedApiKeyForUser(
   userId: string
 ): Promise<string | null> {
   const serviceClient = createServiceClient()
-  const { data } = await serviceClient
+  const { data, error } = await serviceClient
     .from('llm_provider_keys')
     .select('encrypted_key')
     .eq('provider', provider)
     .eq('user_id', userId)
     .single()
+
+  if (error && error.code !== 'PGRST116') {
+    console.error(`[llmKeyService] DB error fetching ${provider} key for user ${userId}:`, error.message)
+    return null
+  }
 
   if (data?.encrypted_key) {
     return decryptSecret(data.encrypted_key)

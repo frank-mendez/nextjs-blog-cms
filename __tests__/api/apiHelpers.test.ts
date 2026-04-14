@@ -31,6 +31,11 @@ describe('parsePaginationParams', () => {
     const params = new URLSearchParams({ page: '-5' })
     expect(parsePaginationParams(params).page).toBe(1)
   })
+
+  it('falls back to defaults for non-numeric inputs', () => {
+    const params = new URLSearchParams({ page: 'abc', limit: 'xyz' })
+    expect(parsePaginationParams(params)).toEqual({ page: 1, limit: 20, offset: 0 })
+  })
 })
 
 describe('parsePostFilters', () => {

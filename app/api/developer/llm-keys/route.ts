@@ -56,6 +56,7 @@ export async function GET() {
   const envProviders: Array<{ provider: LLMProvider; envValue?: string }> = [
     { provider: 'claude', envValue: process.env.ANTHROPIC_API_KEY },
     { provider: 'gemini', envValue: process.env.GOOGLE_GENERATIVE_AI_KEY },
+    { provider: 'openai', envValue: process.env.OPENAI_API_KEY },
   ]
   for (const { provider, envValue } of envProviders) {
     if (envValue && !seen.has(provider)) {
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json() as { provider?: string; api_key?: string }
   const { provider, api_key } = body
 
-  if (!provider || !['claude', 'gemini'].includes(provider)) {
+  if (!provider || !['claude', 'gemini', 'openai'].includes(provider)) {
     return NextResponse.json({ error: 'Invalid provider' }, { status: 400 })
   }
   if (!api_key || api_key.trim().length < 8) {
@@ -136,7 +137,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   const { provider } = await req.json() as { provider?: string }
-  if (!provider || !['claude', 'gemini'].includes(provider)) {
+  if (!provider || !['claude', 'gemini', 'openai'].includes(provider)) {
     return NextResponse.json({ error: 'Invalid provider' }, { status: 400 })
   }
 

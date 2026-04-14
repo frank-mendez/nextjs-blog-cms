@@ -329,6 +329,23 @@ export async function generateChatTitle(
   return (block && block.type === 'text' ? block.text.trim() : 'New Chat')
 }
 
+export function isRateLimitError(err: unknown): boolean {
+  // Anthropic and OpenAI SDK errors both expose a numeric `status` field
+  if (typeof err === 'object' && err !== null && 'status' in err) {
+    if ((err as { status: unknown }).status === 429) return true
+  }
+  if (err instanceof Error) {
+    const msg = err.message.toLowerCase()
+    if (
+      msg.includes('rate limit') ||
+      msg.includes('resource_exhausted') ||
+      msg.includes('quota') ||
+      msg.includes('429')
+    ) return true
+  }
+  return false
+}
+
 export async function validateProviderKey(
   provider: LLMProvider,
   apiKey: string

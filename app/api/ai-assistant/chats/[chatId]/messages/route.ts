@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import {
   getMessages, addMessage, updateChatLastMessage, updateChatTitle, getChat, getBookById,
 } from '@/features/ai-assistant/chatService'
-import { sendMessage, generateChatTitle } from '@/features/ai-assistant/llmService'
+import { sendMessage, generateChatTitle, isRateLimitError } from '@/features/ai-assistant/llmService'
 import { getDecryptedApiKey } from '@/features/ai-assistant/llmKeyService'
 import type { LLMProvider } from '@/features/ai-assistant/types'
 
@@ -49,12 +49,15 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'content required' }, { status: 400 })
   }
 
-  // Save user message
-  await addMessage({ chat_id: chatId, role: 'user', content: content.trim() })
-
-  // Fetch full history (including the message just saved)
-  const history = await getMessages(chatId)
-  const isFirstMessage = history.filter((m) => m.role === 'user').length === 1
+  // Build history for the LLM call without saving the user message yet —
+  // we delay the DB write until after the pre-flight so a rate-limit/provider
+  // error doesn't leave an orphaned user message in the database.
+  const existingHistory = await getMessages(chatId)
+  const isFirstMessage = existingHistory.filter((m) => m.role === 'user').length === 0
+  const history: typeof existingHistory = [
+    ...existingHistory,
+    { id: 'pending', chat_id: chatId, role: 'user', content: content.trim(), created_at: new Date().toISOString() },
+  ]
 
   // Get decrypted API key
   let apiKey: string
@@ -86,12 +89,41 @@ export async function POST(req: NextRequest, { params }: Params) {
     apiKey,
   })
 
-  let fullResponse = ''
+  // Pre-flight: get the first chunk before committing to a streaming response.
+  // Rate limit errors from providers surface here, before any headers are sent.
+  let firstChunk: string | undefined
+  try {
+    const result = await llmStream.next()
+    if (result.done) {
+      return NextResponse.json({ error: 'Failed to get a response from the AI provider.' }, { status: 502 })
+    }
+    firstChunk = result.value
+  } catch (err) {
+    if (isRateLimitError(err)) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please wait a moment and try again.' },
+        { status: 429 }
+      )
+    }
+    return NextResponse.json({ error: 'Failed to get a response from the AI provider.' }, { status: 502 })
+  }
+
+  // Pre-flight succeeded — now persist the user message
+  try {
+    await addMessage({ chat_id: chatId, role: 'user', content: content.trim() })
+  } catch {
+    return NextResponse.json({ error: 'Failed to save message. Please try again.' }, { status: 500 })
+  }
+
+  let fullResponse = firstChunk ?? ''
 
   const readableStream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder()
       try {
+        if (firstChunk !== undefined) {
+          controller.enqueue(encoder.encode(firstChunk))
+        }
         for await (const chunk of llmStream) {
           fullResponse += chunk
           controller.enqueue(encoder.encode(chunk))

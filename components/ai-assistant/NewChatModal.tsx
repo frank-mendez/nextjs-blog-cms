@@ -111,7 +111,7 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
 
   async function handleFileSelect(file: File) {
     if (file.type !== 'application/pdf') { toast.error('Please upload a PDF file'); return }
-    if (file.size > 20 * 1024 * 1024) { toast.error('File too large — max 20MB'); return }
+    if (file.size > 30 * 1024 * 1024) { toast.error('File too large — max 30MB'); return }
 
     setUploading(true)
     setUploadStep('uploading')
@@ -256,7 +256,7 @@ export function NewChatModal({ open, onClose, onChatCreated }: Props) {
                 <>
                   <Upload className="h-8 w-8 text-slate-300 mx-auto mb-2" />
                   <p className="text-sm font-medium text-slate-700">Drop a PDF here</p>
-                  <p className="text-xs text-muted-foreground mt-1">or click to browse — max 20MB</p>
+                  <p className="text-xs text-muted-foreground mt-1">or click to browse — max 30MB</p>
                 </>
               )}
             </div>

@@ -6,7 +6,7 @@ import { extractTextFromPdf } from '@/features/ai-assistant/pdfService'
 
 /**
  * POST /api/ai-assistant/books
- * Accepts multipart/form-data with a PDF file (max 20MB).
+ * Accepts multipart/form-data with a PDF file (max 30MB).
  * Extracts text server-side — the PDF file is NOT stored.
  */
 export async function POST(req: NextRequest) {
@@ -22,9 +22,9 @@ export async function POST(req: NextRequest) {
   if (file.type !== 'application/pdf') {
     return NextResponse.json({ error: 'File must be a PDF' }, { status: 400 })
   }
-  if (file.size > 20 * 1024 * 1024) {
+  if (file.size > 30 * 1024 * 1024) {
     return NextResponse.json(
-      { error: 'PDF too large. Maximum size is 20MB.' },
+      { error: 'PDF too large. Maximum size is 30MB.' },
       { status: 400 }
     )
   }

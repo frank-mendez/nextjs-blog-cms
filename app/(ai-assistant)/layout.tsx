@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AuthProvider } from '@/features/auth/context/AuthProvider'
-import { AISidebar } from '@/components/ai-assistant/AISidebar'
+import { AIAssistantShell } from '@/components/ai-assistant/AIAssistantShell'
 import { Toaster } from 'sonner'
 
 export default async function AIAssistantLayout({
@@ -23,12 +23,9 @@ export default async function AIAssistantLayout({
 
   return (
     <AuthProvider>
-      <div className="flex h-screen overflow-hidden bg-slate-900">
-        <AISidebar />
-        <main className="flex-1 overflow-hidden">
-          {children}
-        </main>
-      </div>
+      <AIAssistantShell>
+        {children}
+      </AIAssistantShell>
       <Toaster richColors />
     </AuthProvider>
   )

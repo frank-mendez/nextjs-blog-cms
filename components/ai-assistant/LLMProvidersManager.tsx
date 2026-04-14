@@ -32,6 +32,12 @@ const PROVIDERS: ProviderConfig[] = [
     models: 'Gemini 1.5 Flash (free), Gemini 1.5 Pro',
     note: 'Gemini Flash has a free tier',
   },
+  {
+    provider: 'openai',
+    label: 'OpenAI',
+    color: 'text-green-600',
+    models: 'GPT-4o, GPT-4o Mini',
+  },
 ]
 
 export function LLMProvidersManager() {

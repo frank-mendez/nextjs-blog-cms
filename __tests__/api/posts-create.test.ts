@@ -39,6 +39,7 @@ describe('POST /api/posts/create', () => {
     const res = await POST(req)
     expect(res.status).toBe(401)
     const json = await res.json()
+    expect(json.success).toBe(false)
     expect(json.error).toBe('Missing or invalid Authorization header')
   })
 
@@ -48,6 +49,7 @@ describe('POST /api/posts/create', () => {
     const res = await POST(req)
     expect(res.status).toBe(401)
     const json = await res.json()
+    expect(json.success).toBe(false)
     expect(json.error).toBe('Invalid or revoked API key')
   })
 
@@ -57,6 +59,7 @@ describe('POST /api/posts/create', () => {
     const res = await POST(req)
     expect(res.status).toBe(400)
     const json = await res.json()
+    expect(json.success).toBe(false)
     expect(json.error).toContain('title')
   })
 
@@ -66,6 +69,7 @@ describe('POST /api/posts/create', () => {
     const res = await POST(req)
     expect(res.status).toBe(400)
     const json = await res.json()
+    expect(json.success).toBe(false)
     expect(json.error).toContain('content')
   })
 
@@ -111,7 +115,8 @@ describe('POST /api/posts/create', () => {
     const res = await POST(req)
     expect(res.status).toBe(201)
     const json = await res.json()
-    expect(json.post.id).toBe('post-abc')
-    expect(json.post.title).toBe('Test Post')
+    expect(json.success).toBe(true)
+    expect(json.data.post.id).toBe('post-abc')
+    expect(json.data.post.title).toBe('Test Post')
   })
 })

@@ -91,14 +91,14 @@ export async function POST(request: Request) {
   const authHeader = request.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
     return NextResponse.json(
-      { error: 'Missing or invalid Authorization header' },
+      { success: false, error: 'Missing or invalid Authorization header' },
       { status: 401 }
     )
   }
 
   const userId = await validateApiKey(authHeader.slice(7))
   if (!userId) {
-    return NextResponse.json({ error: 'Invalid or revoked API key' }, { status: 401 })
+    return NextResponse.json({ success: false, error: 'Invalid or revoked API key' }, { status: 401 })
   }
 
   // 2. Parse and validate body
@@ -106,12 +106,12 @@ export async function POST(request: Request) {
   try {
     rawBody = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const parsed = parsePostBody(rawBody)
   if ('error' in parsed) {
-    return NextResponse.json({ error: parsed.error }, { status: 400 })
+    return NextResponse.json({ success: false, error: parsed.error }, { status: 400 })
   }
   const body = parsed.body
 
@@ -127,8 +127,8 @@ export async function POST(request: Request) {
   const { post, error } = await insertPostWithTags(supabase, payload, body.tags)
 
   if (error) {
-    return NextResponse.json({ error }, { status: 500 })
+    return NextResponse.json({ success: false, error }, { status: 500 })
   }
 
-  return NextResponse.json({ post }, { status: 201 })
+  return NextResponse.json({ success: true, data: { post } }, { status: 201 })
 }

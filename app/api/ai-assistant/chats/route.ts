@@ -4,6 +4,8 @@ import { createChat, getChats } from '@/features/ai-assistant/chatService'
 import { AVAILABLE_MODELS } from '@/features/ai-assistant/types'
 import type { LLMProvider } from '@/features/ai-assistant/types'
 
+const ALLOWED_PROVIDERS: Set<string> = new Set(AVAILABLE_MODELS.map((m) => m.provider))
+
 /**
  * POST /api/ai-assistant/chats
  * Body: { book_id: string, llm_provider: string, llm_model: string }
@@ -22,7 +24,7 @@ export async function POST(req: NextRequest) {
   const { book_id, llm_provider, llm_model } = body
 
   if (!book_id) return NextResponse.json({ error: 'book_id required' }, { status: 400 })
-  if (!llm_provider || !['claude', 'gemini', 'openai'].includes(llm_provider)) {
+  if (!llm_provider || !ALLOWED_PROVIDERS.has(llm_provider)) {
     return NextResponse.json({ error: 'Invalid llm_provider' }, { status: 400 })
   }
   if (

@@ -330,8 +330,10 @@ export async function generateChatTitle(
 }
 
 export function isRateLimitError(err: unknown): boolean {
-  if (err instanceof Anthropic.APIStatusError && err.status === 429) return true
-  if (err instanceof OpenAI.APIStatusError && err.status === 429) return true
+  // Anthropic and OpenAI SDK errors both expose a numeric `status` field
+  if (typeof err === 'object' && err !== null && 'status' in err) {
+    if ((err as { status: unknown }).status === 429) return true
+  }
   if (err instanceof Error) {
     const msg = err.message.toLowerCase()
     if (

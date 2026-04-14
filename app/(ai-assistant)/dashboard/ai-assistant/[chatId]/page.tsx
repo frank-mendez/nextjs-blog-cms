@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { FileText, Sparkles, Loader2 } from 'lucide-react'
+import { FileText, Sparkles, Loader2, AlertCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -25,6 +25,7 @@ export default function ChatPage(_props: Props) {
   const [inputValue, setInputValue] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [streamingContent, setStreamingContent] = useState('')
+  const [sendError, setSendError] = useState<string | null>(null)
   const [generateOpen, setGenerateOpen] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -53,6 +54,7 @@ export default function ChatPage(_props: Props) {
     if (!content || isStreaming) return
 
     setInputValue('')
+    setSendError(null)
     setIsStreaming(true)
     setStreamingContent('')
 
@@ -75,7 +77,10 @@ export default function ChatPage(_props: Props) {
 
       if (!res.ok) {
         const data = await res.json()
-        toast.error(data.error ?? 'Failed to send message')
+        const message = res.status === 429
+          ? (data.error ?? 'Rate limit exceeded. Please wait a moment and try again.')
+          : (data.error ?? 'Failed to send message')
+        setSendError(message)
         setMessages((prev) => prev.filter((m) => m.id !== tempUserMsg.id))
         return
       }
@@ -97,7 +102,7 @@ export default function ChatPage(_props: Props) {
       const msgData = await msgRes.json()
       setMessages(msgData.messages ?? [])
     } catch {
-      toast.error('Connection error')
+      setSendError('Connection error. Please check your network and try again.')
     } finally {
       setIsStreaming(false)
       setStreamingContent('')
@@ -183,6 +188,17 @@ export default function ChatPage(_props: Props) {
         isStreaming={isStreaming}
         onSuggestedPrompt={(prompt) => { setInputValue(prompt) }}
       />
+
+      {/* Inline error banner */}
+      {sendError && (
+        <div className="flex items-center gap-2.5 px-4 py-2.5 bg-red-950/60 border-t border-red-900/50 text-red-300 text-xs shrink-0">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0 text-red-400" />
+          <span className="flex-1">{sendError}</span>
+          <button onClick={() => setSendError(null)} className="text-red-500 hover:text-red-300 transition-colors">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Input */}
       <ChatInput

@@ -104,19 +104,19 @@ describe('POST /api/ai-assistant/books', () => {
     expect(json.error).toMatch(/pdf/i)
   })
 
-  it('returns 400 when PDF is larger than 20MB', async () => {
+  it('returns 400 when PDF is larger than 30MB', async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock() as unknown as Awaited<ReturnType<typeof createClient>>)
 
     const bigFile: FakeFile = {
       name: 'big.pdf',
       type: 'application/pdf',
-      size: 21 * 1024 * 1024,
+      size: 31 * 1024 * 1024,
       arrayBuffer: async () => new ArrayBuffer(0),
     }
     const res = await POST(makePostRequest(bigFile))
     expect(res.status).toBe(400)
     const json = await res.json()
-    expect(json.error).toMatch(/20MB/i)
+    expect(json.error).toMatch(/30MB/i)
   })
 
   it('returns 400 when extracted text is empty (image-only PDF)', async () => {

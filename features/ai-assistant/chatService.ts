@@ -144,3 +144,25 @@ export async function addMessage(data: {
   if (error) throw new Error(error.message)
   return message as AIMessage
 }
+
+export async function deleteChat(chatId: string, userId: string): Promise<void> {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('ai_chats')
+    .delete()
+    .eq('id', chatId)
+    .eq('user_id', userId)
+
+  if (error) throw new Error(error.message)
+}
+
+export async function deleteBook(bookId: string, userId: string): Promise<void> {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('ai_books')
+    .delete()
+    .eq('id', bookId)
+    .eq('user_id', userId)
+
+  if (error) throw new Error(error.message)
+}

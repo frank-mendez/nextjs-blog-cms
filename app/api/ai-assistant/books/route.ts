@@ -22,9 +22,9 @@ export async function POST(req: NextRequest) {
   if (file.type !== 'application/pdf') {
     return NextResponse.json({ error: 'File must be a PDF' }, { status: 400 })
   }
-  if (file.size > 20 * 1024 * 1024) {
+  if (file.size > 30 * 1024 * 1024) {
     return NextResponse.json(
-      { error: 'PDF too large. Maximum size is 20MB.' },
+      { error: 'PDF too large. Maximum size is 30MB.' },
       { status: 400 }
     )
   }

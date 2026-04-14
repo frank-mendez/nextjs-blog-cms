@@ -72,7 +72,7 @@
     "next-themes": "^0.3.0",
     "nextjs-toploader": "^3.9.17",
     "openai": "^6.34.0",
-    "pdf-parse": "^2.4.5",
+    "pdf-parse": "^1.1.4",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-hook-form": "^7.52.0",

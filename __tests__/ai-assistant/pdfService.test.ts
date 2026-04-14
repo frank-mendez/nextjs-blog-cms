@@ -19,7 +19,7 @@ describe('extractTextFromPdf', () => {
       numpages: 3,
       info: { Title: 'My PDF' },
       metadata: null,
-      version: '1.10.100',
+      numrender: 0, version: 'v1.10.100',
     })
 
     const buf = Buffer.from('fake-pdf-bytes')
@@ -39,7 +39,7 @@ describe('extractTextFromPdf', () => {
       numpages: 1,
       info: {},
       metadata: null,
-      version: '1.10.100',
+      numrender: 0, version: 'v1.10.100',
     })
 
     const result = await extractTextFromPdf(Buffer.from('fake'))
@@ -53,7 +53,7 @@ describe('extractTextFromPdf', () => {
       numpages: 100,
       info: {},
       metadata: null,
-      version: '1.10.100',
+      numrender: 0, version: 'v1.10.100',
     })
 
     const result = await extractTextFromPdf(Buffer.from('fake'))
@@ -69,7 +69,7 @@ describe('extractTextFromPdf', () => {
       numpages: 1,
       info: {},
       metadata: null,
-      version: '1.10.100',
+      numrender: 0, version: 'v1.10.100',
     })
 
     const result = await extractTextFromPdf(Buffer.from('fake'))

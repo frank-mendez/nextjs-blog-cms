@@ -152,7 +152,8 @@ export function AISidebar({ onClose }: { onClose?: () => void }) {
                           aria-label="Delete chat"
                           onClick={(e) => handleDeleteChat(chat.id, e)}
                           className={cn(
-                            'absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity',
+                            'absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded transition-opacity',
+                            'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100',
                             currentChatId === chat.id
                               ? 'text-blue-200 hover:text-white hover:bg-blue-500'
                               : 'text-slate-600 hover:text-red-400 hover:bg-slate-700'
@@ -195,7 +196,7 @@ export function AISidebar({ onClose }: { onClose?: () => void }) {
                             type="button"
                             aria-label="Delete book and all its chats"
                             onClick={(e) => handleDeleteBook(book.id, book.title, e)}
-                            className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-red-400 hover:bg-slate-700"
+                            className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 text-slate-600 hover:text-red-400 hover:bg-slate-700"
                             title="Delete book and all its chats"
                           >
                             <Trash2 className="h-3 w-3" />
@@ -226,7 +227,8 @@ export function AISidebar({ onClose }: { onClose?: () => void }) {
                                     aria-label="Delete chat"
                                     onClick={(e) => handleDeleteChat(chat.id, e)}
                                     className={cn(
-                                      'absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover/chat:opacity-100 transition-opacity',
+                                      'absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded transition-opacity',
+                                      'opacity-100 sm:opacity-0 sm:group-hover/chat:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100',
                                       currentChatId === chat.id
                                         ? 'text-blue-200 hover:text-white hover:bg-blue-500'
                                         : 'text-slate-600 hover:text-red-400 hover:bg-slate-700'

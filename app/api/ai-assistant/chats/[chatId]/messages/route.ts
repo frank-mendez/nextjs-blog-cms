@@ -94,7 +94,10 @@ export async function POST(req: NextRequest, { params }: Params) {
   let firstChunk: string | undefined
   try {
     const result = await llmStream.next()
-    if (!result.done) firstChunk = result.value
+    if (result.done) {
+      return NextResponse.json({ error: 'Failed to get a response from the AI provider.' }, { status: 502 })
+    }
+    firstChunk = result.value
   } catch (err) {
     if (isRateLimitError(err)) {
       return NextResponse.json(

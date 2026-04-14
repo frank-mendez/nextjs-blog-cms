@@ -18,7 +18,12 @@ ALTER TABLE public.ai_books
 -- Add computed columns for display / token estimation
 ALTER TABLE public.ai_books
   ADD COLUMN IF NOT EXISTS word_count INTEGER GENERATED ALWAYS AS
-    (array_length(string_to_array(trim(extracted_text), ' '), 1)) STORED;
+    (
+      CASE
+        WHEN btrim(extracted_text) = '' THEN 0
+        ELSE cardinality(regexp_split_to_array(btrim(extracted_text), E'\\s+'))
+      END
+    ) STORED;
 
 ALTER TABLE public.ai_books
   ADD COLUMN IF NOT EXISTS char_count INTEGER GENERATED ALWAYS AS

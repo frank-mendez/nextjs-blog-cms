@@ -36,6 +36,17 @@ describe('TaxonomyStore — tags', () => {
     expect(tags[0].id).toBe('real-1')
   })
 
+  it('commitTag only replaces the matching tag, leaving others unchanged', () => {
+    useTaxonomyStore.getState().addTagOptimistic('temp-1', 'React')
+    useTaxonomyStore.getState().addTagOptimistic('temp-2', 'Vue')
+    const real: Tag = { id: 'real-1', name: 'React', slug: 'react', created_at: '2024-01-01' }
+    useTaxonomyStore.getState().commitTag('temp-1', real)
+    const tags = useTaxonomyStore.getState().tags
+    expect(tags).toHaveLength(2)
+    expect(tags[0].id).toBe('real-1')
+    expect(tags[1].id).toBe('temp-2')
+  })
+
   it('rollbackTag removes optimistic tag', () => {
     useTaxonomyStore.getState().addTagOptimistic('temp-1', 'Vue')
     useTaxonomyStore.getState().rollbackTag('temp-1')
@@ -95,6 +106,20 @@ describe('TaxonomyStore — categories', () => {
     useTaxonomyStore.getState().commitCategory('temp-1', real)
     const cats = useTaxonomyStore.getState().categories
     expect(cats[0].id).toBe('real-1')
+  })
+
+  it('commitCategory only replaces the matching category, leaving others unchanged', () => {
+    useTaxonomyStore.getState().addCategoryOptimistic('temp-1', 'AI')
+    useTaxonomyStore.getState().addCategoryOptimistic('temp-2', 'Cloud')
+    const real: Category = {
+      id: 'real-1', name: 'AI', slug: 'ai',
+      description: null, created_at: '2024-01-01', updated_at: '2024-01-01',
+    }
+    useTaxonomyStore.getState().commitCategory('temp-1', real)
+    const cats = useTaxonomyStore.getState().categories
+    expect(cats).toHaveLength(2)
+    expect(cats[0].id).toBe('real-1')
+    expect(cats[1].id).toBe('temp-2')
   })
 
   it('rollbackCategory removes optimistic category', () => {

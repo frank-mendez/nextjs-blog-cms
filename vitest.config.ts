@@ -14,11 +14,38 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: [
+        // lib core logic
         'lib/utils.ts',
         'lib/permissions/index.ts',
         'lib/store/taxonomy.ts',
+        'lib/apiAuth.ts',
+        'lib/apiHelpers.ts',
+        'lib/rateLimit.ts',
+        'lib/encryption.ts',
+        'lib/api/auth.ts',
+        'lib/auth/session.ts',
+        // features
         'features/posts/components/**/*.{ts,tsx}',
+        'features/comments/components/CommentCard.tsx',
+        'features/comments/components/CommentForm.tsx',
+        'features/comments/components/CommentList.tsx',
+        'features/comments/components/DeleteCommentButton.tsx',
+        'features/api-keys/apiKeyService.ts',
+        'features/ai-assistant/chatService.ts',
+        'features/ai-assistant/llmKeyService.ts',
+        'features/ai-assistant/pdfService.ts',
+        // components
         'components/dashboard/RoleBadge.tsx',
+        'components/dashboard/PostTable/utils.ts',
+        // api routes
+        'app/api/posts/route.ts',
+        'app/api/posts/create/route.ts',
+        'app/api/posts/[id]/route.ts',
+        'app/api/ai-assistant/generate/route.ts',
+        'app/api/ai-assistant/books/route.ts',
+        'app/api/ai-assistant/chats/route.ts',
+        // app logic
+        'app/robots.ts',
       ],
       thresholds: {
         lines: 80,

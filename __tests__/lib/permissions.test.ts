@@ -101,6 +101,13 @@ describe('canAccess', () => {
   })
 })
 
+describe('can — nullish coalescing fallback', () => {
+  it('returns false for an unrecognized role value', () => {
+    // Covers the `?? false` branch when rolePermissions[role] is undefined
+    expect(can('superuser' as unknown as import('@/lib/permissions').Role, 'posts:create')).toBe(false)
+  })
+})
+
 describe('canAny', () => {
   it('returns false for null role', () => {
     expect(canAny(null, ['posts:create'])).toBe(false)

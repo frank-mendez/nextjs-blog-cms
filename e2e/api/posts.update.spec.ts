@@ -3,6 +3,14 @@ import { test, expect } from '../fixtures'
 const NONEXISTENT_ID = '00000000-0000-0000-0000-000000000000'
 
 test.describe('PATCH /api/posts/[id]', () => {
+  test.afterAll(async ({ request, apiKey, seedPostIds }) => {
+    // Restore the title so posts.get.spec.ts can assert the original value
+    await request.patch(`/api/posts/${seedPostIds[0]}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      data: { title: 'E2E Draft Post One' },
+    })
+  })
+
   test('returns 401 with no Authorization header', async ({ request, seedPostIds }) => {
     const res = await request.patch(`/api/posts/${seedPostIds[0]}`, {
       data: { title: 'Should Not Update' },

@@ -28,3 +28,4 @@
 *.exe
 *.dll
 *.so
+.e2e-state.json

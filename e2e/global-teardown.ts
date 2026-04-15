@@ -10,15 +10,25 @@ export default async function globalTeardown() {
     return
   }
 
-  const { userId } = JSON.parse(readFileSync('.e2e-state.json', 'utf8')) as {
+  const { userId, email } = JSON.parse(readFileSync('.e2e-state.json', 'utf8')) as {
     userId: string
+    email: string
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  // Safety guard: only proceed if the state file belongs to the known e2e test user
+  if (!email?.endsWith('@playwright.local')) {
+    throw new Error(`Refusing teardown: unexpected email in .e2e-state.json ("${email}"). Aborting to prevent accidental data deletion.`)
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local')
+  }
+
+  const supabase = createClient(supabaseUrl, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
 
   // Fetch all post IDs for this user (seed posts + any created by tests)
   const { data: posts } = await supabase

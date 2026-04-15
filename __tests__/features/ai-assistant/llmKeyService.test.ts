@@ -64,7 +64,11 @@ describe('getDecryptedApiKey', () => {
     const savedAnt = process.env.ANTHROPIC_API_KEY
     delete process.env.ANTHROPIC_API_KEY
     await expect(getDecryptedApiKey('claude')).rejects.toThrow('No API key configured')
-    process.env.ANTHROPIC_API_KEY = savedAnt
+    if (savedAnt === undefined) {
+      delete process.env.ANTHROPIC_API_KEY
+    } else {
+      process.env.ANTHROPIC_API_KEY = savedAnt
+    }
   })
 })
 

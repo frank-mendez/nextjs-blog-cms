@@ -5,7 +5,11 @@ describe('robots', () => {
   const originalUrl = process.env.NEXT_PUBLIC_SITE_URL
 
   afterEach(() => {
-    process.env.NEXT_PUBLIC_SITE_URL = originalUrl
+    if (originalUrl === undefined) {
+      delete process.env.NEXT_PUBLIC_SITE_URL
+    } else {
+      process.env.NEXT_PUBLIC_SITE_URL = originalUrl
+    }
   })
 
   it('uses NEXT_PUBLIC_SITE_URL when set', () => {

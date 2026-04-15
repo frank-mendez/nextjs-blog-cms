@@ -19,7 +19,11 @@ export default async function globalSetup() {
   })
 
   // ── 1. Create or reuse test user ──────────────────────────────────────────
-  const { data: { users } } = await supabase.auth.admin.listUsers()
+  const { data: usersData, error: listUsersError } = await supabase.auth.admin.listUsers()
+  if (listUsersError || !usersData) {
+    throw new Error(`Failed to list test users: ${listUsersError?.message}`)
+  }
+  const { users } = usersData
   let userId: string
   const existing = users.find((u) => u.email === E2E_EMAIL)
 
@@ -103,7 +107,7 @@ export default async function globalSetup() {
   if (postsError || !posts) throw new Error(`Failed to seed posts: ${postsError?.message}`)
 
   // ── 5. Write state file ───────────────────────────────────────────────────
-  const state = { apiKey, userId, seedPostIds: posts.map((p) => p.id) }
+  const state = { apiKey, userId, email: E2E_EMAIL, seedPostIds: posts.map((p) => p.id) }
   writeFileSync('.e2e-state.json', JSON.stringify(state, null, 2))
 
   console.log(`✓ E2E setup complete — user: ${E2E_EMAIL}, posts: ${posts.length}`)

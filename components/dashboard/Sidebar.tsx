@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X, MessageSquare, Loader2, Code, Bot,
 } from 'lucide-react'
@@ -18,7 +18,6 @@ interface SidebarProps {
 
 export function Sidebar({ profile }: SidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
   const supabase = createClient()
   const role = profile.role as Role
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -32,8 +31,7 @@ export function Sidebar({ profile }: SidebarProps) {
   function handleLogout() {
     startTransition(async () => {
       await supabase.auth.signOut()
-      router.push('/login')
-      router.refresh()
+      window.location.href = '/login'
     })
   }
 

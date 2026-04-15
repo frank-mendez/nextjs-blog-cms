@@ -19,11 +19,30 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const serviceClient = createServiceClient()
-  const { data: rows } = await serviceClient
-    .from('llm_provider_keys')
-    .select('provider, key_preview, is_valid, last_verified_at')
-    .eq('user_id', user.id)
-    .order('updated_at', { ascending: false })
+
+  // Fetch keys and this-month usage counts in parallel
+  const startOfMonth = new Date()
+  startOfMonth.setUTCDate(1)
+  startOfMonth.setUTCHours(0, 0, 0, 0)
+
+  const [{ data: rows }, { data: usageRows }] = await Promise.all([
+    serviceClient
+      .from('llm_provider_keys')
+      .select('provider, key_preview, is_valid, last_verified_at')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false }),
+    serviceClient
+      .from('ai_chats')
+      .select('llm_provider')
+      .eq('user_id', user.id)
+      .gte('created_at', startOfMonth.toISOString()),
+  ])
+
+  // Count chats per provider for this month
+  const usageCounts = new Map<string, number>()
+  for (const row of (usageRows ?? [])) {
+    usageCounts.set(row.llm_provider, (usageCounts.get(row.llm_provider) ?? 0) + 1)
+  }
 
   // One record per provider (take most recent if multiple)
   const seen = new Set<string>()
@@ -36,6 +55,7 @@ export async function GET() {
         key_preview: row.key_preview,
         is_valid: row.is_valid,
         last_verified_at: row.last_verified_at,
+        requests_this_month: usageCounts.get(row.provider) ?? 0,
       })
     }
   }
@@ -49,7 +69,7 @@ export async function GET() {
   for (const { provider, envValue } of envProviders) {
     if (envValue && !seen.has(provider)) {
       seen.add(provider)
-      records.push({ provider, key_preview: null, is_valid: null, last_verified_at: null })
+      records.push({ provider, key_preview: null, is_valid: null, last_verified_at: null, requests_this_month: usageCounts.get(provider) ?? 0 })
     }
   }
 

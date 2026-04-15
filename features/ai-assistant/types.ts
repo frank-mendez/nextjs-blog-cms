@@ -116,6 +116,7 @@ export type LLMProviderKeyRecord = {
   key_preview: string | null
   is_valid: boolean | null
   last_verified_at: string | null
+  requests_this_month: number
 }
 
 export type ProviderStatus = {

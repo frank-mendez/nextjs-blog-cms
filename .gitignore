@@ -29,3 +29,4 @@
 *.dll
 *.so
 .e2e-state.json
+/test-results/

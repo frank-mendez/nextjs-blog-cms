@@ -259,6 +259,36 @@ Delete a post by ID.
 
 ---
 
+## Testing
+
+### Unit Tests (Vitest)
+
+Covers lib utilities, API routes, services, and UI components with 80%+ thresholds across lines, branches, functions, and statements.
+
+```bash
+npm test                  # watch mode
+npm run test:run          # single run
+npm run test:coverage     # coverage report
+```
+
+### API End-to-End Tests (Playwright)
+
+Tests the five posts REST API routes (`GET`, `POST`, `PATCH`, `DELETE`) against a real Next.js dev server and a dedicated Supabase test project. No browser — pure HTTP via `APIRequestContext`.
+
+**Prerequisites:**
+
+- `.env.local` must point to a **separate Supabase test project** (not production)
+- The test project must have the full schema applied (`database/schema.sql`)
+
+```bash
+npm run test:e2e          # run the full suite (19 tests)
+npm run test:e2e:report   # open the HTML report
+```
+
+Global setup seeds a test user, API key, and three posts before the suite runs. Global teardown deletes all seeded data by `user_id` after the suite finishes.
+
+---
+
 ## Deployment
 
 1. Import repo to Vercel

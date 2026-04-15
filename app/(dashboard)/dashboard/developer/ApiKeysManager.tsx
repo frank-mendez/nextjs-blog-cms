@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import { ApiReferenceSection } from '@/components/developer/ApiReferenceSection'
 import {
   Dialog,
   DialogContent,
@@ -198,8 +197,6 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
           </div>
         )}
       </Card>
-
-      <ApiReferenceSection />
 
       {/* Generate Key Dialog */}
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) handleDialogClose() }}>

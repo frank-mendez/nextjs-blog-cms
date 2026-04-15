@@ -19,11 +19,42 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const serviceClient = createServiceClient()
-  const { data: rows } = await serviceClient
-    .from('llm_provider_keys')
-    .select('provider, key_preview, is_valid, last_verified_at')
-    .eq('user_id', user.id)
-    .order('updated_at', { ascending: false })
+
+  const startOfMonth = new Date()
+  startOfMonth.setUTCDate(1)
+  startOfMonth.setUTCHours(0, 0, 0, 0)
+  const since = startOfMonth.toISOString()
+
+  const providers: LLMProvider[] = ['claude', 'gemini', 'openai']
+
+  // Fetch keys + per-provider chat counts for this month in parallel
+  const [
+    { data: rows, error: keysError },
+    ...countResults
+  ] = await Promise.all([
+    serviceClient
+      .from('llm_provider_keys')
+      .select('provider, key_preview, is_valid, last_verified_at')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false }),
+    ...providers.map((p) =>
+      serviceClient
+        .from('ai_chats')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('llm_provider', p)
+        .gte('created_at', since)
+    ),
+  ])
+
+  if (keysError) {
+    console.error('[GET /api/developer/llm-keys] keys query error:', keysError.message)
+    return NextResponse.json({ error: 'Failed to load provider keys' }, { status: 500 })
+  }
+
+  const chatCounts = new Map<LLMProvider, number>(
+    providers.map((p, i) => [p, countResults[i].count ?? 0])
+  )
 
   // One record per provider (take most recent if multiple)
   const seen = new Set<string>()
@@ -36,6 +67,7 @@ export async function GET() {
         key_preview: row.key_preview,
         is_valid: row.is_valid,
         last_verified_at: row.last_verified_at,
+        chats_this_month: chatCounts.get(row.provider as LLMProvider) ?? 0,
       })
     }
   }
@@ -49,7 +81,7 @@ export async function GET() {
   for (const { provider, envValue } of envProviders) {
     if (envValue && !seen.has(provider)) {
       seen.add(provider)
-      records.push({ provider, key_preview: null, is_valid: null, last_verified_at: null })
+      records.push({ provider, key_preview: null, is_valid: null, last_verified_at: null, chats_this_month: chatCounts.get(provider) ?? 0 })
     }
   }
 

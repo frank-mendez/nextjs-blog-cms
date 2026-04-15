@@ -72,8 +72,9 @@ export function LLMProvidersManager() {
       const data = await res.json()
       if (!res.ok) { toast.error(data.error ?? 'Failed to save key'); return }
       setKeys((prev) => {
+        const existing = prev.find((k) => k.provider === provider)
         const next = prev.filter((k) => k.provider !== provider)
-        return [...next, { provider, key_preview: data.key_preview, is_valid: data.is_valid, last_verified_at: new Date().toISOString() }]
+        return [...next, { provider, key_preview: data.key_preview, is_valid: data.is_valid, last_verified_at: new Date().toISOString(), chats_this_month: existing?.chats_this_month ?? 0 }]
       })
       toast.success(data.is_valid ? 'Key saved and verified' : 'Key saved (verification failed — check the key)')
       setEditing(null)
@@ -128,51 +129,65 @@ export function LLMProvidersManager() {
             const isDeleting = deleting === provider
 
             return (
-              <div key={provider} className="rounded-lg border border-gray-100 p-4 space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className={`text-sm font-medium ${color}`}>{label}</p>
-                    <p className="text-xs text-muted-foreground">Models: {models}</p>
-                    {note && <p className="text-xs text-muted-foreground italic mt-0.5">{note}</p>}
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
+              <div key={provider} className="rounded-lg border border-gray-100 p-4 space-y-2">
+                {/* Row 1: name + action buttons */}
+                <div className="flex items-center justify-between gap-2">
+                  <p className={`text-sm font-medium ${color}`}>{label}</p>
+                  <div className="flex items-center gap-1 shrink-0">
                     {keyRecord ? (
                       <>
-                        <span className="flex items-center gap-1 text-xs font-mono text-muted-foreground">
-                          {keyRecord.key_preview}
-                        </span>
-                        <Badge
-                          variant={keyRecord.is_valid ? 'default' : keyRecord.is_valid === false ? 'destructive' : 'secondary'}
-                          className="text-[10px]"
-                        >
-                          {keyRecord.is_valid ? (
-                            <><Check className="h-2.5 w-2.5 mr-1" />Connected</>
-                          ) : keyRecord.is_valid === false ? (
-                            <><X className="h-2.5 w-2.5 mr-1" />Invalid</>
-                          ) : (
-                            'Untested'
-                          )}
-                        </Badge>
                         <Button
                           variant="ghost" size="sm"
-                          className="h-6 px-1.5 text-xs"
+                          className="h-7 w-7 p-0"
                           onClick={() => { setEditing(provider); setInputValues((prev) => ({ ...prev, [provider]: '' })) }}
                         >
-                          <Pencil className="h-3 w-3" />
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
                         <Button
                           variant="ghost" size="sm"
-                          className="h-6 px-1.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
+                          className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
                           onClick={() => handleDelete(provider)}
                           disabled={isDeleting}
                         >
-                          {isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                          {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                         </Button>
                       </>
-                    ) : (
-                      <Badge variant="secondary" className="text-[10px]">Not configured</Badge>
-                    )}
+                    ) : null}
                   </div>
+                </div>
+
+                {/* Row 2: models + note */}
+                <p className="text-xs text-muted-foreground">Models: {models}</p>
+                {note && <p className="text-xs text-muted-foreground italic">{note}</p>}
+
+                {/* Row 3: status badge + key preview + usage */}
+                <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                  {keyRecord ? (
+                    <>
+                      <Badge
+                        variant={keyRecord.is_valid ? 'default' : keyRecord.is_valid === false ? 'destructive' : 'secondary'}
+                        className="text-[10px]"
+                      >
+                        {keyRecord.is_valid ? (
+                          <><Check className="h-2.5 w-2.5 mr-1" />Connected</>
+                        ) : keyRecord.is_valid === false ? (
+                          <><X className="h-2.5 w-2.5 mr-1" />Invalid</>
+                        ) : (
+                          'Untested'
+                        )}
+                      </Badge>
+                      {keyRecord.key_preview && (
+                        <span className="text-xs font-mono text-muted-foreground">{keyRecord.key_preview}</span>
+                      )}
+                      {keyRecord.is_valid && (
+                        <span className="text-xs text-muted-foreground">
+                          <span className="font-medium text-gray-700">{keyRecord.chats_this_month}</span> chat{keyRecord.chats_this_month !== 1 ? 's' : ''} this month
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <Badge variant="secondary" className="text-[10px]">Not configured</Badge>
+                  )}
                 </div>
 
                 {(isEditing || !keyRecord) && (

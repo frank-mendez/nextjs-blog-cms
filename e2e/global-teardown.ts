@@ -1,6 +1,6 @@
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
-import { readFileSync, unlinkSync, existsSync } from 'fs'
+import { readFileSync, unlinkSync, existsSync } from 'node:fs'
 
 config({ path: '.env.local' })
 

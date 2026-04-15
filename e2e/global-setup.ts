@@ -1,7 +1,7 @@
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
-import { writeFileSync } from 'fs'
-import crypto from 'crypto'
+import { writeFileSync } from 'node:fs'
+import crypto from 'node:crypto'
 
 config({ path: '.env.local' })
 
@@ -32,7 +32,7 @@ export default async function globalSetup() {
   } else {
     const { data, error } = await supabase.auth.admin.createUser({
       email: E2E_EMAIL,
-      password: 'E2eTestPassword123!',
+      password: process.env.E2E_TEST_PASSWORD ?? 'E2eTestPassword123!', // NOSONAR — throwaway credential for local-only e2e test user
       email_confirm: true,
     })
     if (error || !data.user) throw new Error(`Failed to create test user: ${error?.message}`)

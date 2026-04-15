@@ -20,29 +20,41 @@ export async function GET() {
 
   const serviceClient = createServiceClient()
 
-  // Fetch keys and this-month usage counts in parallel
   const startOfMonth = new Date()
   startOfMonth.setUTCDate(1)
   startOfMonth.setUTCHours(0, 0, 0, 0)
+  const since = startOfMonth.toISOString()
 
-  const [{ data: rows }, { data: usageRows }] = await Promise.all([
+  const providers: LLMProvider[] = ['claude', 'gemini', 'openai']
+
+  // Fetch keys + per-provider chat counts for this month in parallel
+  const [
+    { data: rows, error: keysError },
+    ...countResults
+  ] = await Promise.all([
     serviceClient
       .from('llm_provider_keys')
       .select('provider, key_preview, is_valid, last_verified_at')
       .eq('user_id', user.id)
       .order('updated_at', { ascending: false }),
-    serviceClient
-      .from('ai_chats')
-      .select('llm_provider')
-      .eq('user_id', user.id)
-      .gte('created_at', startOfMonth.toISOString()),
+    ...providers.map((p) =>
+      serviceClient
+        .from('ai_chats')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('llm_provider', p)
+        .gte('created_at', since)
+    ),
   ])
 
-  // Count chats per provider for this month
-  const usageCounts = new Map<string, number>()
-  for (const row of (usageRows ?? [])) {
-    usageCounts.set(row.llm_provider, (usageCounts.get(row.llm_provider) ?? 0) + 1)
+  if (keysError) {
+    console.error('[GET /api/developer/llm-keys] keys query error:', keysError.message)
+    return NextResponse.json({ error: 'Failed to load provider keys' }, { status: 500 })
   }
+
+  const chatCounts = new Map<LLMProvider, number>(
+    providers.map((p, i) => [p, countResults[i].count ?? 0])
+  )
 
   // One record per provider (take most recent if multiple)
   const seen = new Set<string>()
@@ -55,7 +67,7 @@ export async function GET() {
         key_preview: row.key_preview,
         is_valid: row.is_valid,
         last_verified_at: row.last_verified_at,
-        requests_this_month: usageCounts.get(row.provider) ?? 0,
+        chats_this_month: chatCounts.get(row.provider as LLMProvider) ?? 0,
       })
     }
   }
@@ -69,7 +81,7 @@ export async function GET() {
   for (const { provider, envValue } of envProviders) {
     if (envValue && !seen.has(provider)) {
       seen.add(provider)
-      records.push({ provider, key_preview: null, is_valid: null, last_verified_at: null, requests_this_month: usageCounts.get(provider) ?? 0 })
+      records.push({ provider, key_preview: null, is_valid: null, last_verified_at: null, chats_this_month: chatCounts.get(provider) ?? 0 })
     }
   }
 

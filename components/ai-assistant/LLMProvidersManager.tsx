@@ -74,7 +74,7 @@ export function LLMProvidersManager() {
       setKeys((prev) => {
         const existing = prev.find((k) => k.provider === provider)
         const next = prev.filter((k) => k.provider !== provider)
-        return [...next, { provider, key_preview: data.key_preview, is_valid: data.is_valid, last_verified_at: new Date().toISOString(), requests_this_month: existing?.requests_this_month ?? 0 }]
+        return [...next, { provider, key_preview: data.key_preview, is_valid: data.is_valid, last_verified_at: new Date().toISOString(), chats_this_month: existing?.chats_this_month ?? 0 }]
       })
       toast.success(data.is_valid ? 'Key saved and verified' : 'Key saved (verification failed — check the key)')
       setEditing(null)
@@ -181,7 +181,7 @@ export function LLMProvidersManager() {
                       )}
                       {keyRecord.is_valid && (
                         <span className="text-xs text-muted-foreground">
-                          <span className="font-medium text-gray-700">{keyRecord.requests_this_month}</span> request{keyRecord.requests_this_month !== 1 ? 's' : ''} this month
+                          <span className="font-medium text-gray-700">{keyRecord.chats_this_month}</span> chat{keyRecord.chats_this_month !== 1 ? 's' : ''} this month
                         </span>
                       )}
                     </>

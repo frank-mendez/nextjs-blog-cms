@@ -132,12 +132,38 @@ describe('POST /api/webhooks/user-confirmed', () => {
     expect(mockSendAdminEmail).toHaveBeenCalled()
   })
 
+  it('returns 400 when webhook event type is not UPDATE', async () => {
+    const req = makeRequest({ ...validPayload, type: 'INSERT' }, WEBHOOK_SECRET)
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+    const json = await res.json()
+    expect(json.error).toBe('Invalid webhook event')
+  })
+
+  it('returns 400 when webhook table is not profiles', async () => {
+    const req = makeRequest({ ...validPayload, table: 'posts' }, WEBHOOK_SECRET)
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+    const json = await res.json()
+    expect(json.error).toBe('Invalid webhook event')
+  })
+
   it('returns 400 when record is missing from payload', async () => {
     const req = makeRequest({ type: 'UPDATE', table: 'profiles' }, WEBHOOK_SECRET)
     const res = await POST(req)
     expect(res.status).toBe(400)
     const json = await res.json()
     expect(json.error).toBe('Invalid payload')
+  })
+
+  it('returns 200 with skipped:true when old_record is null', async () => {
+    const req = makeRequest({ ...validPayload, old_record: null }, WEBHOOK_SECRET)
+    const res = await POST(req)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.skipped).toBe(true)
+    expect(mockSendAdminEmail).not.toHaveBeenCalled()
+    expect(mockSendSlackNotification).not.toHaveBeenCalled()
   })
 
   it('returns 500 when WEBHOOK_SECRET env var is not configured', async () => {

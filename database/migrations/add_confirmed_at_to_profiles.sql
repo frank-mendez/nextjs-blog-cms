@@ -27,7 +27,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth;
 
 -- 4. Create trigger on auth.users UPDATE
 DROP TRIGGER IF EXISTS on_auth_user_confirmed ON auth.users;

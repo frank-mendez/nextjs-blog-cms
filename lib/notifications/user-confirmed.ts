@@ -54,12 +54,19 @@ export async function sendSlackNotification(profile: NotificationProfile): Promi
   if (!webhookUrl) throw new Error('SLACK_WEBHOOK_URL is not configured')
 
   const displayName = profile.full_name ?? profile.email
+  const message = `New user confirmed: ${displayName} (${profile.email}) — ID: ${profile.id} — Confirmed at: ${profile.confirmed_at ?? 'N/A'}`
 
   const response = await fetch(webhookUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      text: `New user confirmed: *${displayName}* (${profile.email}) — ID: \`${profile.id}\``,
+      text: 'New user confirmed',
+      blocks: [
+        {
+          type: 'section',
+          text: { type: 'plain_text', text: message },
+        },
+      ],
     }),
   })
 

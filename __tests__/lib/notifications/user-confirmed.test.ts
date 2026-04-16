@@ -94,16 +94,18 @@ describe('sendSlackNotification', () => {
       })
     )
     const body = JSON.parse(mockFetch.mock.calls[0][1].body)
-    expect(body.text).toContain('Jane Doe')
-    expect(body.text).toContain('jane@example.com')
+    const blockText = body.blocks[0].text.text
+    expect(blockText).toContain('Jane Doe')
+    expect(blockText).toContain('jane@example.com')
   })
 
   it('uses email as display name when full_name is null', async () => {
     mockFetch.mockResolvedValue({ ok: true })
     await sendSlackNotification({ ...profile, full_name: null })
     const body = JSON.parse(mockFetch.mock.calls[0][1].body)
-    expect(body.text).toContain('jane@example.com')
-    expect(body.text).not.toContain('null')
+    const blockText = body.blocks[0].text.text
+    expect(blockText).toContain('jane@example.com')
+    expect(blockText).not.toContain('null')
   })
 
   it('throws when Slack returns a non-OK response', async () => {

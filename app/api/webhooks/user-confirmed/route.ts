@@ -43,6 +43,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
+  if (body?.type !== 'UPDATE' || body?.table !== 'profiles') {
+    return NextResponse.json({ error: 'Invalid webhook event' }, { status: 400 })
+  }
+
   if (!body?.record?.id || !body.record.email) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
   }
@@ -53,8 +57,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing confirmed_at' }, { status: 400 })
   }
 
-  // Only notify on first confirmation (old_record.confirmed_at was null)
-  if (body.old_record?.confirmed_at != null) {
+  // Skip if old_record is absent or already had confirmed_at set (prevents duplicate notifications)
+  if (body.old_record == null || body.old_record.confirmed_at !== null) {
     return NextResponse.json({ success: true, skipped: true })
   }
 

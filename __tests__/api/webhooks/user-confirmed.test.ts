@@ -131,4 +131,21 @@ describe('POST /api/webhooks/user-confirmed', () => {
     await POST(req)
     expect(mockSendAdminEmail).toHaveBeenCalled()
   })
+
+  it('returns 400 when record is missing from payload', async () => {
+    const req = makeRequest({ type: 'UPDATE', table: 'profiles' }, WEBHOOK_SECRET)
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+    const json = await res.json()
+    expect(json.error).toBe('Invalid payload')
+  })
+
+  it('returns 500 when WEBHOOK_SECRET env var is not configured', async () => {
+    vi.stubEnv('WEBHOOK_SECRET', '')
+    const req = makeRequest(validPayload, WEBHOOK_SECRET)
+    const res = await POST(req)
+    expect(res.status).toBe(500)
+    const json = await res.json()
+    expect(json.error).toBe('Server misconfiguration')
+  })
 })

@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendAdminEmail, sendSlackNotification } from '@/lib/notifications/user-confirmed'
 
@@ -12,9 +13,23 @@ interface WebhookPayload {
   }
 }
 
+function secureCompare(a: string, b: string): boolean {
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  if (bufA.length !== bufB.length) return false
+  return timingSafeEqual(bufA, bufB)
+}
+
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-webhook-secret')
-  if (!secret || secret !== process.env.WEBHOOK_SECRET) {
+  const envSecret = process.env.WEBHOOK_SECRET
+
+  if (!envSecret) {
+    console.error('[webhook] WEBHOOK_SECRET is not configured')
+    return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
+  }
+
+  if (!secret || !secureCompare(secret, envSecret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -23,6 +38,10 @@ export async function POST(req: NextRequest) {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
+  if (!body?.record?.id || !body.record.email) {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
   }
 
   const { id, email, full_name, confirmed_at } = body.record

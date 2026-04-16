@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-interface NotificationProfile {
+export interface NotificationProfile {
   id: string
   email: string
   full_name: string | null
@@ -28,11 +28,15 @@ export async function sendAdminEmail(profile: NotificationProfile): Promise<void
 export async function sendSlackNotification(profile: NotificationProfile): Promise<void> {
   const displayName = profile.full_name ?? profile.email
 
-  await fetch(process.env.SLACK_WEBHOOK_URL!, {
+  const response = await fetch(process.env.SLACK_WEBHOOK_URL!, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       text: `New user confirmed: *${displayName}* (${profile.email}) — ID: \`${profile.id}\``,
     }),
   })
+
+  if (!response.ok) {
+    throw new Error(`Slack webhook failed: ${response.status} ${response.statusText}`)
+  }
 }

@@ -82,4 +82,9 @@ describe('sendSlackNotification', () => {
     expect(body.text).toContain('jane@example.com')
     expect(body.text).not.toContain('null')
   })
+
+  it('throws when Slack returns a non-OK response', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 429, statusText: 'Too Many Requests' })
+    await expect(sendSlackNotification(profile)).rejects.toThrow('429')
+  })
 })

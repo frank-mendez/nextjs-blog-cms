@@ -13,7 +13,7 @@ const mockSendSlackNotification = vi.mocked(sendSlackNotification)
 
 const WEBHOOK_SECRET = 'test-secret-value'
 
-function makeRequest(body: unknown, secret?: string): Request {
+function makeRequest(body: unknown, secret?: string): import('next/server').NextRequest {
   return new Request('http://localhost/api/webhooks/user-confirmed', {
     method: 'POST',
     headers: {
@@ -21,7 +21,7 @@ function makeRequest(body: unknown, secret?: string): Request {
       ...(secret !== undefined ? { 'x-webhook-secret': secret } : {}),
     },
     body: JSON.stringify(body),
-  })
+  }) as unknown as import('next/server').NextRequest
 }
 
 const validPayload = {
@@ -66,7 +66,7 @@ describe('POST /api/webhooks/user-confirmed', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-webhook-secret': WEBHOOK_SECRET },
       body: 'not-json',
-    })
+    }) as unknown as import('next/server').NextRequest
     const res = await POST(req)
     expect(res.status).toBe(400)
     const json = await res.json()

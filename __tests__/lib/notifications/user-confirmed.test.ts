@@ -49,6 +49,15 @@ describe('sendAdminEmail', () => {
     expect(call.html).not.toContain('<script>')
   })
 
+  it('strips CR/LF and control characters from email subject', async () => {
+    mockSend.mockResolvedValue({ id: 'email-id' })
+    await sendAdminEmail({ ...profile, full_name: 'Hacker\r\nBcc: evil@evil.com' })
+    const call = mockSend.mock.calls[0][0]
+    expect(call.subject).not.toContain('\r')
+    expect(call.subject).not.toContain('\n')
+    expect(call.subject).toContain('HackerBcc: evil@evil.com')
+  })
+
   it('throws when ADMIN_EMAIL is not configured', async () => {
     vi.stubEnv('ADMIN_EMAIL', '')
     await expect(sendAdminEmail(profile)).rejects.toThrow('ADMIN_EMAIL is not configured')

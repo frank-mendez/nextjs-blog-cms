@@ -15,6 +15,11 @@ function escapeHtml(str: string): string {
     .replace(/"/g, '&quot;')
 }
 
+function sanitizeSubject(str: string): string {
+  // Strip CR, LF, and other control characters to prevent header injection
+  return str.replace(/[\r\n\x00-\x1F\x7F]/g, '')
+}
+
 export async function sendAdminEmail(profile: NotificationProfile): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY
   const fromEmail = process.env.RESEND_FROM_EMAIL
@@ -33,7 +38,7 @@ export async function sendAdminEmail(profile: NotificationProfile): Promise<void
   await resend.emails.send({
     from: fromEmail,
     to: adminEmail,
-    subject: `New user registered: ${profile.full_name ?? profile.email}`,
+    subject: `New user registered: ${sanitizeSubject(profile.full_name ?? profile.email)}`,
     html: `
       <h2>New user registered</h2>
       <p><strong>Name:</strong> ${displayName}</p>

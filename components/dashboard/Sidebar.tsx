@@ -9,7 +9,6 @@ import {
 import { cn } from '@/lib/utils'
 import { can } from '@/lib/permissions'
 import type { Role } from '@/lib/permissions'
-import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/supabase/types'
 
 interface SidebarProps {
@@ -18,7 +17,6 @@ interface SidebarProps {
 
 export function Sidebar({ profile }: SidebarProps) {
   const pathname = usePathname()
-  const supabase = createClient()
   const role = profile.role as Role
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -30,11 +28,8 @@ export function Sidebar({ profile }: SidebarProps) {
 
   function handleLogout() {
     startTransition(async () => {
-      try {
-        await supabase.auth.signOut()
-      } finally {
-        globalThis.location.href = '/login'
-      }
+      await fetch('/api/auth/signout', { method: 'POST' })
+      globalThis.location.href = '/login'
     })
   }
 

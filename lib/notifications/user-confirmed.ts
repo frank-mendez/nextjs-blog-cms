@@ -7,8 +7,6 @@ export interface NotificationProfile {
   confirmed_at: string | null
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -18,10 +16,14 @@ function escapeHtml(str: string): string {
 }
 
 export async function sendAdminEmail(profile: NotificationProfile): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY
   const fromEmail = process.env.RESEND_FROM_EMAIL
   const adminEmail = process.env.ADMIN_EMAIL
+  if (!apiKey) throw new Error('RESEND_API_KEY is not configured')
   if (!fromEmail) throw new Error('RESEND_FROM_EMAIL is not configured')
   if (!adminEmail) throw new Error('ADMIN_EMAIL is not configured')
+
+  const resend = new Resend(apiKey)
 
   const displayName = escapeHtml(profile.full_name ?? profile.email)
   const email = escapeHtml(profile.email)

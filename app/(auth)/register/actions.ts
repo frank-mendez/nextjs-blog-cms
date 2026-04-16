@@ -16,11 +16,13 @@ export async function register(formData: FormData) {
     },
   }
 
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/+$/, '')
+
   const { data: authData, error } = await supabase.auth.signUp({
     ...data,
     options: {
       ...data.options,
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blog.frankmendez.site'}/auth/callback`,
+      emailRedirectTo: new URL('/auth/callback', baseUrl).toString(),
     },
   })
 

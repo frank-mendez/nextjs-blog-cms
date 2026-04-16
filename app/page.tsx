@@ -100,7 +100,7 @@ export default async function Home({
 }) {
   const params = await searchParams
   if (params.code) {
-    redirect(`/auth/callback?code=${params.code}`)
+    redirect(`/auth/callback?code=${encodeURIComponent(params.code)}`)
   }
   return <HomeContent />
 }

@@ -148,4 +148,20 @@ describe('POST /api/webhooks/user-confirmed', () => {
     const json = await res.json()
     expect(json.error).toBe('Server misconfiguration')
   })
+
+  it('returns 200 with skipped:true when old_record already had confirmed_at set', async () => {
+    const req = makeRequest(
+      {
+        ...validPayload,
+        old_record: { ...validPayload.old_record, confirmed_at: '2026-01-01T00:00:00Z' },
+      },
+      WEBHOOK_SECRET
+    )
+    const res = await POST(req)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.skipped).toBe(true)
+    expect(mockSendAdminEmail).not.toHaveBeenCalled()
+    expect(mockSendSlackNotification).not.toHaveBeenCalled()
+  })
 })

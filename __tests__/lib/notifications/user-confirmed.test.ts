@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mockSend = vi.fn()
+const { mockSend } = vi.hoisted(() => ({ mockSend: vi.fn() }))
 
 vi.mock('resend', () => ({
   Resend: vi.fn().mockImplementation(function() {
@@ -34,10 +34,24 @@ describe('sendAdminEmail', () => {
     await sendAdminEmail(profile)
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({
+        from: 'noreply@example.com',
         to: 'admin@example.com',
         subject: 'New user registered: Jane Doe',
       })
     )
+  })
+
+  it('escapes HTML special characters in the email body', async () => {
+    mockSend.mockResolvedValue({ id: 'email-id' })
+    await sendAdminEmail({ ...profile, full_name: '<script>alert(1)</script>' })
+    const call = mockSend.mock.calls[0][0]
+    expect(call.html).toContain('&lt;script&gt;')
+    expect(call.html).not.toContain('<script>')
+  })
+
+  it('throws when ADMIN_EMAIL is not configured', async () => {
+    vi.stubEnv('ADMIN_EMAIL', '')
+    await expect(sendAdminEmail(profile)).rejects.toThrow('ADMIN_EMAIL is not configured')
   })
 
   it('uses email as display name when full_name is null', async () => {
@@ -86,5 +100,10 @@ describe('sendSlackNotification', () => {
   it('throws when Slack returns a non-OK response', async () => {
     mockFetch.mockResolvedValue({ ok: false, status: 429, statusText: 'Too Many Requests' })
     await expect(sendSlackNotification(profile)).rejects.toThrow('429')
+  })
+
+  it('throws when SLACK_WEBHOOK_URL is not configured', async () => {
+    vi.stubEnv('SLACK_WEBHOOK_URL', '')
+    await expect(sendSlackNotification(profile)).rejects.toThrow('SLACK_WEBHOOK_URL is not configured')
   })
 })

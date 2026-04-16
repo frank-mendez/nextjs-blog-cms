@@ -7,28 +7,48 @@ export interface NotificationProfile {
   confirmed_at: string | null
 }
 
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 export async function sendAdminEmail(profile: NotificationProfile): Promise<void> {
-  const resend = new Resend(process.env.RESEND_API_KEY)
-  const displayName = profile.full_name ?? profile.email
+  const fromEmail = process.env.RESEND_FROM_EMAIL
+  const adminEmail = process.env.ADMIN_EMAIL
+  if (!fromEmail) throw new Error('RESEND_FROM_EMAIL is not configured')
+  if (!adminEmail) throw new Error('ADMIN_EMAIL is not configured')
+
+  const displayName = escapeHtml(profile.full_name ?? profile.email)
+  const email = escapeHtml(profile.email)
+  const id = escapeHtml(profile.id)
+  const confirmedAt = escapeHtml(profile.confirmed_at ?? '')
 
   await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL!,
-    to: process.env.ADMIN_EMAIL!,
-    subject: `New user registered: ${displayName}`,
+    from: fromEmail,
+    to: adminEmail,
+    subject: `New user registered: ${profile.full_name ?? profile.email}`,
     html: `
       <h2>New user registered</h2>
       <p><strong>Name:</strong> ${displayName}</p>
-      <p><strong>Email:</strong> ${profile.email}</p>
-      <p><strong>User ID:</strong> ${profile.id}</p>
-      <p><strong>Confirmed at:</strong> ${profile.confirmed_at}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>User ID:</strong> ${id}</p>
+      <p><strong>Confirmed at:</strong> ${confirmedAt}</p>
     `,
   })
 }
 
 export async function sendSlackNotification(profile: NotificationProfile): Promise<void> {
+  const webhookUrl = process.env.SLACK_WEBHOOK_URL
+  if (!webhookUrl) throw new Error('SLACK_WEBHOOK_URL is not configured')
+
   const displayName = profile.full_name ?? profile.email
 
-  const response = await fetch(process.env.SLACK_WEBHOOK_URL!, {
+  const response = await fetch(webhookUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

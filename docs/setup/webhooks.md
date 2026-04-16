@@ -27,9 +27,9 @@ This webhook fires when a user confirms their email and triggers admin notificat
 
 5. Click **Confirm** to save.
 
-### Optional: filter to reduce noise
+### Required: add confirmed_at filter
 
-To avoid triggering the webhook on every profile update (e.g. role changes), add a filter condition:
+Without this filter, the webhook fires on every profile update (role changes, name updates, etc.), causing duplicate notifications. Add this filter condition:
 
 - **Column:** `confirmed_at`
 - **Operator:** `is not`

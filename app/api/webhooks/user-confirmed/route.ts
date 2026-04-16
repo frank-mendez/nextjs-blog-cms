@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
-import { sendAdminEmail, sendSlackNotification } from '@/lib/notifications/user-confirmed'
+import { sendAdminEmail, sendSlackNotification, type NotificationProfile } from '@/lib/notifications/user-confirmed'
 
 interface WebhookPayload {
   type: string
@@ -11,6 +11,9 @@ interface WebhookPayload {
     full_name: string | null
     confirmed_at: string | null
   }
+  old_record: {
+    confirmed_at: string | null
+  } | null
 }
 
 function secureCompare(a: string, b: string): boolean {
@@ -50,7 +53,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing confirmed_at' }, { status: 400 })
   }
 
-  const profile = { id, email, full_name, confirmed_at }
+  // Only notify on first confirmation (old_record.confirmed_at was null)
+  if (body.old_record?.confirmed_at != null) {
+    return NextResponse.json({ success: true, skipped: true })
+  }
+
+  const profile: NotificationProfile = { id, email, full_name, confirmed_at }
 
   await Promise.all([
     sendAdminEmail(profile).catch((err) =>

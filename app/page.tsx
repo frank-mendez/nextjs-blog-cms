@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Press_Start_2P, VT323 } from 'next/font/google'
 import styles from './page.module.css'
@@ -92,7 +93,19 @@ const floatingBlocks: Array<{
   { color: '#C01010', shadow: '#600808', top: '45%', right: '15%', dur: '10s', delay: '-4s', size: '24px' },
 ]
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string }>
+}) {
+  const params = await searchParams
+  if (params.code) {
+    redirect(`/auth/callback?code=${encodeURIComponent(params.code)}`)
+  }
+  return <HomeContent />
+}
+
+function HomeContent() {
   return (
     <div
       className={`${s('root')} ${pressStart2P.variable} ${vt323.variable}`}

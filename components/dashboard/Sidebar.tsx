@@ -28,8 +28,11 @@ export function Sidebar({ profile }: SidebarProps) {
 
   function handleLogout() {
     startTransition(async () => {
-      await fetch('/api/auth/signout', { method: 'POST' })
-      globalThis.location.href = '/login'
+      try {
+        await fetch('/api/auth/signout', { method: 'POST' })
+      } finally {
+        globalThis.location.href = '/login'
+      }
     })
   }
 

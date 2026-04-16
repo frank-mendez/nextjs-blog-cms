@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirm Your Signup – The Practical Engineer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: #1a1a2e;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #e8e8e8;
+      padding: 40px 16px;
+    }
+
+    .wrapper {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ── Pixel top border ── */
+    .pixel-border-top {
+      height: 8px;
+      background: repeating-linear-gradient(
+        to right,
+        #5D9E1F 0px, #5D9E1F 8px,
+        #8B6340 8px, #8B6340 16px,
+        #5DECF5 16px, #5DECF5 24px,
+        #FCBA03 24px, #FCBA03 32px,
+        #17DD62 32px, #17DD62 40px,
+        #C040FF 40px, #C040FF 48px
+      );
+      image-rendering: pixelated;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #0d0d1a;
+      border: 3px solid #2a2a4a;
+      border-top: none;
+      padding: 40px 36px 36px;
+    }
+
+    /* ── Header ── */
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .grass-block {
+      width: 32px;
+      height: 32px;
+      background: #5D9E1F;
+      box-shadow: inset -4px -4px 0 #2D5A0A, inset 4px 4px 0 rgba(255,255,255,0.2);
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: 'VT323', 'Courier New', monospace;
+      font-size: 18px;
+      letter-spacing: 2px;
+      color: #5DECF5;
+      text-transform: uppercase;
+    }
+
+    /* ── Hero block ── */
+    .hero-block {
+      background: #111128;
+      border: 2px solid #2a2a4a;
+      border-left: 4px solid #5DECF5;
+      padding: 24px 24px 20px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      font-family: 'VT323', 'Courier New', monospace;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: #5DECF5;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .headline {
+      font-family: 'VT323', 'Courier New', monospace;
+      font-size: 32px;
+      color: #ffffff;
+      line-height: 1.1;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .headline span {
+      color: #5D9E1F;
+    }
+
+    .sub {
+      font-size: 14px;
+      color: #9494b8;
+      line-height: 1.6;
+    }
+
+    /* ── CTA button ── */
+    .cta-wrap {
+      text-align: center;
+      margin: 32px 0 28px;
+    }
+
+    .cta-btn {
+      display: inline-block;
+      background: #5D9E1F;
+      color: #ffffff !important;
+      font-family: 'VT323', 'Courier New', monospace;
+      font-size: 20px;
+      letter-spacing: 2px;
+      text-decoration: none;
+      padding: 14px 36px;
+      text-transform: uppercase;
+      box-shadow: inset -4px -4px 0 #2D5A0A, inset 4px 4px 0 rgba(255,255,255,0.2);
+      border: none;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 2px;
+      background: repeating-linear-gradient(
+        to right,
+        #2a2a4a 0px, #2a2a4a 6px,
+        transparent 6px, transparent 10px
+      );
+      margin: 24px 0;
+    }
+
+    /* ── Info row ── */
+    .info-row {
+      background: #111128;
+      border: 1px solid #2a2a4a;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .info-icon {
+      width: 20px;
+      height: 20px;
+      background: #FCBA03;
+      box-shadow: inset -3px -3px 0 #7A5800, inset 3px 3px 0 rgba(255,255,255,0.2);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .info-text {
+      font-size: 13px;
+      color: #9494b8;
+      line-height: 1.5;
+    }
+
+    .info-text strong {
+      color: #e8e8e8;
+    }
+
+    /* ── Fallback link ── */
+    .fallback {
+      font-size: 12px;
+      color: #6060a0;
+      text-align: center;
+      line-height: 1.6;
+      margin-top: 16px;
+    }
+
+    .fallback a {
+      color: #5DECF5;
+      word-break: break-all;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #2a2a4a;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-family: 'VT323', 'Courier New', monospace;
+      font-size: 14px;
+      letter-spacing: 2px;
+      color: #5DECF5;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .footer-note {
+      font-size: 11px;
+      color: #4a4a6a;
+      line-height: 1.5;
+    }
+
+    .footer-note a {
+      color: #6060a0;
+    }
+
+    /* ── Pixel bottom border ── */
+    .pixel-border-bottom {
+      height: 8px;
+      background: repeating-linear-gradient(
+        to right,
+        #C040FF 0px, #C040FF 8px,
+        #17DD62 8px, #17DD62 16px,
+        #FCBA03 16px, #FCBA03 24px,
+        #5DECF5 24px, #5DECF5 32px,
+        #8B6340 32px, #8B6340 40px,
+        #5D9E1F 40px, #5D9E1F 48px
+      );
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="pixel-border-top"></div>
+
+    <div class="card">
+      <!-- Logo -->
+      <div class="logo-row">
+        <div class="grass-block"></div>
+        <span class="logo-text">The Practical Engineer</span>
+      </div>
+
+      <!-- Hero -->
+      <div class="hero-block">
+        <p class="eyebrow">▶ Incoming Transmission</p>
+        <h1 class="headline">CONFIRM YOUR<br /><span>ACCOUNT</span></h1>
+        <p class="sub">
+          You're one click away from accessing in-depth technical writing
+          for engineers who care about craft.
+        </p>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-wrap">
+        <a href="{{ .ConfirmationURL }}" class="cta-btn">▶ Confirm My Email</a>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Info rows -->
+      <div class="info-row">
+        <div class="info-icon"></div>
+        <p class="info-text">
+          <strong>Link expires in 24 hours.</strong>
+          If you didn't create an account, you can safely ignore this email.
+        </p>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon"></div>
+        <p class="info-text">
+          <strong>Button not working?</strong>
+          Copy and paste the link below into your browser.
+        </p>
+      </div>
+
+      <p class="fallback">
+        <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="card" style="border-top: 1px solid #2a2a4a; padding: 20px 36px;">
+      <div class="footer">
+        <p class="footer-logo">▪ The Practical Engineer ▪</p>
+        <p class="footer-note">
+          You received this email because you signed up at
+          <a href="https://blog.frankmendez.site">blog.frankmendez.site</a>.<br />
+          © 2026 The Practical Engineer. All rights reserved.
+        </p>
+      </div>
+    </div>
+
+    <div class="pixel-border-bottom"></div>
+  </div>
+</body>
+</html>

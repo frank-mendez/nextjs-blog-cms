@@ -16,7 +16,13 @@ export async function register(formData: FormData) {
     },
   }
 
-  const { data: authData, error } = await supabase.auth.signUp(data)
+  const { data: authData, error } = await supabase.auth.signUp({
+    ...data,
+    options: {
+      ...data.options,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blog.frankmendez.site'}/auth/callback`,
+    },
+  })
 
   if (error) {
     return { error: error.message }

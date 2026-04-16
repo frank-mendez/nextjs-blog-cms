@@ -7,19 +7,8 @@ interface NotificationProfile {
   confirmed_at: string | null
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createResend(apiKey: string | undefined): InstanceType<typeof Resend> {
-  // Use Function.prototype.call to avoid triggering new.target in test environments
-  // where the mock implementation may be an arrow function (not valid with Reflect.construct)
-  try {
-    return new Resend(apiKey)
-  } catch {
-    return (Resend as unknown as (...args: unknown[]) => InstanceType<typeof Resend>)(apiKey)
-  }
-}
-
 export async function sendAdminEmail(profile: NotificationProfile): Promise<void> {
-  const resend = createResend(process.env.RESEND_API_KEY)
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const displayName = profile.full_name ?? profile.email
 
   await resend.emails.send({

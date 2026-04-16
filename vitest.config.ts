@@ -24,6 +24,8 @@ export default defineConfig({
         'lib/encryption.ts',
         'lib/api/auth.ts',
         'lib/auth/session.ts',
+        // notifications
+        'lib/notifications/user-confirmed.ts',
         // features
         'features/posts/components/**/*.{ts,tsx}',
         'features/comments/components/CommentCard.tsx',
@@ -44,6 +46,8 @@ export default defineConfig({
         'app/api/ai-assistant/generate/route.ts',
         'app/api/ai-assistant/books/route.ts',
         'app/api/ai-assistant/chats/route.ts',
+        // webhook routes
+        'app/api/webhooks/user-confirmed/route.ts',
         // app logic
         'app/robots.ts',
       ],

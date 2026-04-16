@@ -24,6 +24,15 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
+Notification feature (required for email confirmation alerts):
+```
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
+ADMIN_EMAIL=
+SLACK_WEBHOOK_URL=
+WEBHOOK_SECRET=
+```
+
 ## Database Setup
 
 1. Run `database/schema.sql` in Supabase SQL editor

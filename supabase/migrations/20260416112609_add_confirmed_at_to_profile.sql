@@ -1,0 +1,7 @@
+-- No-op placeholder: canonical migration lives at
+-- database/migrations/add_confirmed_at_to_profiles.sql
+-- ============================================================
+--
+-- This file intentionally contains no executable SQL to avoid
+-- maintaining and potentially applying the same migration twice.
+-- Use the canonical migration above as the single source of truth.

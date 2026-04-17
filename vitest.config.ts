@@ -50,10 +50,9 @@ export default defineConfig({
         'app/api/webhooks/user-confirmed/route.ts',
         // app logic
         'app/robots.ts',
-        // profile feature — server actions and forms with full branch coverage
+        // profile feature
         'features/profile/actions.ts',
-        'features/profile/components/GeneralInfoForm.tsx',
-        'features/profile/components/ChangePasswordForm.tsx',
+        'features/profile/components/**/*.{ts,tsx}',
       ],
       thresholds: {
         lines: 80,

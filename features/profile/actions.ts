@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/lib/auth/session'
 import type { ProfileFormData, SocialLinksFormData } from './types'
@@ -81,7 +82,8 @@ export async function deleteAvatar() {
 
   // List all files under the user's folder and remove them all.
   // This handles any extension (jpg/png/gif) without fragile URL parsing.
-  const { data: listed } = await supabase.storage.from('avatars').list(profile.id)
+  const { data: listed, error: listError } = await supabase.storage.from('avatars').list(profile.id)
+  if (listError) return { error: listError.message }
   if (listed && listed.length > 0) {
     const paths = listed.map((f) => `${profile.id}/${f.name}`)
     const { error: removeError } = await supabase.storage.from('avatars').remove(paths)
@@ -103,15 +105,26 @@ export async function updatePassword(currentPassword: string, newPassword: strin
   const profile = await getProfile()
   if (!profile) return { error: 'Unauthorized' }
 
-  const supabase = await createClient()
-
-  // Verify the current password by attempting re-authentication
-  const { error: signInError } = await supabase.auth.signInWithPassword({
+  // Use a stateless client (no cookie writes) to verify the current password
+  // so re-authentication does not mutate the caller's session cookies.
+  const anonClient = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+  const { error: signInError } = await anonClient.auth.signInWithPassword({
     email: profile.email,
     password: currentPassword,
   })
-  if (signInError) return { error: 'Current password is incorrect' }
+  if (signInError) {
+    // Distinguish credential failures from infrastructure/rate-limit errors
+    if (signInError.message.toLowerCase().includes('invalid login credentials')) {
+      return { error: 'Current password is incorrect' }
+    }
+    return { error: signInError.message }
+  }
 
+  const supabase = await createClient()
   const { error } = await supabase.auth.updateUser({ password: newPassword })
   if (error) return { error: error.message }
 

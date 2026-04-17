@@ -57,9 +57,11 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // Enforce MFA for users who have it enrolled
-    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-    if (aal?.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+    // Enforce MFA for users who have it enrolled.
+    // Fail-closed: if the AAL lookup fails, redirect to /mfa rather than
+    // allowing the request through without MFA verification.
+    const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aalError || (aal?.nextLevel === 'aal2' && aal.currentLevel !== 'aal2')) {
       const url = request.nextUrl.clone()
       url.pathname = '/mfa'
       return NextResponse.redirect(url)

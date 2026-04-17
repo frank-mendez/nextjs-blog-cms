@@ -4,6 +4,14 @@ vi.mock('@/lib/supabase/server', () => ({ createClient: vi.fn() }))
 vi.mock('@/lib/auth/session', () => ({ getProfile: vi.fn() }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
+// Mock the stateless @supabase/supabase-js client used in updatePassword
+const mockAnonSignIn = vi.fn()
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: vi.fn(() => ({
+    auth: { signInWithPassword: mockAnonSignIn },
+  })),
+}))
+
 import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/lib/auth/session'
 import { updateProfile, updateAvatar, deleteAvatar, updatePassword } from '@/features/profile/actions'
@@ -196,17 +204,23 @@ describe('updatePassword', () => {
     expect(result).toEqual({ error: 'Unauthorized' })
   })
 
-  it('returns error when current password is wrong', async () => {
+  it('returns "Current password is incorrect" for invalid login credentials', async () => {
     mockGetProfile.mockResolvedValue(fakeProfile as any)
-    mockCreateClient.mockResolvedValue(
-      makeSupabase({ authSignInError: { message: 'Invalid credentials' } }) as any
-    )
+    mockAnonSignIn.mockResolvedValue({ error: { message: 'Invalid login credentials' } })
     const result = await updatePassword('wrong', 'newpass')
     expect(result).toEqual({ error: 'Current password is incorrect' })
   })
 
+  it('surfaces non-credential errors as-is', async () => {
+    mockGetProfile.mockResolvedValue(fakeProfile as any)
+    mockAnonSignIn.mockResolvedValue({ error: { message: 'Email rate limit exceeded' } })
+    const result = await updatePassword('any', 'newpass')
+    expect(result).toEqual({ error: 'Email rate limit exceeded' })
+  })
+
   it('returns error when updateUser fails', async () => {
     mockGetProfile.mockResolvedValue(fakeProfile as any)
+    mockAnonSignIn.mockResolvedValue({ error: null })
     mockCreateClient.mockResolvedValue(
       makeSupabase({ authUpdateError: { message: 'Update failed' } }) as any
     )
@@ -216,6 +230,7 @@ describe('updatePassword', () => {
 
   it('returns success on valid password change', async () => {
     mockGetProfile.mockResolvedValue(fakeProfile as any)
+    mockAnonSignIn.mockResolvedValue({ error: null })
     mockCreateClient.mockResolvedValue(makeSupabase() as any)
     const result = await updatePassword('correct', 'newpass123')
     expect(result).toEqual({ success: true })

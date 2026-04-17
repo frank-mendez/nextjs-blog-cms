@@ -94,6 +94,17 @@ export function TwoFactorSetup() {
     }
   }
 
+  async function handleCancelEnroll() {
+    if (enrollFactorId) {
+      await supabase.auth.mfa.unenroll({ factorId: enrollFactorId })
+    }
+    setEnrollFactorId(null)
+    setQrCode(null)
+    setSecret(null)
+    setVerifyCode('')
+    setEnrollOpen(false)
+  }
+
   async function handleDisable() {
     if (!factor) return
     setDisableLoading(true)
@@ -157,17 +168,7 @@ export function TwoFactorSetup() {
       </Card>
 
       {/* Enroll dialog */}
-      <Dialog open={enrollOpen} onOpenChange={async (open) => {
-        if (!open && enrollFactorId) {
-          // User dismissed without verifying — clean up the pending factor
-          await supabase.auth.mfa.unenroll({ factorId: enrollFactorId })
-          setEnrollFactorId(null)
-          setQrCode(null)
-          setSecret(null)
-          setVerifyCode('')
-        }
-        setEnrollOpen(open)
-      }}>
+      <Dialog open={enrollOpen} onOpenChange={(open) => { if (!open) handleCancelEnroll() }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Set up authenticator app</DialogTitle>
@@ -199,7 +200,7 @@ export function TwoFactorSetup() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEnrollOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={handleCancelEnroll}>Cancel</Button>
             <Button onClick={handleVerifyEnroll} disabled={enrollLoading || verifyCode.length !== 6}>
               {enrollLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Verify &amp; Enable

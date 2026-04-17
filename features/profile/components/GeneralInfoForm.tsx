@@ -44,10 +44,21 @@ export function GeneralInfoForm({ profile }: GeneralInfoFormProps) {
     },
   })
 
+  function normalizeOptional(v: string): string | null {
+    return v.trim() === '' ? null : v
+  }
+
   async function onSubmit(values: FormValues) {
     setSaving(true)
     try {
-      const result = await updateProfile(values)
+      const result = await updateProfile({
+        full_name: values.full_name,
+        pronouns: normalizeOptional(values.pronouns),
+        bio: normalizeOptional(values.bio),
+        company: normalizeOptional(values.company),
+        location: normalizeOptional(values.location),
+        website: normalizeOptional(values.website),
+      })
       if (result.error) {
         toast.error(result.error)
       } else {

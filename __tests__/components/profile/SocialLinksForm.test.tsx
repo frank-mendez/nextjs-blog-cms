@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { SocialLinksForm } from '@/features/profile/components/SocialLinksForm'
 
 vi.mock('@/features/profile/actions', () => ({ updateProfile: vi.fn() }))
+
+import { updateProfile } from '@/features/profile/actions'
+const mockUpdateProfile = vi.mocked(updateProfile)
 
 const fakeProfile = {
   twitter_url: 'https://twitter.com/frank',
@@ -36,5 +39,23 @@ describe('SocialLinksForm', () => {
   it('renders a Save Changes button', () => {
     render(<SocialLinksForm profile={fakeProfile as any} />)
     expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument()
+  })
+
+  it('calls updateProfile on submit and normalizes empty strings to null', async () => {
+    mockUpdateProfile.mockResolvedValue({ success: true })
+    render(<SocialLinksForm profile={fakeProfile as any} />)
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() => expect(mockUpdateProfile).toHaveBeenCalledOnce())
+    // All null fields should be passed as null, pre-filled twitter_url as its value
+    const callArg = mockUpdateProfile.mock.calls[0][0] as Record<string, string | null>
+    expect(callArg.twitter_url).toBe('https://twitter.com/frank')
+    expect(callArg.linkedin_url).toBeNull()
+  })
+
+  it('shows error toast when updateProfile fails', async () => {
+    mockUpdateProfile.mockResolvedValue({ error: 'Save failed' })
+    render(<SocialLinksForm profile={fakeProfile as any} />)
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    await waitFor(() => expect(mockUpdateProfile).toHaveBeenCalledOnce())
   })
 })

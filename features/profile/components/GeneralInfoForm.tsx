@@ -46,12 +46,15 @@ export function GeneralInfoForm({ profile }: GeneralInfoFormProps) {
 
   async function onSubmit(values: FormValues) {
     setSaving(true)
-    const result = await updateProfile(values)
-    setSaving(false)
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success('Profile updated')
+    try {
+      const result = await updateProfile(values)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success('Profile updated')
+      }
+    } finally {
+      setSaving(false)
     }
   }
 

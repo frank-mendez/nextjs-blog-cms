@@ -9,10 +9,20 @@ export async function updateProfile(data: Partial<ProfileFormData & SocialLinksF
   const profile = await getProfile()
   if (!profile) return { error: 'Unauthorized' }
 
+  const ALLOWED_PROFILE_KEYS = new Set([
+    'full_name', 'pronouns', 'bio', 'company', 'location', 'website',
+    'twitter_url', 'linkedin_url', 'github_url', 'instagram_url',
+    'facebook_url', 'youtube_url', 'tiktok_url',
+  ])
+
+  const safeData = Object.fromEntries(
+    Object.entries(data).filter(([k]) => ALLOWED_PROFILE_KEYS.has(k))
+  )
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('profiles')
-    .update(data)
+    .update(safeData)
     .eq('id', profile.id)
 
   if (error) return { error: error.message }
@@ -29,7 +39,15 @@ export async function updateAvatar(formData: FormData) {
   if (!file || file.size === 0) return { error: 'No file provided' }
   if (file.size > 2 * 1024 * 1024) return { error: 'File too large (max 2 MB)' }
 
-  const ext = file.name.split('.').pop()
+  const ALLOWED_TYPES: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/gif': 'gif',
+    'image/webp': 'webp',
+  }
+
+  if (!ALLOWED_TYPES[file.type]) return { error: 'Invalid file type. Use JPG, PNG, GIF, or WebP.' }
+  const ext = ALLOWED_TYPES[file.type]
   const path = `${profile.id}/avatar.${ext}`
 
   const supabase = await createClient()
@@ -69,7 +87,8 @@ export async function deleteAvatar() {
   const storagePath = pathParts[1]
 
   if (storagePath) {
-    await supabase.storage.from('avatars').remove([storagePath])
+    const { error: removeError } = await supabase.storage.from('avatars').remove([storagePath])
+    if (removeError) return { error: removeError.message }
   }
 
   const { error } = await supabase

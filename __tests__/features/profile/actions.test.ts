@@ -134,6 +134,14 @@ describe('updateAvatar', () => {
     const result = await updateAvatar(fd)
     expect(result).toEqual({ success: true, avatar_url: 'https://example.com/avatars/user-1/avatar.jpg' })
   })
+
+  it('returns error for invalid file type', async () => {
+    mockGetProfile.mockResolvedValue(fakeProfile as any)
+    const fd = new FormData()
+    fd.set('avatar', new File(['data'], 'photo.exe', { type: 'application/octet-stream' }))
+    const result = await updateAvatar(fd)
+    expect(result).toEqual({ error: 'Invalid file type. Use JPG, PNG, GIF, or WebP.' })
+  })
 })
 
 // ─── deleteAvatar ─────────────────────────────────────────────────────────────
@@ -149,6 +157,17 @@ describe('deleteAvatar', () => {
     mockGetProfile.mockResolvedValue({ ...fakeProfile, avatar_url: null } as any)
     const result = await deleteAvatar()
     expect(result).toEqual({ success: true })
+  })
+
+  it('returns error when storage remove fails', async () => {
+    mockGetProfile.mockResolvedValue({
+      ...fakeProfile,
+      avatar_url: 'https://abc.supabase.co/storage/v1/object/public/avatars/user-1/avatar.jpg',
+    } as any)
+    const supabaseMock = makeSupabase({ removeError: { message: 'Remove failed' } })
+    mockCreateClient.mockResolvedValue(supabaseMock as any)
+    const result = await deleteAvatar()
+    expect(result).toEqual({ error: 'Remove failed' })
   })
 
   it('removes file from storage and clears avatar_url', async () => {

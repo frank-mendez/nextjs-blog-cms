@@ -58,6 +58,7 @@ function makeSupabase({
         upload: vi.fn().mockResolvedValue({ error: uploadError }),
         remove: vi.fn().mockResolvedValue({ error: removeError }),
         getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl } }),
+        list: vi.fn().mockResolvedValue({ data: [{ name: 'avatar.jpg' }], error: null }),
       }),
     },
     auth: {
@@ -140,7 +141,7 @@ describe('updateAvatar', () => {
     const fd = new FormData()
     fd.set('avatar', new File(['data'], 'photo.exe', { type: 'application/octet-stream' }))
     const result = await updateAvatar(fd)
-    expect(result).toEqual({ error: 'Invalid file type. Use JPG, PNG, GIF, or WebP.' })
+    expect(result).toEqual({ error: 'Invalid file type. Use JPG, PNG, or GIF.' })
   })
 })
 
@@ -178,8 +179,9 @@ describe('deleteAvatar', () => {
     const supabaseMock = makeSupabase()
     mockCreateClient.mockResolvedValue(supabaseMock as any)
     const result = await deleteAvatar()
-    // Capture the bucket mock that was actually used
     const bucketMock = supabaseMock.storage.from.mock.results[0].value
+    // list is called with the user's folder, then remove is called with the derived paths
+    expect(bucketMock.list).toHaveBeenCalledWith('user-1')
     expect(bucketMock.remove).toHaveBeenCalledWith(['user-1/avatar.jpg'])
     expect(result).toEqual({ success: true })
   })

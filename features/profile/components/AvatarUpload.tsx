@@ -85,7 +85,7 @@ export function AvatarUpload({ profile }: AvatarUploadProps) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
+              accept="image/jpeg,image/png,image/gif"
               className="hidden"
               onChange={handleFileChange}
             />
@@ -115,7 +115,7 @@ export function AvatarUpload({ profile }: AvatarUploadProps) {
             )}
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-3">JPG, PNG, GIF or WebP · Max 2 MB</p>
+        <p className="text-xs text-muted-foreground mt-3">JPG, PNG or GIF · Max 2 MB</p>
       </CardContent>
     </Card>
   )

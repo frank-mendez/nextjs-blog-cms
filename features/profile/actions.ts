@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/lib/auth/session'
 import type { ProfileFormData, SocialLinksFormData } from './types'
 
-export async function updateProfile(data: Partial<ProfileFormData & SocialLinksFormData>) {
+export async function updateProfile(data: Partial<{ [K in keyof (ProfileFormData & SocialLinksFormData)]: string | null }>) {
   const profile = await getProfile()
   if (!profile) return { error: 'Unauthorized' }
 
@@ -43,10 +43,9 @@ export async function updateAvatar(formData: FormData) {
     'image/jpeg': 'jpg',
     'image/png': 'png',
     'image/gif': 'gif',
-    'image/webp': 'webp',
   }
 
-  if (!ALLOWED_TYPES[file.type]) return { error: 'Invalid file type. Use JPG, PNG, GIF, or WebP.' }
+  if (!ALLOWED_TYPES[file.type]) return { error: 'Invalid file type. Use JPG, PNG, or GIF.' }
   const ext = ALLOWED_TYPES[file.type]
   const path = `${profile.id}/avatar.${ext}`
 
@@ -80,14 +79,12 @@ export async function deleteAvatar() {
 
   const supabase = await createClient()
 
-  // Extract storage path from the public URL
-  // Public URL format: .../storage/v1/object/public/avatars/{path}
-  const url = new URL(profile.avatar_url)
-  const pathParts = url.pathname.split('/avatars/')
-  const storagePath = pathParts[1]
-
-  if (storagePath) {
-    const { error: removeError } = await supabase.storage.from('avatars').remove([storagePath])
+  // List all files under the user's folder and remove them all.
+  // This handles any extension (jpg/png/gif) without fragile URL parsing.
+  const { data: listed } = await supabase.storage.from('avatars').list(profile.id)
+  if (listed && listed.length > 0) {
+    const paths = listed.map((f) => `${profile.id}/${f.name}`)
+    const { error: removeError } = await supabase.storage.from('avatars').remove(paths)
     if (removeError) return { error: removeError.message }
   }
 

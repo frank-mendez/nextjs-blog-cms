@@ -83,6 +83,9 @@ export function TwoFactorSetup() {
       }
 
       setFactor({ id: enrollFactorId, factor_type: 'totp', status: 'verified' })
+      setEnrollFactorId(null)
+      setQrCode(null)
+      setSecret(null)
       setEnrollOpen(false)
       setVerifyCode('')
       toast.success('Two-factor authentication enabled')
@@ -154,7 +157,17 @@ export function TwoFactorSetup() {
       </Card>
 
       {/* Enroll dialog */}
-      <Dialog open={enrollOpen} onOpenChange={setEnrollOpen}>
+      <Dialog open={enrollOpen} onOpenChange={async (open) => {
+        if (!open && enrollFactorId) {
+          // User dismissed without verifying — clean up the pending factor
+          await supabase.auth.mfa.unenroll({ factorId: enrollFactorId })
+          setEnrollFactorId(null)
+          setQrCode(null)
+          setSecret(null)
+          setVerifyCode('')
+        }
+        setEnrollOpen(open)
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Set up authenticator app</DialogTitle>

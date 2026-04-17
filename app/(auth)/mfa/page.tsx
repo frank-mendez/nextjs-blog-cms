@@ -63,6 +63,7 @@ export default function MfaChallengePage() {
       return
     }
 
+    router.refresh()
     router.push('/dashboard')
   }
 

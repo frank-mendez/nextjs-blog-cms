@@ -61,9 +61,9 @@ export function SocialLinksForm({ profile }: SocialLinksFormProps) {
     setSaving(true)
     try {
       // Convert empty strings to null for storage
-      const normalized = Object.fromEntries(
+      const normalized: Record<string, string | null> = Object.fromEntries(
         Object.entries(values).map(([k, v]) => [k, v === '' ? null : v])
-      ) as FormValues
+      )
       const result = await updateProfile(normalized)
       if (result.error) {
         toast.error(result.error)

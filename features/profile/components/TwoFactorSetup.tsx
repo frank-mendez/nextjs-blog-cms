@@ -45,15 +45,20 @@ export function TwoFactorSetup() {
   }, [])
 
   async function handleStartEnroll() {
-    const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' })
-    if (error) {
-      toast.error(error.message)
-      return
+    setEnrollLoading(true)
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' })
+      if (error) {
+        toast.error(error.message)
+        return
+      }
+      setQrCode(data.totp.qr_code)
+      setSecret(data.totp.secret)
+      setEnrollFactorId(data.id)
+      setEnrollOpen(true)
+    } finally {
+      setEnrollLoading(false)
     }
-    setQrCode(data.totp.qr_code)
-    setSecret(data.totp.secret)
-    setEnrollFactorId(data.id)
-    setEnrollOpen(true)
   }
 
   async function handleVerifyEnroll() {
@@ -140,7 +145,8 @@ export function TwoFactorSetup() {
               Disable 2FA
             </Button>
           ) : (
-            <Button size="sm" onClick={handleStartEnroll}>
+            <Button size="sm" onClick={handleStartEnroll} disabled={enrollLoading}>
+              {enrollLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Enable 2FA
             </Button>
           )}

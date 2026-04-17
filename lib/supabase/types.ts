@@ -204,33 +204,69 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
+          company: string | null
           confirmed_at: string | null
           created_at: string | null
           email: string
+          facebook_url: string | null
           full_name: string | null
+          github_url: string | null
           id: string
+          instagram_url: string | null
+          linkedin_url: string | null
+          location: string | null
+          pronouns: string | null
           role: string
+          tiktok_url: string | null
+          twitter_url: string | null
           updated_at: string | null
+          website: string | null
+          youtube_url: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
+          company?: string | null
           confirmed_at?: string | null
           created_at?: string | null
           email: string
+          facebook_url?: string | null
           full_name?: string | null
+          github_url?: string | null
           id: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          pronouns?: string | null
           role?: string
+          tiktok_url?: string | null
+          twitter_url?: string | null
           updated_at?: string | null
+          website?: string | null
+          youtube_url?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
+          company?: string | null
           confirmed_at?: string | null
           created_at?: string | null
           email?: string
+          facebook_url?: string | null
           full_name?: string | null
+          github_url?: string | null
           id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          pronouns?: string | null
           role?: string
+          tiktok_url?: string | null
+          twitter_url?: string | null
           updated_at?: string | null
+          website?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }

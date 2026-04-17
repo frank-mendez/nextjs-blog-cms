@@ -50,6 +50,9 @@ export default defineConfig({
         'app/api/webhooks/user-confirmed/route.ts',
         // app logic
         'app/robots.ts',
+        // profile feature
+        'features/profile/actions.ts',
+        'features/profile/components/**/*.{ts,tsx}',
       ],
       thresholds: {
         lines: 80,

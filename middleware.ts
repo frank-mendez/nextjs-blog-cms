@@ -32,15 +32,42 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Protect /dashboard routes
+  // Helper: build a redirect that carries any auth cookie updates from supabaseResponse.
+  // Without this, session-refresh cookies written by getUser() would be lost on redirects.
+  function redirectWithCookies(destination: string): NextResponse {
+    const url = request.nextUrl.clone()
+    url.pathname = destination
+    const redirectResponse = NextResponse.redirect(url)
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+    return redirectResponse
+  }
+
+  // ── /mfa page ──────────────────────────────────────────────────────────────
+  if (pathname === '/mfa') {
+    if (!user) return redirectWithCookies('/login')
+
+    // Already completed MFA — send to dashboard
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aal?.currentLevel === 'aal2') return redirectWithCookies('/dashboard')
+
+    return supabaseResponse
+  }
+
+  // ── /dashboard routes ──────────────────────────────────────────────────────
   if (pathname.startsWith('/dashboard')) {
-    if (!user) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      return NextResponse.redirect(url)
+    if (!user) return redirectWithCookies('/login')
+
+    // Enforce MFA for users who have it enrolled.
+    // Fail-closed: if the AAL lookup fails, redirect to /mfa rather than
+    // allowing the request through without MFA verification.
+    const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aalError || (aal?.nextLevel === 'aal2' && aal.currentLevel !== 'aal2')) {
+      return redirectWithCookies('/mfa')
     }
 
-    // Protect /dashboard/admin routes — require admin role
+    // Protect /dashboard/admin — require admin role
     if (pathname.startsWith('/dashboard/admin')) {
       const { data: profileData } = await supabase
         .from('profiles')
@@ -49,19 +76,13 @@ export async function middleware(request: NextRequest) {
         .single()
 
       const profile = profileData as { role: string } | null
-      if (profile?.role !== 'admin') {
-        const url = request.nextUrl.clone()
-        url.pathname = '/dashboard'
-        return NextResponse.redirect(url)
-      }
+      if (profile?.role !== 'admin') return redirectWithCookies('/dashboard')
     }
   }
 
-  // Redirect logged-in users away from auth pages
+  // ── Redirect logged-in users away from auth pages ─────────────────────────
   if (user && (pathname === '/login' || pathname === '/register')) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    return redirectWithCookies('/dashboard')
   }
 
   return supabaseResponse
@@ -72,5 +93,6 @@ export const config = {
     '/dashboard/:path*',
     '/login',
     '/register',
+    '/mfa',
   ],
 }

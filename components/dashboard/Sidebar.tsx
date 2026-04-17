@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X, MessageSquare, Loader2, Code, Bot,
+  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X, MessageSquare, Loader2, Code, Bot, UserCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { can } from '@/lib/permissions'
@@ -38,6 +38,7 @@ export function Sidebar({ profile }: SidebarProps) {
 
   const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', show: true, section: 'main' as const },
+    { href: '/dashboard/profile', icon: UserCircle, label: 'Profile', show: true, section: 'main' as const },
     { href: '/dashboard/posts', icon: FileText, label: 'Posts', show: true, section: 'main' as const },
     { href: '/dashboard/posts/new', icon: PlusCircle, label: 'New Post', show: true, section: 'main' as const },
     { href: '/dashboard/ai-assistant', icon: Bot, label: 'AI Assistant', show: true, section: 'main' as const },
@@ -138,7 +139,7 @@ export function Sidebar({ profile }: SidebarProps) {
 
       {/* User section */}
       <div className="p-3 border-t border-slate-800">
-        <div className="flex items-center gap-3 px-3 py-3 rounded-lg mb-1">
+        <Link href="/dashboard/profile" className="flex items-center gap-3 px-3 py-3 rounded-lg mb-1 hover:bg-slate-800 transition-colors">
           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold shrink-0">
             {initials}
           </div>
@@ -146,7 +147,7 @@ export function Sidebar({ profile }: SidebarProps) {
             <p className="text-sm font-medium text-white truncate">{profile.full_name ?? profile.email}</p>
             <p className="text-xs text-slate-500 capitalize">{profile.role}</p>
           </div>
-        </div>
+        </Link>
         <button
           onClick={handleLogout}
           disabled={isPending}

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { ChangePasswordForm } from '@/features/profile/components/ChangePasswordForm'
 
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('@/features/profile/actions', () => ({ updatePassword: vi.fn() }))
 
 import { updatePassword } from '@/features/profile/actions'

@@ -61,15 +61,18 @@ export async function updateAvatar(formData: FormData) {
     .from('avatars')
     .getPublicUrl(path)
 
+  // Append a version query param so re-uploads of the same filename bust the browser cache
+  const versionedUrl = `${publicUrl}?v=${Date.now()}`
+
   const { error: updateError } = await supabase
     .from('profiles')
-    .update({ avatar_url: publicUrl })
+    .update({ avatar_url: versionedUrl })
     .eq('id', profile.id)
 
   if (updateError) return { error: updateError.message }
 
   revalidatePath('/dashboard/profile')
-  return { success: true, avatar_url: publicUrl }
+  return { success: true, avatar_url: versionedUrl }
 }
 
 export async function deleteAvatar() {

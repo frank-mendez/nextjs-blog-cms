@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { SocialLinksForm } from '@/features/profile/components/SocialLinksForm'
 
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('@/features/profile/actions', () => ({ updateProfile: vi.fn() }))
 
 import { updateProfile } from '@/features/profile/actions'

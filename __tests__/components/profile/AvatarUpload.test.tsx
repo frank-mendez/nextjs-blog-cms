@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { AvatarUpload } from '@/features/profile/components/AvatarUpload'
 
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('@/features/profile/actions', () => ({
   updateAvatar: vi.fn(),
   deleteAvatar: vi.fn(),

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { TwoFactorSetup } from '@/features/profile/components/TwoFactorSetup'
 
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('@/lib/supabase/client', () => ({ createClient: vi.fn() }))
 
 import { createClient } from '@/lib/supabase/client'

@@ -135,13 +135,16 @@ describe('updateAvatar', () => {
     expect(result).toEqual({ error: 'Upload failed' })
   })
 
-  it('returns success and public URL on valid upload', async () => {
+  it('returns success and versioned public URL on valid upload', async () => {
     mockGetProfile.mockResolvedValue(fakeProfile as any)
     mockCreateClient.mockResolvedValue(makeSupabase() as any)
     const fd = new FormData()
     fd.set('avatar', new File(['data'], 'photo.jpg', { type: 'image/jpeg' }))
     const result = await updateAvatar(fd)
-    expect(result).toEqual({ success: true, avatar_url: 'https://example.com/avatars/user-1/avatar.jpg' })
+    expect(result.error).toBeUndefined()
+    expect((result as { avatar_url: string }).avatar_url).toMatch(
+      /^https:\/\/example\.com\/avatars\/user-1\/avatar\.jpg\?v=\d+$/
+    )
   })
 
   it('returns error for invalid file type', async () => {

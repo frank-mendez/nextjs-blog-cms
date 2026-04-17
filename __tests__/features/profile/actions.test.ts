@@ -204,16 +204,23 @@ describe('updatePassword', () => {
     expect(result).toEqual({ error: 'Unauthorized' })
   })
 
-  it('returns "Current password is incorrect" for invalid login credentials', async () => {
+  it('returns "Current password is incorrect" when error code is invalid_credentials', async () => {
     mockGetProfile.mockResolvedValue(fakeProfile as any)
-    mockAnonSignIn.mockResolvedValue({ error: { message: 'Invalid login credentials' } })
+    mockAnonSignIn.mockResolvedValue({ error: { code: 'invalid_credentials', status: 400, message: 'Invalid login credentials' } })
+    const result = await updatePassword('wrong', 'newpass')
+    expect(result).toEqual({ error: 'Current password is incorrect' })
+  })
+
+  it('returns "Current password is incorrect" when status is 400 and no code', async () => {
+    mockGetProfile.mockResolvedValue(fakeProfile as any)
+    mockAnonSignIn.mockResolvedValue({ error: { code: null, status: 400, message: 'Invalid login credentials' } })
     const result = await updatePassword('wrong', 'newpass')
     expect(result).toEqual({ error: 'Current password is incorrect' })
   })
 
   it('surfaces non-credential errors as-is', async () => {
     mockGetProfile.mockResolvedValue(fakeProfile as any)
-    mockAnonSignIn.mockResolvedValue({ error: { message: 'Email rate limit exceeded' } })
+    mockAnonSignIn.mockResolvedValue({ error: { code: 'over_email_send_rate_limit', status: 429, message: 'Email rate limit exceeded' } })
     const result = await updatePassword('any', 'newpass')
     expect(result).toEqual({ error: 'Email rate limit exceeded' })
   })

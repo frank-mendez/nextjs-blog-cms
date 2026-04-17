@@ -117,11 +117,12 @@ export async function updatePassword(currentPassword: string, newPassword: strin
     password: currentPassword,
   })
   if (signInError) {
-    // Distinguish credential failures from infrastructure/rate-limit errors
-    if (signInError.message.toLowerCase().includes('invalid login credentials')) {
-      return { error: 'Current password is incorrect' }
-    }
-    return { error: signInError.message }
+    // Use structured error code to distinguish credential failures from
+    // infrastructure/rate-limit errors, avoiding brittle string matching.
+    const isInvalidCredentials =
+      signInError.code === 'invalid_credentials' ||
+      (signInError.code == null && signInError.status === 400)
+    return { error: isInvalidCredentials ? 'Current password is incorrect' : signInError.message }
   }
 
   const supabase = await createClient()

@@ -20,18 +20,33 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('avatars', 'avatars', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Storage RLS: anyone can read avatars (public bucket)
+-- Storage RLS: only the owning user can list/access their own avatar metadata via the API.
+-- Public avatar image reads still work through the bucket's public=true setting (direct URLs),
+-- but this prevents unauthenticated enumeration of user-id folder names via the Storage API.
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  -- Drop the overly permissive policy if it was created previously
+  IF EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'storage'
       AND tablename = 'objects'
       AND policyname = 'Avatar images are publicly accessible'
   ) THEN
-    CREATE POLICY "Avatar images are publicly accessible"
+    DROP POLICY "Avatar images are publicly accessible" ON storage.objects;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can view their own avatar metadata'
+  ) THEN
+    CREATE POLICY "Users can view their own avatar metadata"
       ON storage.objects FOR SELECT
-      USING (bucket_id = 'avatars');
+      USING (
+        bucket_id = 'avatars' AND
+        auth.uid()::text = (storage.foldername(name))[1]
+      );
   END IF;
 END $$;
 

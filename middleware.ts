@@ -32,7 +32,24 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Protect /dashboard routes
+  // ── /mfa page ──────────────────────────────────────────────────────────────
+  if (pathname === '/mfa') {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+    // Already completed MFA — send to dashboard
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aal?.currentLevel === 'aal2') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+    return supabaseResponse
+  }
+
+  // ── /dashboard routes ──────────────────────────────────────────────────────
   if (pathname.startsWith('/dashboard')) {
     if (!user) {
       const url = request.nextUrl.clone()
@@ -40,7 +57,15 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // Protect /dashboard/admin routes — require admin role
+    // Enforce MFA for users who have it enrolled
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aal?.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/mfa'
+      return NextResponse.redirect(url)
+    }
+
+    // Protect /dashboard/admin — require admin role
     if (pathname.startsWith('/dashboard/admin')) {
       const { data: profileData } = await supabase
         .from('profiles')
@@ -57,7 +82,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect logged-in users away from auth pages
+  // ── Redirect logged-in users away from auth pages ─────────────────────────
   if (user && (pathname === '/login' || pathname === '/register')) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
@@ -72,5 +97,6 @@ export const config = {
     '/dashboard/:path*',
     '/login',
     '/register',
+    '/mfa',
   ],
 }

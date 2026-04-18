@@ -19,6 +19,7 @@ function makeSupabaseMfa({
 } = {}) {
   return {
     auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: { factors } }, error: null }),
       mfa: {
         listFactors: vi.fn().mockResolvedValue({ data: { all: factors, totp: factors.filter(f => f.status === 'verified') }, error: null }),
         enroll: vi.fn().mockResolvedValue(enrollResult),

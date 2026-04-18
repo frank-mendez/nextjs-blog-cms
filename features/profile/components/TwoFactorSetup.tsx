@@ -45,10 +45,10 @@ export function TwoFactorSetup() {
   useEffect(() => {
     async function loadFactors() {
       try {
-        const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000))
-        const result = await Promise.race([supabase.auth.mfa.listFactors(), timeout])
-        if (result && !result.error) {
-          const verified = result.data.all.find(
+        const { data, error } = await supabase.auth.getUser()
+        if (!error && data.user) {
+          const factors = (data.user as { factors?: Factor[] }).factors ?? []
+          const verified = factors.find(
             (f) => f.factor_type === 'totp' && f.status === 'verified',
           )
           setFactor(verified ?? null)

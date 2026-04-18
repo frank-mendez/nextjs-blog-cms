@@ -140,9 +140,14 @@ export function Sidebar({ profile }: SidebarProps) {
       {/* User section */}
       <div className="p-3 border-t border-slate-800">
         <Link href="/dashboard/profile" className="flex items-center gap-3 px-3 py-3 rounded-lg mb-1 hover:bg-slate-800 transition-colors">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold shrink-0">
-            {initials}
-          </div>
+          {profile.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profile.avatar_url} alt={profile.full_name ?? profile.email} className="w-8 h-8 rounded-full object-cover shrink-0" />
+          ) : (
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold shrink-0">
+              {initials}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white truncate">{profile.full_name ?? profile.email}</p>
             <p className="text-xs text-slate-500 capitalize">{profile.role}</p>

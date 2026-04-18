@@ -24,7 +24,6 @@ export default function MfaChallengePage() {
     async function init() {
       const { data: factorData, error: factorsErr } = await supabase.auth.mfa.listFactors()
       if (factorsErr || !factorData.totp.length) {
-        // No MFA factors — shouldn't be here
         router.replace('/dashboard')
         return
       }
@@ -63,8 +62,7 @@ export default function MfaChallengePage() {
       return
     }
 
-    router.refresh()
-    router.push('/dashboard')
+    window.location.replace('/dashboard')
   }
 
   if (initializing) {

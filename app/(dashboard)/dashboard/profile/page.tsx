@@ -12,19 +12,28 @@ export default async function ProfilePage() {
   const profile = await requireAuth()
 
   return (
-    <div className="p-8 max-w-2xl space-y-6 animate-page">
-      <div>
+    <div className="p-8 animate-page">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">My Profile</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
           Manage your personal information and account settings
         </p>
       </div>
 
-      <GeneralInfoForm profile={profile} />
-      <AvatarUpload profile={profile} />
-      <SocialLinksForm profile={profile} />
-      <ChangePasswordForm />
-      <TwoFactorSetup />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Main column */}
+        <div className="space-y-6">
+          <GeneralInfoForm profile={profile} />
+          <SocialLinksForm profile={profile} />
+        </div>
+
+        {/* Side column */}
+        <div className="space-y-6">
+          <AvatarUpload profile={profile} />
+          <ChangePasswordForm />
+          <TwoFactorSetup />
+        </div>
+      </div>
     </div>
   )
 }

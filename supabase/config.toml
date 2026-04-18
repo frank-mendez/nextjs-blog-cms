@@ -229,7 +229,7 @@ otp_expiry = 3600
 # Uncomment to customize email template
 [auth.email.template.confirmation]
 subject = "Confirm your signup – The Practical Engineer"
-content_path = "./supabase/templates/confirm.html"
+content_path = "./templates/confirm.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]

@@ -68,13 +68,15 @@ export function AvatarUpload({ profile }: AvatarUploadProps) {
       <CardContent>
         <div className="flex items-center gap-4">
           {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt="Profile photo"
-              width={64}
-              height={64}
-              className="rounded-full object-cover shrink-0"
-            />
+            <div className="w-16 h-16 rounded-full overflow-hidden shrink-0">
+              <Image
+                src={avatarUrl}
+                alt="Profile photo"
+                width={64}
+                height={64}
+                className="w-full h-full object-cover"
+              />
+            </div>
           ) : (
             <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-xl shrink-0">
               {initials}

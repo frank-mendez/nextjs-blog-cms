@@ -5,8 +5,10 @@ import { TwoFactorSetup } from '@/features/profile/components/TwoFactorSetup'
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('@/lib/supabase/client', () => ({ createClient: vi.fn() }))
 
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 const mockCreateClient = vi.mocked(createClient)
+const mockToast = vi.mocked(toast)
 
 function makeSupabaseMfa({
   factors = [] as { id: string; factor_type: string; status: string }[],
@@ -17,8 +19,9 @@ function makeSupabaseMfa({
 } = {}) {
   return {
     auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: { factors } }, error: null }),
       mfa: {
-        listFactors: vi.fn().mockResolvedValue({ data: { totp: factors }, error: null }),
+        listFactors: vi.fn().mockResolvedValue({ data: { all: factors, totp: factors.filter(f => f.status === 'verified') }, error: null }),
         enroll: vi.fn().mockResolvedValue(enrollResult),
         challenge: vi.fn().mockResolvedValue(challengeResult),
         verify: vi.fn().mockResolvedValue(verifyResult),
@@ -73,6 +76,17 @@ describe('TwoFactorSetup', () => {
     expect(await screen.findByLabelText(/verification code/i)).toBeInTheDocument()
   })
 
+  it('shows error toast when enroll fails', async () => {
+    const supabaseMock = makeSupabaseMfa({
+      enrollResult: { data: null, error: { message: 'Enroll failed' } },
+    })
+    mockCreateClient.mockReturnValue(supabaseMock as any)
+    render(<TwoFactorSetup />)
+    const enableBtn = await screen.findByRole('button', { name: /enable 2fa/i })
+    fireEvent.click(enableBtn)
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Enroll failed'))
+  })
+
   it('calls unenroll when enroll dialog is dismissed before verifying', async () => {
     const supabaseMock = makeSupabaseMfa()
     mockCreateClient.mockReturnValue(supabaseMock as any)
@@ -80,7 +94,6 @@ describe('TwoFactorSetup', () => {
     const enableBtn = await screen.findByRole('button', { name: /enable 2fa/i })
     fireEvent.click(enableBtn)
     await waitFor(() => expect(supabaseMock.auth.mfa.enroll).toHaveBeenCalledOnce())
-    // Click the Cancel button inside the dialog
     fireEvent.click(await screen.findByRole('button', { name: /cancel/i }))
     await waitFor(() => expect(supabaseMock.auth.mfa.unenroll).toHaveBeenCalledWith({ factorId: 'factor-new' }))
   })
@@ -95,8 +108,20 @@ describe('TwoFactorSetup', () => {
     fireEvent.change(codeInput, { target: { value: '123456' } })
     fireEvent.click(screen.getByRole('button', { name: /verify/i }))
     await waitFor(() => expect(supabaseMock.auth.mfa.verify).toHaveBeenCalledOnce())
-    // After success the badge should show enabled
     expect(await screen.findByText(/enabled/i)).toBeInTheDocument()
+  })
+
+  it('shows error toast when challenge fails', async () => {
+    const supabaseMock = makeSupabaseMfa({
+      challengeResult: { data: null, error: { message: 'Challenge failed' } },
+    })
+    mockCreateClient.mockReturnValue(supabaseMock as any)
+    render(<TwoFactorSetup />)
+    fireEvent.click(await screen.findByRole('button', { name: /enable 2fa/i }))
+    const codeInput = await screen.findByLabelText(/verification code/i)
+    fireEvent.change(codeInput, { target: { value: '123456' } })
+    fireEvent.click(screen.getByRole('button', { name: /verify/i }))
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Challenge failed'))
   })
 
   it('shows error toast when verify code is wrong', async () => {
@@ -109,7 +134,6 @@ describe('TwoFactorSetup', () => {
     fireEvent.change(codeInput, { target: { value: '000000' } })
     fireEvent.click(screen.getByRole('button', { name: /verify/i }))
     await waitFor(() => expect(supabaseMock.auth.mfa.verify).toHaveBeenCalledOnce())
-    // Dialog should still be open (factor not enrolled)
     expect(screen.getByLabelText(/verification code/i)).toBeInTheDocument()
   })
 
@@ -118,10 +142,34 @@ describe('TwoFactorSetup', () => {
     mockCreateClient.mockReturnValue(supabaseMock as any)
     render(<TwoFactorSetup />)
     fireEvent.click(await screen.findByRole('button', { name: /disable 2fa/i }))
-    // Confirm dialog appears — click the destructive Disable 2FA action button
     const confirmBtn = await screen.findByRole('button', { name: /^disable 2fa$/i })
     fireEvent.click(confirmBtn)
     await waitFor(() => expect(supabaseMock.auth.mfa.unenroll).toHaveBeenCalledWith({ factorId: 'factor-1' }))
     expect(await screen.findByText(/disabled/i)).toBeInTheDocument()
+  })
+
+  it('shows error toast when disable fails', async () => {
+    const supabaseMock = makeSupabaseMfa({
+      factors: [{ id: 'factor-1', factor_type: 'totp', status: 'verified' }],
+      unenrollResult: { error: { message: 'Cannot unenroll' } },
+    })
+    mockCreateClient.mockReturnValue(supabaseMock as any)
+    render(<TwoFactorSetup />)
+    fireEvent.click(await screen.findByRole('button', { name: /disable 2fa/i }))
+    const confirmBtn = await screen.findByRole('button', { name: /^disable 2fa$/i })
+    fireEvent.click(confirmBtn)
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Cannot unenroll'))
+    expect(screen.getByRole('button', { name: /disable 2fa/i })).toBeInTheDocument()
+  })
+
+  it('cleans up unverified factors before enrolling', async () => {
+    const supabaseMock = makeSupabaseMfa({
+      factors: [{ id: 'stale-factor', factor_type: 'totp', status: 'unverified' }],
+    })
+    mockCreateClient.mockReturnValue(supabaseMock as any)
+    render(<TwoFactorSetup />)
+    fireEvent.click(await screen.findByRole('button', { name: /enable 2fa/i }))
+    await waitFor(() => expect(supabaseMock.auth.mfa.unenroll).toHaveBeenCalledWith({ factorId: 'stale-factor' }))
+    await waitFor(() => expect(supabaseMock.auth.mfa.enroll).toHaveBeenCalledOnce())
   })
 })

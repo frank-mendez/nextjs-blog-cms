@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Loader2, ShieldCheck, ShieldOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,10 +8,20 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 
 type Factor = { id: string; factor_type: string; status: string }
@@ -30,15 +40,22 @@ export function TwoFactorSetup() {
   const [enrollLoading, setEnrollLoading] = useState(false)
   const [disableLoading, setDisableLoading] = useState(false)
 
-  const supabase = createClient()
+  const supabase = useMemo(createClient, [])
 
   useEffect(() => {
     async function loadFactors() {
-      const { data, error } = await supabase.auth.mfa.listFactors()
-      if (!error && data.totp.length > 0) {
-        setFactor(data.totp.find((f) => f.status === 'verified') ?? null)
+      try {
+        const { data, error } = await supabase.auth.getUser()
+        if (!error && data.user) {
+          const factors = (data.user as { factors?: Factor[] }).factors ?? []
+          const verified = factors.find(
+            (f) => f.factor_type === 'totp' && f.status === 'verified',
+          )
+          setFactor(verified ?? null)
+        }
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     loadFactors()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -47,6 +64,14 @@ export function TwoFactorSetup() {
   async function handleStartEnroll() {
     setEnrollLoading(true)
     try {
+      // Clean up stale unverified factors that would block enrollment
+      const { data: existing } = await supabase.auth.mfa.listFactors()
+      for (const f of existing?.all ?? []) {
+        if (f.factor_type === 'totp' && f.status !== 'verified') {
+          await supabase.auth.mfa.unenroll({ factorId: f.id })
+        }
+      }
+
       const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' })
       if (error) {
         toast.error(error.message)
@@ -56,6 +81,8 @@ export function TwoFactorSetup() {
       setSecret(data.totp.secret)
       setEnrollFactorId(data.id)
       setEnrollOpen(true)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong — please try again')
     } finally {
       setEnrollLoading(false)
     }
@@ -65,7 +92,9 @@ export function TwoFactorSetup() {
     if (!enrollFactorId || !verifyCode) return
     setEnrollLoading(true)
     try {
-      const { data: challengeData, error: challengeErr } = await supabase.auth.mfa.challenge({ factorId: enrollFactorId })
+      const { data: challengeData, error: challengeErr } = await supabase.auth.mfa.challenge({
+        factorId: enrollFactorId,
+      })
       if (challengeErr) {
         toast.error(challengeErr.message)
         return
@@ -89,6 +118,8 @@ export function TwoFactorSetup() {
       setEnrollOpen(false)
       setVerifyCode('')
       toast.success('Two-factor authentication enabled')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong — please try again')
     } finally {
       setEnrollLoading(false)
     }
@@ -196,7 +227,7 @@ export function TwoFactorSetup() {
               maxLength={6}
               placeholder="000000"
               value={verifyCode}
-              onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, ''))}
+              onChange={(e) => setVerifyCode(e.target.value.replaceAll(/\D/g, ''))}
             />
           </div>
           <DialogFooter>

@@ -39,4 +39,9 @@ describe('AuthorAvatar', () => {
     const color2 = (c2.firstChild as HTMLElement).style.background
     expect(color1).toBe(color2)
   })
+
+  it('renders a fallback for an empty name', () => {
+    render(<AuthorAvatar name="" />)
+    expect(screen.getByText('?')).toBeInTheDocument()
+  })
 })

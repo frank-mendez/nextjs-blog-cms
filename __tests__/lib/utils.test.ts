@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { cn } from '@/lib/utils'
+import { cn, readTime } from '@/lib/utils'
 
 describe('cn', () => {
   it('returns a single class', () => {
@@ -41,5 +41,30 @@ describe('cn', () => {
   it('merges responsive and base utilities correctly', () => {
     const result = cn('px-2 py-1', 'px-4')
     expect(result).toBe('py-1 px-4')
+  })
+})
+
+describe('readTime', () => {
+  it('returns 1 for very short content', () => {
+    expect(readTime('Hello world')).toBe(1)
+  })
+
+  it('calculates minutes based on 200 wpm', () => {
+    const words = Array(400).fill('word').join(' ')
+    expect(readTime(words)).toBe(2)
+  })
+
+  it('strips HTML tags before counting words', () => {
+    const html = '<p>' + Array(200).fill('word').join(' ') + '</p>'
+    expect(readTime(html)).toBe(1)
+  })
+
+  it('rounds up partial minutes', () => {
+    const words = Array(201).fill('word').join(' ')
+    expect(readTime(words)).toBe(2)
+  })
+
+  it('returns 1 for empty string', () => {
+    expect(readTime('')).toBe(1)
   })
 })

@@ -40,9 +40,10 @@ export function AuthorAvatar({ name, size = 32 }: AuthorAvatarProps) {
         color: '#fff',
         userSelect: 'none',
       }}
+      role="img"
       aria-label={name}
     >
-      {getInitials(name)}
+      <span aria-hidden="true">{getInitials(name)}</span>
     </div>
   )
 }

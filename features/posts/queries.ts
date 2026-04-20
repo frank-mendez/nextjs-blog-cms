@@ -111,6 +111,8 @@ export async function getAllPublishedSlugs() {
 
 export type TagWithCount = { id: string; name: string; slug: string; count: number }
 
+export type PostTagRow = { tags: { id: string; name: string; slug: string } | null }
+
 export async function getPopularTags(limit = 8): Promise<TagWithCount[]> {
   const supabase = await createClient()
 
@@ -118,15 +120,16 @@ export async function getPopularTags(limit = 8): Promise<TagWithCount[]> {
   // !inner ensures we only get rows where a matching post exists.
   const { data, error } = await supabase
     .from('post_tags')
-    .select('tags(id, name, slug), post:posts!inner(status)')
-    .eq('post.status', 'published')
+    .select('tags(id, name, slug), posts!inner(status)')
+    .eq('posts.status', 'published')
 
   if (error) throw error
 
   // Aggregate tag counts in JS — Supabase JS client doesn't support GROUP BY
+  // PostgREST nested join shape is not inferred correctly by the Supabase TS client
   const counts = new Map<string, TagWithCount>()
   for (const row of data ?? []) {
-    const tag = (row as unknown as { tags: { id: string; name: string; slug: string } | null }).tags
+    const tag = (row as unknown as PostTagRow).tags
     if (!tag) continue
     const entry = counts.get(tag.id)
     if (entry) {

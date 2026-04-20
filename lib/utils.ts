@@ -26,12 +26,11 @@ function extractTipTapText(node: unknown): string[] {
 function getReadableText(content: string): string {
   try {
     const parsed = JSON.parse(content) as unknown
-    const extracted = extractTipTapText(parsed).join(' ').trim()
-    if (extracted) return extracted
+    return extractTipTapText(parsed).join(' ').trim()
   } catch {
     // Fall back to legacy/raw HTML or plain text content.
+    return content.replace(/<[^>]+>/g, ' ')
   }
-  return content.replace(/<[^>]+>/g, ' ')
 }
 
 export function readTime(content: string): number {

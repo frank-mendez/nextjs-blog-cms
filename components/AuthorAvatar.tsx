@@ -41,7 +41,7 @@ export function AuthorAvatar({ name, size = 32 }: AuthorAvatarProps) {
         userSelect: 'none',
       }}
       role="img"
-      aria-label={name}
+      aria-label={name.trim() || 'Unknown author'}
     >
       <span aria-hidden="true">{getInitials(name)}</span>
     </div>

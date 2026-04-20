@@ -12,5 +12,5 @@ as $$
   where p.status = 'published'
   group by t.id, t.name, t.slug
   order by count desc
-  limit tag_limit;
+  limit least(greatest(tag_limit, 1), 50);
 $$;

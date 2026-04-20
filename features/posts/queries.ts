@@ -108,3 +108,20 @@ export async function getAllPublishedSlugs() {
 
   return ((data ?? []) as { slug: string }[]).map((p) => p.slug)
 }
+
+export type TagWithCount = { id: string; name: string; slug: string; count: number }
+
+export async function getPopularTags(limit = 8): Promise<TagWithCount[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.rpc('get_popular_tags', { tag_limit: limit })
+
+  if (error) throw error
+
+  return ((data ?? []) as TagWithCount[]).map((row) => ({
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    count: Number(row.count),
+  }))
+}

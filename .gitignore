@@ -1,7 +1,6 @@
 .mcp.json
 .worktrees/
 .superpowers/
-/docs/
 /node_modules
 /dist
 /build
@@ -30,3 +29,4 @@
 *.so
 .e2e-state.json
 /test-results/
+.playwright-mcp/

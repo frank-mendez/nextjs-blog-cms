@@ -1,12 +1,17 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import type { Metadata } from 'next'
 import { getPublishedPosts } from '@/features/posts/queries'
 import { getPopularTags } from '@/features/posts/queries'
-import type { TagWithCount } from '@/features/posts/queries'
 import { AuthorAvatar } from '@/components/AuthorAvatar'
-import { readTime } from '@/lib/utils'
+import { readTime, cn } from '@/lib/utils'
 import type { PostWithRelations } from '@/features/posts/types'
+
+export const metadata: Metadata = {
+  title: 'Home',
+  description: 'Practical deep-dives, guides, and architecture insights for engineers who ship.',
+}
 
 export const revalidate = 60
 
@@ -34,7 +39,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_220px] gap-0">
 
         {/* ── Left sidebar ── */}
-        <aside className="hidden md:block pr-4 border-r border-border">
+        <aside className="hidden md:block pr-4">
           {/* Nav */}
           <nav className="flex flex-col gap-1 mb-6">
             <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted font-semibold text-sm text-foreground">
@@ -88,7 +93,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </main>
 
         {/* ── Right sidebar ── */}
-        <aside className="hidden md:flex flex-col gap-4 pl-4 border-l border-border">
+        <aside className="hidden md:flex flex-col gap-4 pl-4">
 
           {/* Popular Tags */}
           {popularTags.length > 0 && (
@@ -152,10 +157,10 @@ function ArticleCard({ post, featured }: { post: PostWithRelations; featured: bo
 
   return (
     <article
-      className={[
+      className={cn(
         'bg-card px-5 py-4 border-b border-border',
-        featured ? 'border-l-4 border-l-amber-400' : '',
-      ].join(' ')}
+        featured && 'border-l-4 border-l-amber-400',
+      )}
     >
       {/* Author row */}
       <div className="flex items-center gap-2.5 mb-2.5">

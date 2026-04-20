@@ -189,7 +189,7 @@ function ArticleCard({ post, featured }: { post: PostWithRelations; featured: bo
               href={`/blog/tag/${tag.slug}`}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              #{tag.slug}
+              #{tag.name}
             </Link>
           ))}
         </div>

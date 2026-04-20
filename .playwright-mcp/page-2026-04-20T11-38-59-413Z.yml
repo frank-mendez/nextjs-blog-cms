@@ -1,0 +1,205 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "✦ The Practical Engineer" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - navigation [ref=e6]:
+          - link "Articles" [ref=e7] [cursor=pointer]:
+            - /url: /blog
+    - main [ref=e8]:
+      - main [ref=e11]:
+        - article [ref=e12]:
+          - generic [ref=e13]:
+            - generic "Frank Mendez" [ref=e14]: FM
+            - generic [ref=e15]:
+              - generic [ref=e16]: Frank Mendez
+              - time [ref=e17]: Apr 20
+          - link "Claude Opus 4.7 Just Dropped — And Yeah, It’s Getting Serious" [ref=e18] [cursor=pointer]:
+            - /url: /blog/claude-opus-47-just-dropped-and-yeah-its-getting-serious
+            - heading "Claude Opus 4.7 Just Dropped — And Yeah, It’s Getting Serious" [level=2] [ref=e19]
+          - generic [ref=e20]:
+            - link "#agentic" [ref=e21] [cursor=pointer]:
+              - /url: /blog/tag/agentic
+            - link "#claude" [ref=e22] [cursor=pointer]:
+              - /url: /blog/tag/claude
+          - generic [ref=e24]: 3 min read
+        - article [ref=e25]:
+          - generic [ref=e26]:
+            - generic "Frank Mendez" [ref=e27]: FM
+            - generic [ref=e28]:
+              - generic [ref=e29]: Frank Mendez
+              - time [ref=e30]: Apr 18
+          - 'link "Understanding Lending Agreements in the Philippines: MFK Lending Corporation''s Commitment to Compliance" [ref=e31] [cursor=pointer]':
+            - /url: /blog/understanding-lending-agreements-in-the-philippines-mfk-lending-corporations-commitment-to-compliance
+            - 'heading "Understanding Lending Agreements in the Philippines: MFK Lending Corporation''s Commitment to Compliance" [level=2] [ref=e32]'
+          - generic [ref=e33]:
+            - link "#automation" [ref=e34] [cursor=pointer]:
+              - /url: /blog/tag/automation
+            - link "#mfk-lending" [ref=e35] [cursor=pointer]:
+              - /url: /blog/tag/mfk-lending
+            - link "#lending-agreements" [ref=e36] [cursor=pointer]:
+              - /url: /blog/tag/lending-agreements
+            - link "#philippine-law" [ref=e37] [cursor=pointer]:
+              - /url: /blog/tag/philippine-law
+          - generic [ref=e39]: 3 min read
+        - article [ref=e40]:
+          - generic [ref=e41]:
+            - generic "Frank Mendez" [ref=e42]: FM
+            - generic [ref=e43]:
+              - generic [ref=e44]: Frank Mendez
+              - time [ref=e45]: Apr 17
+          - link "Build a Complete Profile Settings System with Supabase + Next.js (That Doesn’t Suck)" [ref=e46] [cursor=pointer]:
+            - /url: /blog/build-a-complete-profile-settings-system-with-supabase-nextjs-that-doesnt-suck
+            - heading "Build a Complete Profile Settings System with Supabase + Next.js (That Doesn’t Suck)" [level=2] [ref=e47]
+          - generic [ref=e48]:
+            - link "#verification" [ref=e49] [cursor=pointer]:
+              - /url: /blog/tag/verification
+            - link "#api" [ref=e50] [cursor=pointer]:
+              - /url: /blog/tag/api
+            - link "#nextjs" [ref=e51] [cursor=pointer]:
+              - /url: /blog/tag/nextjs
+            - link "#security" [ref=e52] [cursor=pointer]:
+              - /url: /blog/tag/security
+            - link "#supabase" [ref=e53] [cursor=pointer]:
+              - /url: /blog/tag/supabase
+            - link "#softwareengineering" [ref=e54] [cursor=pointer]:
+              - /url: /blog/tag/softwareengineering
+            - link "#system-design" [ref=e55] [cursor=pointer]:
+              - /url: /blog/tag/system-design
+            - link "#cyber-security" [ref=e56] [cursor=pointer]:
+              - /url: /blog/tag/cyber-security
+          - generic [ref=e58]: 3 min read
+        - article [ref=e59]:
+          - generic [ref=e60]:
+            - generic "Frank Mendez" [ref=e61]: FM
+            - generic [ref=e62]:
+              - generic [ref=e63]: Frank Mendez
+              - time [ref=e64]: Apr 16
+          - link "Event-Driven User Notifications with Supabase, Webhooks, and Next.js (No Edge Functions Needed)" [ref=e65] [cursor=pointer]:
+            - /url: /blog/event-driven-user-notifications-with-supabase-webhooks-and-nextjs-no-edge-functions-needed
+            - heading "Event-Driven User Notifications with Supabase, Webhooks, and Next.js (No Edge Functions Needed)" [level=2] [ref=e66]
+          - generic [ref=e67]:
+            - link "#cms" [ref=e68] [cursor=pointer]:
+              - /url: /blog/tag/cms
+            - link "#supabase" [ref=e69] [cursor=pointer]:
+              - /url: /blog/tag/supabase
+            - link "#backend" [ref=e70] [cursor=pointer]:
+              - /url: /blog/tag/backend
+            - link "#softwareengineering" [ref=e71] [cursor=pointer]:
+              - /url: /blog/tag/softwareengineering
+            - link "#system-design" [ref=e72] [cursor=pointer]:
+              - /url: /blog/tag/system-design
+          - generic [ref=e74]: 3 min read
+        - article [ref=e75]:
+          - generic [ref=e76]:
+            - generic "Frank Mendez" [ref=e77]: FM
+            - generic [ref=e78]:
+              - generic [ref=e79]: Frank Mendez
+              - time [ref=e80]: Apr 15
+          - link "Mastering Layering in Enterprise Application Architecture" [ref=e81] [cursor=pointer]:
+            - /url: /blog/mastering-layering-in-enterprise-application-architecture
+            - heading "Mastering Layering in Enterprise Application Architecture" [level=2] [ref=e82]
+          - generic [ref=e83]:
+            - link "#software-architecture" [ref=e84] [cursor=pointer]:
+              - /url: /blog/tag/software-architecture
+            - link "#layering-patterns" [ref=e85] [cursor=pointer]:
+              - /url: /blog/tag/layering-patterns
+            - link "#enterprise-applications" [ref=e86] [cursor=pointer]:
+              - /url: /blog/tag/enterprise-applications
+          - generic [ref=e88]: 3 min read
+        - article [ref=e89]:
+          - generic [ref=e90]:
+            - generic "Frank Mendez" [ref=e91]: FM
+            - generic [ref=e92]:
+              - generic [ref=e93]: Frank Mendez
+              - time [ref=e94]: Apr 14
+          - link "Understanding Layering in Enterprise Application Architecture" [ref=e95] [cursor=pointer]:
+            - /url: /blog/understanding-layering-in-enterprise-application-architecture
+            - heading "Understanding Layering in Enterprise Application Architecture" [level=2] [ref=e96]
+          - link "#enterprise-architecture" [ref=e98] [cursor=pointer]:
+            - /url: /blog/tag/enterprise-architecture
+          - generic [ref=e100]: 3 min read
+        - article [ref=e101]:
+          - generic [ref=e102]:
+            - generic "Frank Mendez" [ref=e103]: FM
+            - generic [ref=e104]:
+              - generic [ref=e105]: Frank Mendez
+              - time [ref=e106]: Apr 14
+          - 'link "Reaction: Batch Processing Isn’t Dead—It’s Just Quietly Running the World" [ref=e107] [cursor=pointer]':
+            - /url: /blog/reaction-batch-processing-isnt-deadits-just-quietly-running-the-world
+            - 'heading "Reaction: Batch Processing Isn’t Dead—It’s Just Quietly Running the World" [level=2] [ref=e108]'
+          - generic [ref=e109]:
+            - link "#architecture" [ref=e110] [cursor=pointer]:
+              - /url: /blog/tag/architecture
+            - link "#backend" [ref=e111] [cursor=pointer]:
+              - /url: /blog/tag/backend
+            - link "#softwareengineering" [ref=e112] [cursor=pointer]:
+              - /url: /blog/tag/softwareengineering
+          - generic [ref=e114]: 3 min read
+        - article [ref=e115]:
+          - generic [ref=e116]:
+            - generic "Frank Mendez" [ref=e117]: FM
+            - generic [ref=e118]:
+              - generic [ref=e119]: Frank Mendez
+              - time [ref=e120]: Apr 8
+          - 'link "The Phoenix Project Chapter 3 Reaction: Meet Brent, the Bottleneck Breaking Your System" [ref=e121] [cursor=pointer]':
+            - /url: /blog/the-phoenix-project-chapter-3-reaction-meet-brent-the-bottleneck-breaking-your-system
+            - 'heading "The Phoenix Project Chapter 3 Reaction: Meet Brent, the Bottleneck Breaking Your System" [level=2] [ref=e122]'
+          - generic [ref=e123]:
+            - link "#leadership" [ref=e124] [cursor=pointer]:
+              - /url: /blog/tag/leadership
+            - link "#devops" [ref=e125] [cursor=pointer]:
+              - /url: /blog/tag/devops
+            - link "#pipelines" [ref=e126] [cursor=pointer]:
+              - /url: /blog/tag/pipelines
+            - link "#software-engineering" [ref=e127] [cursor=pointer]:
+              - /url: /blog/tag/software-engineering
+          - generic [ref=e129]: 1 min read
+        - article [ref=e130]:
+          - generic [ref=e131]:
+            - generic "Frank Mendez" [ref=e132]: FM
+            - generic [ref=e133]:
+              - generic [ref=e134]: Frank Mendez
+              - time [ref=e135]: Apr 7
+          - 'link "Chapter 2: API Paradigms Choosing the Right Language for Your System" [ref=e136] [cursor=pointer]':
+            - /url: /blog/chapter-2-api-paradigms-choosing-the-right-language-for-your-system
+            - 'heading "Chapter 2: API Paradigms Choosing the Right Language for Your System" [level=2] [ref=e137]'
+          - generic [ref=e138]:
+            - link "#architecture" [ref=e139] [cursor=pointer]:
+              - /url: /blog/tag/architecture
+            - link "#devlife" [ref=e140] [cursor=pointer]:
+              - /url: /blog/tag/devlife
+            - link "#rest-api" [ref=e141] [cursor=pointer]:
+              - /url: /blog/tag/rest-api
+            - link "#scalability" [ref=e142] [cursor=pointer]:
+              - /url: /blog/tag/scalability
+            - link "#backend" [ref=e143] [cursor=pointer]:
+              - /url: /blog/tag/backend
+            - link "#softwareengineering" [ref=e144] [cursor=pointer]:
+              - /url: /blog/tag/softwareengineering
+          - generic [ref=e146]: 3 min read
+        - article [ref=e147]:
+          - generic [ref=e148]:
+            - generic "Frank Mendez" [ref=e149]: FM
+            - generic [ref=e150]:
+              - generic [ref=e151]: Frank Mendez
+              - time [ref=e152]: Apr 7
+          - 'link "Designing Data-Intensive Applications Chapter 9 Consistency & Consensus: Getting Systems to Agree (Good Luck With That)" [ref=e153] [cursor=pointer]':
+            - /url: /blog/designing-data-intensive-applications-chapter-9-consistency-and-consensus-getting-systems-to-agree-good-luck-with-that
+            - 'heading "Designing Data-Intensive Applications Chapter 9 Consistency & Consensus: Getting Systems to Agree (Good Luck With That)" [level=2] [ref=e154]'
+          - generic [ref=e155]:
+            - link "#architecture" [ref=e156] [cursor=pointer]:
+              - /url: /blog/tag/architecture
+            - link "#devlife" [ref=e157] [cursor=pointer]:
+              - /url: /blog/tag/devlife
+            - link "#scalability" [ref=e158] [cursor=pointer]:
+              - /url: /blog/tag/scalability
+            - link "#backend" [ref=e159] [cursor=pointer]:
+              - /url: /blog/tag/backend
+            - link "#softwareengineering" [ref=e160] [cursor=pointer]:
+              - /url: /blog/tag/softwareengineering
+          - generic [ref=e162]: 3 min read
+    - contentinfo [ref=e163]:
+      - paragraph [ref=e164]: © 2026 The Practical Engineer. All rights reserved.
+  - alert [ref=e165]

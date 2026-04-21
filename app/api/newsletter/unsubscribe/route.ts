@@ -16,10 +16,12 @@ export async function GET(req: NextRequest) {
 
   if (!data) return new NextResponse(null, { status: 404 })
 
-  await supabase
+  const { error: updateErr } = await supabase
     .from('newsletter_subscriptions')
     .update({ unsubscribed_at: new Date().toISOString() })
     .eq('id', data.id)
+
+  if (updateErr) return new NextResponse(null, { status: 500 })
 
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/+$/, '')
   return NextResponse.redirect(`${siteUrl}/newsletter/unsubscribed`)

@@ -30,10 +30,13 @@ export async function POST(req: NextRequest) {
     if (existing.unsubscribed_at === null) {
       return NextResponse.json({ success: true, message: "You're already subscribed" })
     }
-    await supabase
+    const { error: updateErr } = await supabase
       .from('newsletter_subscriptions')
       .update({ unsubscribed_at: null, subscribed_at: new Date().toISOString() })
       .eq('id', existing.id)
+    if (updateErr) {
+      return NextResponse.json({ success: false, message: 'Failed to re-subscribe' }, { status: 500 })
+    }
     return NextResponse.json({ success: true, message: "You've been re-subscribed" })
   }
 

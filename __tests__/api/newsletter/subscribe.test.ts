@@ -91,4 +91,16 @@ describe('POST /api/newsletter/subscribe', () => {
     expect(json.success).toBe(true)
     expect(json.message).toBe("You've been re-subscribed")
   })
+
+  it('returns 500 when re-subscribe update fails', async () => {
+    const supabase = makeSupabase({
+      existingRow: { id: 'sub-1', unsubscribed_at: '2026-01-01T00:00:00Z' },
+      updateError: { message: 'DB error' },
+    })
+    mockCreateServiceClient.mockReturnValue(supabase)
+    const res = await POST(makeReq({ email: 'old@example.com' }))
+    expect(res.status).toBe(500)
+    const json = await res.json()
+    expect(json.success).toBe(false)
+  })
 })

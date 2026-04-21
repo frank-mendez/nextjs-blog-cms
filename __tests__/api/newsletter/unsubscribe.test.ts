@@ -57,4 +57,14 @@ describe('GET /api/newsletter/unsubscribe', () => {
     expect(res.status).toBe(307)
     expect(res.headers.get('location')).toContain('/newsletter/unsubscribed')
   })
+
+  it('returns 500 when unsubscribe update fails', async () => {
+    const supabase = makeSupabase({
+      foundRow: { id: 'sub-1' },
+      updateError: { message: 'DB error' },
+    })
+    mockCreateServiceClient.mockReturnValue(supabase)
+    const res = await GET(makeReq('valid-token'))
+    expect(res.status).toBe(500)
+  })
 })

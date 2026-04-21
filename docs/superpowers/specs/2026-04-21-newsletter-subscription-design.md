@@ -111,7 +111,7 @@ app/(dashboard)/dashboard/admin/newsletter/
 app/(public)/newsletter/
   unsubscribed/page.tsx # confirmation page shown after unsubscribing
 
-database/
+supabase/
   migrations/add_newsletter_tables.sql
   policies/newsletter.sql
 

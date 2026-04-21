@@ -1,10 +1,20 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServiceClient } from '@/lib/supabase/service'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 const schema = z.object({ email: z.string().email() })
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  const rl = checkRateLimit(`newsletter:subscribe:${ip}`, 5, 60_000)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { success: false, message: 'Too many requests. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+    )
+  }
+
   let body: unknown
   try {
     body = await req.json()
@@ -17,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'Invalid email address' }, { status: 400 })
   }
 
-  const { email } = result.data
+  const email = result.data.email.trim().toLowerCase()
   const supabase = createServiceClient()
 
   const { data: existing, error: existingErr } = await supabase

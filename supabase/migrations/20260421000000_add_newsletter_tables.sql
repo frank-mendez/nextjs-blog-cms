@@ -9,7 +9,7 @@
 
 CREATE TABLE IF NOT EXISTS public.newsletter_subscriptions (
   id                UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
-  email             TEXT        NOT NULL UNIQUE,
+  email             TEXT        NOT NULL,
   subscribed_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   unsubscribed_at   TIMESTAMPTZ,
   unsubscribe_token TEXT        NOT NULL UNIQUE DEFAULT gen_random_uuid(),
@@ -31,6 +31,10 @@ CREATE TABLE IF NOT EXISTS public.newsletter_sends (
 -- ============================================
 -- INDEXES
 -- ============================================
+
+-- Case-insensitive uniqueness: User@Example.com and user@example.com are the same subscriber
+CREATE UNIQUE INDEX IF NOT EXISTS newsletter_subscriptions_email_lower_idx
+  ON public.newsletter_subscriptions (lower(email));
 
 CREATE INDEX IF NOT EXISTS newsletter_sends_pending_scheduled_idx
   ON public.newsletter_sends (scheduled_at)

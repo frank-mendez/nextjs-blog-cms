@@ -20,7 +20,7 @@
 - `lib/notifications/newsletter.ts` — `sendNewsletterEmail` via Resend
 - `app/api/newsletter/subscribe/route.ts` — `POST` subscribe endpoint
 - `app/api/newsletter/unsubscribe/route.ts` — `GET ?token=` one-click unsubscribe
-- `app/api/newsletter/send/route.ts` — `GET` Vercel Cron endpoint
+- `app/api/newsletter/send/route.ts` — `POST` Vercel Cron endpoint
 - `app/api/newsletter/subscribers/export/route.ts` — `GET` CSV export
 - `components/newsletter/SubscribeForm.tsx` — subscribe widget (client component)
 - `app/(dashboard)/dashboard/admin/newsletter/page.tsx` — admin panel

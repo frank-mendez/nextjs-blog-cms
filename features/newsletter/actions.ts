@@ -15,5 +15,6 @@ export async function scheduleNewsletterSend(postId: string): Promise<void> {
     )
   if (error) {
     console.error('[scheduleNewsletterSend] DB error:', error.message)
+    throw new Error(`[scheduleNewsletterSend] DB error: ${error.message}`)
   }
 }

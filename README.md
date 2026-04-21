@@ -283,7 +283,7 @@ Every email contains a unique unsubscribe link: `GET /api/newsletter/unsubscribe
 
 ### Admin dashboard
 
-Go to **Dashboard → Newsletter** (admin only) to see:
+Go to **Dashboard → Admin → Newsletter** (admin only) to see:
 
 - Active subscribers, sends dispatched, and unsubscribed counts
 - Pending and in-progress scheduled sends
@@ -292,20 +292,7 @@ Go to **Dashboard → Newsletter** (admin only) to see:
 
 ### Vercel Cron setup
 
-Add this to `vercel.json` to trigger the send processor every minute:
-
-```json
-{
-  "crons": [
-    {
-      "path": "/api/newsletter/send",
-      "schedule": "* * * * *"
-    }
-  ]
-}
-```
-
-The endpoint requires a `x-webhook-secret` header matching `WEBHOOK_SECRET`. Set this in your Vercel project environment variables and configure your cron caller to include it.
+A `vercel.json` is included at the repo root that configures the cron to fire every minute. The endpoint requires a `x-webhook-secret` header matching `WEBHOOK_SECRET` — add this to your Vercel project environment variables. Vercel Cron sends the header automatically when the secret is configured in the project settings.
 
 ---
 

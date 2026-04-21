@@ -1,16 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('@/lib/supabase/service', () => ({ createServiceClient: vi.fn() }))
+vi.mock('@/lib/rateLimit', () => ({ checkRateLimit: vi.fn(() => ({ allowed: true })) }))
 
 import { createServiceClient } from '@/lib/supabase/service'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { POST } from '@/app/api/newsletter/subscribe/route'
 
 const mockCreateServiceClient = vi.mocked(createServiceClient)
+const mockCheckRateLimit = vi.mocked(checkRateLimit)
 
-function makeReq(body: unknown) {
+function makeReq(body: unknown, ip = '1.2.3.4') {
   return new Request('http://localhost/api/newsletter/subscribe', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
     body: JSON.stringify(body),
   }) as unknown as import('next/server').NextRequest
 }
@@ -39,9 +42,29 @@ function makeSupabase({
   } as unknown as ReturnType<typeof createServiceClient>
 }
 
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => {
+  vi.clearAllMocks()
+  mockCheckRateLimit.mockReturnValue({ allowed: true })
+})
 
 describe('POST /api/newsletter/subscribe', () => {
+  it('returns 429 when rate limit exceeded', async () => {
+    mockCheckRateLimit.mockReturnValue({ allowed: false, retryAfter: 30 })
+    mockCreateServiceClient.mockReturnValue(makeSupabase())
+    const res = await POST(makeReq({ email: 'test@example.com' }))
+    expect(res.status).toBe(429)
+    expect(res.headers.get('Retry-After')).toBe('30')
+  })
+
+  it('normalizes email to lowercase before insert', async () => {
+    const supabase = makeSupabase({ existingRow: null })
+    mockCreateServiceClient.mockReturnValue(supabase)
+    await POST(makeReq({ email: 'User@Example.COM' }))
+    const mutateChain = (supabase.from as ReturnType<typeof vi.fn>).mock.results[1].value as any
+    expect(mutateChain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'user@example.com' })
+    )
+  })
   it('returns 400 for invalid email', async () => {
     mockCreateServiceClient.mockReturnValue(makeSupabase())
     const res = await POST(makeReq({ email: 'not-an-email' }))

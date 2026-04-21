@@ -59,7 +59,7 @@ Subscribers stored in Supabase. A `newsletter_sends` queue table holds scheduled
 
 1. Reader submits email on blog post → `POST /api/newsletter/subscribe` → insert into `newsletter_subscriptions`
 2. Admin publishes post → server action writes row to `newsletter_sends` with `scheduled_at = now() + NEWSLETTER_DELAY_MINUTES`
-3. Vercel Cron fires every minute → `GET /api/newsletter/send` → finds rows where `status = 'pending'` AND `scheduled_at <= now()`
+3. Vercel Cron fires every minute → `POST /api/newsletter/send` → finds rows where `status = 'pending'` AND `scheduled_at <= now()`
 4. For each pending send: fetch all active subscribers, send email via Resend with post details + unsubscribe link, update `status = 'sent'`
 5. Reader clicks unsubscribe link → `GET /api/newsletter/unsubscribe?token=xxx` → sets `unsubscribed_at = now()` → redirects to `/newsletter/unsubscribed`
 
@@ -80,7 +80,7 @@ Subscribers stored in Supabase. A `newsletter_sends` queue table holds scheduled
 - If found: sets `unsubscribed_at = now()`
 - Redirects to `/newsletter/unsubscribed`
 
-### `GET /api/newsletter/send`
+### `POST /api/newsletter/send`
 - Protected by `x-webhook-secret: $WEBHOOK_SECRET` header
 - Queries `newsletter_sends` where `status = 'pending'` AND `scheduled_at <= now()`
 - Also marks sends stuck in `sending` for >10 minutes as `failed` (recovery from cron crash)

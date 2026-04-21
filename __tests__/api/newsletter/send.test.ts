@@ -41,7 +41,14 @@ function makeSupabase({
 } = {}) {
   const fromMock = vi.fn()
 
-  // Call 1: fetch pending sends (.select.eq.lte.limit)
+  // Call 1: stuck-sending recovery (.update.eq.lt)
+  fromMock.mockReturnValueOnce({
+    update: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    lt: vi.fn().mockResolvedValue({ error: null }),
+  })
+
+  // Call 2: fetch pending sends (.select.eq.lte.limit)
   fromMock.mockReturnValueOnce({
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
@@ -49,7 +56,7 @@ function makeSupabase({
     limit: vi.fn().mockResolvedValue({ data: fetchPendingError ? null : pendingSends, error: fetchPendingError }),
   })
 
-  // Call 2: claim sends (.update.in.eq.select)
+  // Call 3: claim sends (.update.in.eq.select)
   fromMock.mockReturnValueOnce({
     update: vi.fn().mockReturnThis(),
     in: vi.fn().mockReturnThis(),

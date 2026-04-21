@@ -42,6 +42,14 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServiceClient()
 
+  // Recovery: mark sends stuck in 'sending' for >10 minutes as failed
+  const stuckCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+  await supabase
+    .from('newsletter_sends')
+    .update({ status: 'failed' })
+    .eq('status', 'sending')
+    .lt('sending_started_at', stuckCutoff)
+
   // Fetch pending sends that are due, then claim only the ones we actually update
   // (concurrent invocations will fail to claim rows already set to 'sending')
   const { data: pendingSends, error: fetchError } = await supabase

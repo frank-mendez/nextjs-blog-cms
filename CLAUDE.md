@@ -35,9 +35,16 @@ WEBHOOK_SECRET=
 
 ## Database Setup
 
-1. Run `database/schema.sql` in Supabase SQL editor
-2. Apply RLS policies from `database/policies/`
-3. Optionally seed with `database/seed.sql`
+Migrations and policies are managed via the Supabase CLI (`npx supabase`):
+
+```bash
+npx supabase migration new <name>   # Create a new migration
+npx supabase db push                # Apply migrations to remote
+npx supabase db reset               # Reset local DB and reapply all migrations
+```
+
+- Migrations: `supabase/migrations/`
+- RLS policies: `supabase/policies/`
 
 ## Architecture
 
@@ -54,13 +61,14 @@ WEBHOOK_SECRET=
 - `lib/permissions/` — RBAC enforcement logic
 - `components/editor/` — TipTap WYSIWYG editor integration
 - `components/ui/` — shadcn/ui components
-- `database/` — SQL schema, migrations, RLS policies
+- `supabase/migrations/` — SQL migrations (applied via `npx supabase`)
+- `supabase/policies/` — RLS policies
 
 ### Auth & Permissions
 - Authentication via **Supabase Auth**
 - Two roles: **Admin** (full control) and **Author** (own posts + developer settings)
 - **Developer feature** (`/dashboard/developer`) is accessible to both Admin and Author — each user manages their own API keys and LLM provider keys scoped to their `user_id`
-- Access control enforced at the database level via **Supabase Row Level Security (RLS)** policies in `database/policies/`
+- Access control enforced at the database level via **Supabase Row Level Security (RLS)** policies in `supabase/policies/`
 - Client-side RBAC logic lives in `lib/permissions/`
 
 ### Data Flow

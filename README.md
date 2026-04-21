@@ -1,6 +1,6 @@
 # Next.js Blog CMS
 
-A full-stack Blog CMS built with Next.js (App Router), Supabase, TailwindCSS, and shadcn/ui. Features Supabase Auth with role-based access control, a WYSIWYG editor, draft/publish workflow, an AI writing assistant, a headless REST API, and MCP-powered development workflows.
+A full-stack Blog CMS built with Next.js (App Router), Supabase, TailwindCSS, and shadcn/ui. Features Supabase Auth with role-based access control, a WYSIWYG editor, draft/publish workflow, newsletter subscriptions, an AI writing assistant, a headless REST API, and MCP-powered development workflows.
 
 ---
 
@@ -17,6 +17,7 @@ A full-stack Blog CMS built with Next.js (App Router), Supabase, TailwindCSS, an
 - AI Writing Assistant — chat with uploaded books (PDF) using Claude, Gemini, or OpenAI; generate full blog post drafts from conversation context
 - LLM provider key management — store encrypted API keys (AES-256-GCM) for Claude, Gemini, and OpenAI per user
 - Headless AI post generation via `POST /api/ai-assistant/generate`
+- Newsletter subscriptions — readers subscribe from a widget on every post; email sent automatically on publish via Resend after a configurable delay; one-click unsubscribe via token
 - REST API for posts — list, create, read, update, delete via authenticated endpoints
 - In-memory rate limiting on API routes
 - Favicon support
@@ -111,6 +112,12 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 LLM_KEY_ENCRYPTION_SECRET=   # 32-character secret for AES-256-GCM key encryption
+
+# Newsletter
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=            # verified sender address, e.g. noreply@yourdomain.com
+NEWSLETTER_DELAY_MINUTES=60   # delay between publish and send (default: 60)
+WEBHOOK_SECRET=               # shared secret used to authenticate the /api/newsletter/send cron call
 ```
 
 ### 4. Set up the database
@@ -259,6 +266,49 @@ Delete a post by ID.
 
 ---
 
+## Newsletter
+
+Readers subscribe via a widget at the bottom of every blog post. When a post is published, a send is queued in the `newsletter_sends` table and dispatched after a configurable delay.
+
+### How it works
+
+1. Reader submits their email on any blog post — stored in `newsletter_subscriptions`
+2. When a post is published, a row is inserted into `newsletter_sends` with `scheduled_at = now() + NEWSLETTER_DELAY_MINUTES`
+3. A Vercel Cron Job (or any HTTP scheduler) calls `POST /api/newsletter/send` every minute
+4. The endpoint claims pending sends past their `scheduled_at`, emails all active subscribers via Resend, and marks the send as `sent`
+
+### Unsubscribe
+
+Every email contains a unique unsubscribe link: `GET /api/newsletter/unsubscribe?token=<token>`. Clicking it sets `unsubscribed_at` and redirects to `/newsletter/unsubscribed`.
+
+### Admin dashboard
+
+Go to **Dashboard → Newsletter** (admin only) to see:
+
+- Active subscribers, sends dispatched, and unsubscribed counts
+- Pending and in-progress scheduled sends
+- Recent subscriber list with status badges
+- CSV export of all subscribers
+
+### Vercel Cron setup
+
+Add this to `vercel.json` to trigger the send processor every minute:
+
+```json
+{
+  "crons": [
+    {
+      "path": "/api/newsletter/send",
+      "schedule": "* * * * *"
+    }
+  ]
+}
+```
+
+The endpoint requires a `x-webhook-secret` header matching `WEBHOOK_SECRET`. Set this in your Vercel project environment variables and configure your cron caller to include it.
+
+---
+
 ## Testing
 
 ### Unit Tests (Vitest)
@@ -330,6 +380,7 @@ This project is designed to work seamlessly with Claude Code:
 - [x] AI Writing Assistant (Claude, Gemini, OpenAI)
 - [x] PDF text extraction and LLM context
 - [x] REST API for posts
+- [x] Newsletter subscriptions with auto-send on publish
 - [ ] Analytics dashboard
 - [ ] Scheduled posts
 - [ ] Multi-author collaboration

@@ -20,17 +20,21 @@ export function SubscribeForm() {
   } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
   async function onSubmit(values: FormValues) {
-    const res = await fetch('/api/newsletter/subscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values),
-    })
-    const json = await res.json()
-    if (json.success) {
-      setSubscribed(true)
-      toast.success(json.message)
-    } else {
-      toast.error(json.message ?? 'Something went wrong')
+    try {
+      const res = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      })
+      const json = await res.json().catch(() => null)
+      if (json?.success) {
+        setSubscribed(true)
+        toast.success(json.message)
+      } else {
+        toast.error(json?.message ?? 'Something went wrong')
+      }
+    } catch {
+      toast.error('Network error. Please try again.')
     }
   }
 

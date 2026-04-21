@@ -5,9 +5,9 @@ import type { NewsletterSubscription, NewsletterSend, SubscriberStats } from './
 export async function getSubscriberStats(): Promise<SubscriberStats> {
   const supabase = createServiceClient()
   const [
-    { count: active },
-    { count: unsubscribed },
-    { count: sends_dispatched },
+    { count: active, error: e1 },
+    { count: unsubscribed, error: e2 },
+    { count: sends_dispatched, error: e3 },
   ] = await Promise.all([
     supabase
       .from('newsletter_subscriptions')
@@ -22,6 +22,8 @@ export async function getSubscriberStats(): Promise<SubscriberStats> {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'sent'),
   ])
+  const firstError = e1 ?? e2 ?? e3
+  if (firstError) throw firstError
   return {
     active: active ?? 0,
     sends_dispatched: sends_dispatched ?? 0,
@@ -37,7 +39,8 @@ export async function getScheduledSends(): Promise<(NewsletterSend & { post_titl
     .in('status', ['pending', 'sending'])
     .order('scheduled_at', { ascending: true })
   if (error) throw error
-  return (data ?? []).map((row: any) => ({
+  type RawSendRow = NewsletterSend & { post: { title: string } | null }
+  return (data as RawSendRow[] ?? []).map((row) => ({
     ...row,
     post_title: row.post?.title ?? 'Unknown post',
   }))

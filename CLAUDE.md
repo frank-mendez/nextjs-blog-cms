@@ -35,9 +35,16 @@ WEBHOOK_SECRET=
 
 ## Database Setup
 
-1. Run `database/schema.sql` in Supabase SQL editor
-2. Apply RLS policies from `database/policies/`
-3. Optionally seed with `database/seed.sql`
+Migrations and policies are managed via the Supabase CLI (`npx supabase`):
+
+```bash
+npx supabase migration new <name>   # Create a new migration
+npx supabase db push                # Apply migrations to remote
+npx supabase db reset               # Reset local DB and reapply all migrations
+```
+
+- Migrations: `supabase/migrations/`
+- RLS policies: `database/policies/`
 
 ## Architecture
 
@@ -54,7 +61,8 @@ WEBHOOK_SECRET=
 - `lib/permissions/` — RBAC enforcement logic
 - `components/editor/` — TipTap WYSIWYG editor integration
 - `components/ui/` — shadcn/ui components
-- `database/` — SQL schema, migrations, RLS policies
+- `supabase/migrations/` — SQL migrations (applied via `npx supabase`)
+- `database/policies/` — RLS policies
 
 ### Auth & Permissions
 - Authentication via **Supabase Auth**
@@ -64,7 +72,7 @@ WEBHOOK_SECRET=
 - Client-side RBAC logic lives in `lib/permissions/`
 
 ### Data Flow
-API routes and Server Components use the Supabase service role client (`lib/supabase/server.ts`). Client Components use the anon key client (`lib/supabase/client.ts`). RLS policies ensure users can only access data they're permitted to see regardless of which client is used.
+API routes and Server Components use the Supabase service role client (`lib/supabase/service.ts`). Client Components use the anon key client (`lib/supabase/client.ts`). RLS policies ensure users can only access data they're permitted to see regardless of which client is used.
 
 ## MCP Servers
 

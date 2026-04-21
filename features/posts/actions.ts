@@ -9,6 +9,7 @@ import { can } from '@/lib/permissions'
 import type { Role } from '@/lib/permissions'
 import { getProfile } from '@/lib/auth/session'
 import type { PostFormValues } from './types'
+import { scheduleNewsletterSend } from '@/features/newsletter/actions'
 
 async function generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
   const supabase = await createClient()
@@ -134,6 +135,12 @@ export async function publishPost(id: string) {
     .single()
 
   if (error) return { error: error.message }
+
+  try {
+    await scheduleNewsletterSend(id)
+  } catch (err) {
+    console.error('[publishPost] Failed to schedule newsletter send:', err)
+  }
 
   revalidatePath('/dashboard/posts')
   revalidatePath('/blog')

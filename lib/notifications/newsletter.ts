@@ -10,6 +10,7 @@ function escapeHtml(str: string): string {
 }
 
 function sanitizeSubject(str: string): string {
+  // Strip CR, LF, and other control characters to prevent header injection
   return str.replace(/[\r\n\x00-\x1F\x7F]/g, '')
 }
 
@@ -46,11 +47,11 @@ export async function sendNewsletterEmail(
         <h1 style="font-size:24px;font-weight:700;margin-bottom:8px;">${title}</h1>
         ${excerpt ? `<p style="color:#6b7280;margin-bottom:16px;">${excerpt}</p>` : ''}
         ${post.cover_image ? `<img src="${escapeHtml(post.cover_image)}" alt="${title}" style="width:100%;border-radius:8px;margin-bottom:16px;" />` : ''}
-        <a href="${postUrl}" style="display:inline-block;background:#111;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">Read Post</a>
+        <a href="${escapeHtml(postUrl)}" style="display:inline-block;background:#111;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">Read Post</a>
         <hr style="margin:32px 0;border:none;border-top:1px solid #e5e7eb;" />
         <p style="color:#9ca3af;font-size:12px;">
           You're receiving this because you subscribed to new posts.
-          <a href="${unsubscribeUrl}" style="color:#9ca3af;">Unsubscribe</a>
+          <a href="${escapeHtml(unsubscribeUrl)}" style="color:#9ca3af;">Unsubscribe</a>
         </p>
       </div>
     `,

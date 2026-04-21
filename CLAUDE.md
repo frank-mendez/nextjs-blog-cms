@@ -44,7 +44,7 @@ npx supabase db reset               # Reset local DB and reapply all migrations
 ```
 
 - Migrations: `supabase/migrations/`
-- RLS policies: `supabase/policies/`
+- RLS policies: `database/policies/`
 
 ## Architecture
 
@@ -62,17 +62,17 @@ npx supabase db reset               # Reset local DB and reapply all migrations
 - `components/editor/` — TipTap WYSIWYG editor integration
 - `components/ui/` — shadcn/ui components
 - `supabase/migrations/` — SQL migrations (applied via `npx supabase`)
-- `supabase/policies/` — RLS policies
+- `database/policies/` — RLS policies
 
 ### Auth & Permissions
 - Authentication via **Supabase Auth**
 - Two roles: **Admin** (full control) and **Author** (own posts + developer settings)
 - **Developer feature** (`/dashboard/developer`) is accessible to both Admin and Author — each user manages their own API keys and LLM provider keys scoped to their `user_id`
-- Access control enforced at the database level via **Supabase Row Level Security (RLS)** policies in `supabase/policies/`
+- Access control enforced at the database level via **Supabase Row Level Security (RLS)** policies in `database/policies/`
 - Client-side RBAC logic lives in `lib/permissions/`
 
 ### Data Flow
-API routes and Server Components use the Supabase service role client (`lib/supabase/server.ts`). Client Components use the anon key client (`lib/supabase/client.ts`). RLS policies ensure users can only access data they're permitted to see regardless of which client is used.
+API routes and Server Components use the Supabase service role client (`lib/supabase/service.ts`). Client Components use the anon key client (`lib/supabase/client.ts`). RLS policies ensure users can only access data they're permitted to see regardless of which client is used.
 
 ## MCP Servers
 

@@ -17,14 +17,15 @@ function makeReq(body: unknown) {
 
 function makeSupabase({
   existingRow = null as { id: string; unsubscribed_at: string | null } | null,
+  lookupError = null as { message: string } | null,
   insertError = null as { message: string } | null,
   updateError = null as { message: string } | null,
 } = {}) {
-  const singleMock = vi.fn().mockResolvedValue({ data: existingRow, error: null })
+  const maybeSingleMock = vi.fn().mockResolvedValue({ data: existingRow, error: lookupError })
   const selectChain: any = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
-    single: singleMock,
+    maybeSingle: maybeSingleMock,
   }
   const insertMock = vi.fn().mockResolvedValue({ error: insertError })
   const updateEqMock = vi.fn().mockResolvedValue({ error: updateError })
@@ -90,6 +91,15 @@ describe('POST /api/newsletter/subscribe', () => {
     const json = await res.json()
     expect(json.success).toBe(true)
     expect(json.message).toBe("You've been re-subscribed")
+  })
+
+  it('returns 500 on DB lookup error', async () => {
+    const supabase = makeSupabase({ lookupError: { message: 'connection refused' } })
+    mockCreateServiceClient.mockReturnValue(supabase)
+    const res = await POST(makeReq({ email: 'test@example.com' }))
+    expect(res.status).toBe(500)
+    const json = await res.json()
+    expect(json.success).toBe(false)
   })
 
   it('returns 500 when re-subscribe update fails', async () => {

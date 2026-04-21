@@ -20,7 +20,7 @@
 - `lib/notifications/newsletter.ts` — `sendNewsletterEmail` via Resend
 - `app/api/newsletter/subscribe/route.ts` — `POST` subscribe endpoint
 - `app/api/newsletter/unsubscribe/route.ts` — `GET ?token=` one-click unsubscribe
-- `app/api/newsletter/cron/route.ts` — `GET` Vercel Cron endpoint
+- `app/api/newsletter/send/route.ts` — `GET` Vercel Cron endpoint
 - `app/api/newsletter/subscribers/export/route.ts` — `GET` CSV export
 - `components/newsletter/SubscribeForm.tsx` — subscribe widget (client component)
 - `app/(dashboard)/dashboard/admin/newsletter/page.tsx` — admin panel
@@ -1043,19 +1043,19 @@ git commit -m "feat: add newsletter subscribers CSV export route"
 ## Task 12: Cron Route
 
 **Files:**
-- Create: `app/api/newsletter/cron/route.ts`
+- Create: `app/api/newsletter/send/route.ts`
 
 - [ ] **Step 1: Create the cron route**
 
 ```typescript
-// app/api/newsletter/cron/route.ts
+// app/api/newsletter/send/route.ts
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendNewsletterEmail } from '@/lib/notifications/newsletter'
 import type { NewsletterSubscription } from '@/features/newsletter/types'
 
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET
+  const secret = process.env.WEBHOOK_SECRET
   const auth = req.headers.get('authorization')
   if (!secret || auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -1133,7 +1133,7 @@ export async function GET(req: NextRequest) {
 - [ ] **Step 2: Commit**
 
 ```bash
-git add app/api/newsletter/cron/route.ts
+git add app/api/newsletter/send/route.ts
 git commit -m "feat: add newsletter Vercel Cron route"
 ```
 
@@ -1192,7 +1192,7 @@ git commit -m "feat: add unsubscribed confirmation page"
 {
   "crons": [
     {
-      "path": "/api/newsletter/cron",
+      "path": "/api/newsletter/send",
       "schedule": "* * * * *"
     }
   ]
@@ -1221,7 +1221,7 @@ In `vitest.config.ts`, inside the `coverage.include` array, add after the `'app/
         // newsletter routes
         'app/api/newsletter/subscribe/route.ts',
         'app/api/newsletter/unsubscribe/route.ts',
-        'app/api/newsletter/cron/route.ts',
+        'app/api/newsletter/send/route.ts',
         'lib/notifications/newsletter.ts',
 ```
 
@@ -1262,7 +1262,7 @@ In the environment variables block (step 3 of Getting Started), add after `SLACK
 ```markdown
 NEXT_PUBLIC_SITE_URL=           # Full URL of your deployment, e.g. https://blog.example.com
 NEWSLETTER_DELAY_MINUTES=60     # Minutes to wait after publish before sending email
-CRON_SECRET=                    # Secret shared with Vercel Cron (set in Vercel env vars)
+WEBHOOK_SECRET=               # Secret used to authenticate calls to /api/newsletter/send
 ```
 
 - [ ] **Step 3: Add Newsletter section to the README**
@@ -1295,11 +1295,11 @@ Navigate to **Dashboard → Admin → Newsletter** to see:
 |---|---|
 | `NEXT_PUBLIC_SITE_URL` | Full public URL (e.g. `https://blog.example.com`) — used in email links |
 | `NEWSLETTER_DELAY_MINUTES` | Minutes to wait after publish before sending (default: `60`) |
-| `CRON_SECRET` | Secret Vercel sends in the `Authorization` header to authenticate cron calls |
+| `WEBHOOK_SECRET` | Secret Vercel sends in the `Authorization` header to authenticate cron calls |
 
 ### Vercel Setup
 
-Add `CRON_SECRET` to your Vercel project environment variables. The cron job is configured in `vercel.json` and runs every minute.
+Add `WEBHOOK_SECRET` to your Vercel project environment variables. The cron job is configured in `vercel.json` and runs every minute.
 ```
 
 - [ ] **Step 4: Update the Roadmap section to mark newsletter complete**

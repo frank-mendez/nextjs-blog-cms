@@ -20,11 +20,18 @@ export async function POST(req: NextRequest) {
   const { email } = result.data
   const supabase = createServiceClient()
 
-  const { data: existing } = await supabase
+  const { data: existing, error: existingErr } = await supabase
     .from('newsletter_subscriptions')
     .select('id, unsubscribed_at')
     .eq('email', email)
-    .single()
+    .maybeSingle()
+
+  if (existingErr) {
+    return NextResponse.json(
+      { success: false, message: 'Failed to check subscription status' },
+      { status: 500 }
+    )
+  }
 
   if (existing) {
     if (existing.unsubscribed_at === null) {

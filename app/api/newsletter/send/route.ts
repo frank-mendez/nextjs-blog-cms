@@ -3,12 +3,28 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendNewsletterEmail } from '@/lib/notifications/newsletter'
 import type { NewsletterSubscription } from '@/features/newsletter/types'
+import type { PostEmailData } from '@/lib/notifications/newsletter'
+
+const EMAIL_BATCH_SIZE = 10
 
 function secureCompare(a: string, b: string): boolean {
   const bufA = Buffer.from(a)
   const bufB = Buffer.from(b)
   if (bufA.length !== bufB.length) return false
   return timingSafeEqual(bufA, bufB)
+}
+
+async function sendInBatches(
+  subscribers: NewsletterSubscription[],
+  post: PostEmailData
+): Promise<number> {
+  let failures = 0
+  for (let i = 0; i < subscribers.length; i += EMAIL_BATCH_SIZE) {
+    const batch = subscribers.slice(i, i + EMAIL_BATCH_SIZE)
+    const results = await Promise.allSettled(batch.map((sub) => sendNewsletterEmail(sub, post)))
+    failures += results.filter((r) => r.status === 'rejected').length
+  }
+  return failures
 }
 
 export async function POST(req: NextRequest) {
@@ -26,7 +42,8 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServiceClient()
 
-  // Claim pending sends that are due
+  // Fetch pending sends that are due, then claim only the ones we actually update
+  // (concurrent invocations will fail to claim rows already set to 'sending')
   const { data: pendingSends, error: fetchError } = await supabase
     .from('newsletter_sends')
     .select('id, post_id')
@@ -43,21 +60,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ dispatched: 0 })
   }
 
-  const sendIds = pendingSends.map((s) => s.id)
+  const candidateIds = pendingSends.map((s) => s.id)
 
-  // Mark as sending to prevent duplicate dispatch
-  const { error: claimError } = await supabase
+  // Claim only rows still in 'pending'; .select() returns rows actually updated
+  const { data: claimedSends, error: claimError } = await supabase
     .from('newsletter_sends')
     .update({ status: 'sending', sending_started_at: new Date().toISOString() })
-    .in('id', sendIds)
+    .in('id', candidateIds)
     .eq('status', 'pending')
+    .select('id, post_id')
 
   if (claimError) {
     console.error('[newsletter/send] Failed to claim sends:', claimError.message)
     return NextResponse.json({ error: 'DB error' }, { status: 500 })
   }
 
-  // Fetch active subscribers once
+  if (!claimedSends || claimedSends.length === 0) {
+    return NextResponse.json({ dispatched: 0 })
+  }
+
+  // Fetch active subscribers once for all sends in this batch
   const { data: subscribers, error: subError } = await supabase
     .from('newsletter_subscriptions')
     .select('id, email, unsubscribe_token, subscribed_at, unsubscribed_at')
@@ -71,7 +93,7 @@ export async function POST(req: NextRequest) {
   const activeSubscribers = (subscribers ?? []) as NewsletterSubscription[]
   let dispatched = 0
 
-  for (const send of pendingSends) {
+  for (const send of claimedSends) {
     const { data: postData, error: postError } = await supabase
       .from('posts')
       .select('title, slug, excerpt, cover_image')
@@ -80,28 +102,22 @@ export async function POST(req: NextRequest) {
 
     if (postError || !postData) {
       console.error(`[newsletter/send] Post ${send.post_id} not found, skipping`)
-      await supabase
-        .from('newsletter_sends')
-        .update({ status: 'failed' })
-        .eq('id', send.id)
+      await supabase.from('newsletter_sends').update({ status: 'failed' }).eq('id', send.id)
       continue
     }
 
-    const results = await Promise.allSettled(
-      activeSubscribers.map((sub) => sendNewsletterEmail(sub, postData))
-    )
+    const failures = await sendInBatches(activeSubscribers, postData)
 
-    const failures = results.filter((r) => r.status === 'rejected').length
     if (failures > 0) {
       console.error(`[newsletter/send] ${failures}/${activeSubscribers.length} emails failed for send ${send.id}`)
+      await supabase.from('newsletter_sends').update({ status: 'failed' }).eq('id', send.id)
+    } else {
+      await supabase
+        .from('newsletter_sends')
+        .update({ status: 'sent', sent_at: new Date().toISOString() })
+        .eq('id', send.id)
+      dispatched++
     }
-
-    await supabase
-      .from('newsletter_sends')
-      .update({ status: 'sent', sent_at: new Date().toISOString() })
-      .eq('id', send.id)
-
-    dispatched++
   }
 
   return NextResponse.json({ dispatched })

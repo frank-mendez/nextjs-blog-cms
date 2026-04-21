@@ -1,12 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { requirePermission } from '@/lib/auth/session'
+import { getProfile } from '@/lib/auth/session'
+import { can } from '@/lib/permissions'
+import type { Role } from '@/lib/permissions'
 import { createServiceClient } from '@/lib/supabase/service'
 import type { NewsletterSubscription } from '@/features/newsletter/types'
 
 export async function GET(_req: NextRequest) {
-  try {
-    await requirePermission('users:read')
-  } catch {
+  const profile = await getProfile()
+  if (!profile || !can(profile.role as Role, 'users:read')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

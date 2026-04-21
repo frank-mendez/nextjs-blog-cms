@@ -16,13 +16,14 @@ function makeReq(token?: string) {
 
 function makeSupabase({
   foundRow = null as { id: string } | null,
+  lookupError = null as { message: string } | null,
   updateError = null as { message: string } | null,
 } = {}) {
-  const singleMock = vi.fn().mockResolvedValue({ data: foundRow, error: null })
+  const maybeSingleMock = vi.fn().mockResolvedValue({ data: foundRow, error: lookupError })
   const selectChain: any = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
-    single: singleMock,
+    maybeSingle: maybeSingleMock,
   }
   const updateEqMock = vi.fn().mockResolvedValue({ error: updateError })
   const updateMock = vi.fn().mockReturnValue({ eq: updateEqMock })
@@ -48,6 +49,13 @@ describe('GET /api/newsletter/unsubscribe', () => {
     mockCreateServiceClient.mockReturnValue(supabase)
     const res = await GET(makeReq('unknown-token'))
     expect(res.status).toBe(404)
+  })
+
+  it('returns 500 on DB lookup error', async () => {
+    const supabase = makeSupabase({ lookupError: { message: 'connection refused' } })
+    mockCreateServiceClient.mockReturnValue(supabase)
+    const res = await GET(makeReq('any-token'))
+    expect(res.status).toBe(500)
   })
 
   it('redirects to /newsletter/unsubscribed for valid token', async () => {

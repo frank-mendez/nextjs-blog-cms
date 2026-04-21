@@ -8,12 +8,13 @@ export async function GET(req: NextRequest) {
 
   const supabase = createServiceClient()
 
-  const { data } = await supabase
+  const { data, error: lookupErr } = await supabase
     .from('newsletter_subscriptions')
     .select('id')
     .eq('unsubscribe_token', token)
-    .single()
+    .maybeSingle()
 
+  if (lookupErr) return new NextResponse(null, { status: 500 })
   if (!data) return new NextResponse(null, { status: 404 })
 
   const { error: updateErr } = await supabase

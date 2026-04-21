@@ -136,9 +136,11 @@ export async function publishPost(id: string) {
 
   if (error) return { error: error.message }
 
-  scheduleNewsletterSend(id).catch((err) =>
+  try {
+    await scheduleNewsletterSend(id)
+  } catch (err) {
     console.error('[publishPost] Failed to schedule newsletter send:', err)
-  )
+  }
 
   revalidatePath('/dashboard/posts')
   revalidatePath('/blog')

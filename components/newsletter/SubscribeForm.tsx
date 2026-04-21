@@ -56,8 +56,10 @@ export function SubscribeForm() {
         Get notified when new posts are published. No spam, unsubscribe anytime.
       </p>
       <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2 max-w-sm mx-auto">
+        <label htmlFor="subscribe-email" className="sr-only">Email address</label>
         <Input
           {...register('email')}
+          id="subscribe-email"
           type="email"
           placeholder="your@email.com"
           className="flex-1"

@@ -55,9 +55,9 @@ You can expect an acknowledgement within **72 hours** and a resolution or status
 
 ### Rate Limiting
 
-- All API routes apply in-memory rate limiting via `lib/rateLimit.ts`.
-- Requests that exceed the limit receive a `429 Too Many Requests` response with a `retry_after` value.
-- **Note:** The current implementation uses a Node.js in-memory `Map`. In a multi-instance (horizontally scaled) deployment this does not share state across instances. For production scale, replace with a distributed store such as Redis/Upstash (see the TODO comment in `lib/rateLimit.ts`).
+- Selected API routes apply in-memory rate limiting via `lib/rateLimit.ts` when the handler calls `checkRateLimit`.
+- Requests to rate-limited endpoints that exceed the limit receive a `429 Too Many Requests` response with a `retry_after` value.
+- **Note:** The current implementation uses a Node.js in-memory `Map`. For endpoints that use this rate limiter, state is not shared across instances in a multi-instance (horizontally scaled) deployment. For production scale, replace it with a distributed store such as Redis/Upstash (see the TODO comment in `lib/rateLimit.ts`).
 
 ### Newsletter Webhook Secret
 

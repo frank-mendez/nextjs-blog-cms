@@ -14,7 +14,7 @@ Only the latest code on the `main` branch receives security fixes. If you are ru
 
 **Please do not open a public GitHub issue for security vulnerabilities.**
 
-Report vulnerabilities privately by emailing the maintainer directly or by using [GitHub's private vulnerability reporting](https://github.com/frank-mendez/nextjs-blog-cms/security/advisories/new) feature.
+Report vulnerabilities privately by using [GitHub's private vulnerability reporting](https://github.com/frank-mendez/nextjs-blog-cms/security/advisories/new) feature.
 
 Include the following in your report:
 

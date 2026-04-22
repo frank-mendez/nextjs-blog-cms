@@ -42,6 +42,7 @@ export function HeaderSearch() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search articles…"
+            aria-label="Search articles"
             className="h-8 w-44 border-b border-foreground/30 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground transition-colors"
             autoComplete="off"
           />

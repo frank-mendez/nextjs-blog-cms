@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import type { Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import {
   DropdownMenu,
@@ -35,11 +36,21 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts.at(-1)![0]).toUpperCase()
 }
 
+function sessionToUser(session: Session | null) {
+  if (!session) return null
+  const email = session.user.email ?? ''
+  const name =
+    session.user.user_metadata?.full_name ??
+    session.user.user_metadata?.name ??
+    email.split('@')[0]
+  return { email, name }
+}
+
 type UserState = { email: string; name: string } | null | undefined
 
 export function NavAuthButton() {
   const [user, setUser] = useState<UserState>(undefined)
-  const [signingOut, startSignOut] = useTransition()
+  const [signingOut, setSigningOut] = useState(false)
   const [goingToDashboard, startDashboard] = useTransition()
   const router = useRouter()
 
@@ -84,13 +95,13 @@ export function NavAuthButton() {
     })
   }
 
-  const handleSignOut = () => {
-    startSignOut(async () => {
-      const supabase = createClient()
-      await supabase.auth.signOut()
-      router.push('/')
-      router.refresh()
-    })
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
+    setSigningOut(false)
   }
 
   const initials = getInitials(user.name)
@@ -159,14 +170,4 @@ export function NavAuthButton() {
       </DropdownMenuContent>
     </DropdownMenu>
   )
-}
-
-function sessionToUser(session: Awaited<ReturnType<ReturnType<typeof createClient>['auth']['getSession']>>['data']['session']) {
-  if (!session) return null
-  const email = session.user.email ?? ''
-  const name =
-    session.user.user_metadata?.full_name ??
-    session.user.user_metadata?.name ??
-    email.split('@')[0]
-  return { email, name }
 }

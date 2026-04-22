@@ -90,7 +90,7 @@ Before deploying to production, confirm the following:
 
 ## Dependency Security
 
-Dependencies are pinned to minor version ranges in `package.json`. It is recommended to:
+Dependencies in `package.json` use caret/semver ranges, which generally pin updates to the same major version (with special handling for `0.x` versions). It is recommended to:
 
 - Regularly run `npm audit` and address reported vulnerabilities.
 - Keep Next.js, Supabase libraries, and AI SDK packages up to date, as they receive active security patches.

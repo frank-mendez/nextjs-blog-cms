@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, PenLine, Menu, X, MessageSquare, Loader2, Code, Bot, UserCircle, Mail,
+  LayoutDashboard, FileText, PlusCircle, Users, FolderOpen, Tag, LogOut, Menu, X, MessageSquare, Loader2, Code, Bot, UserCircle, Mail,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { can } from '@/lib/permissions'
@@ -61,11 +62,9 @@ export function Sidebar({ profile }: SidebarProps) {
     <>
       {/* Logo */}
       <div className="p-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-shadow">
-            <PenLine className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-white text-lg tracking-tight">Blog CMS</span>
+        <Link href="/" className="flex items-center gap-3 group hover:opacity-80 transition-opacity">
+          <Image src="/logo.png" alt="The Practical Engineer" width={36} height={36} className="rounded-lg shrink-0" />
+          <span className="font-bold text-white text-lg tracking-tight">The Practical Engineer</span>
         </Link>
         <button
           className="md:hidden text-slate-400 hover:text-white p-1"
@@ -173,11 +172,9 @@ export function Sidebar({ profile }: SidebarProps) {
     <>
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14 bg-slate-950 border-b border-slate-800">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600">
-            <PenLine className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-white text-base tracking-tight">Blog CMS</span>
+        <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+          <Image src="/logo.png" alt="The Practical Engineer" width={32} height={32} className="rounded-lg shrink-0" />
+          <span className="font-bold text-white text-base tracking-tight">The Practical Engineer</span>
         </Link>
         <button
           onClick={() => setMobileOpen(true)}

@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { NavAuthButton } from '@/components/NavAuthButton'
+import { HeaderSearch } from '@/components/HeaderSearch'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
 
@@ -7,17 +9,17 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-border/60 sticky top-0 z-50 bg-background/95 backdrop-blur-sm">
         <div className="container max-w-5xl mx-auto py-4 px-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="font-bold text-lg tracking-tight"
-            style={{ fontFamily: 'var(--font-playfair, serif)' }}
-          >
-            <span style={{ color: '#f59e0b' }}>✦</span> The Practical Engineer
+          <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <Image src="/logo.png" alt="The Practical Engineer" width={32} height={32} className="rounded-sm" priority />
+            <span
+              className="font-bold text-lg tracking-tight"
+              style={{ fontFamily: 'var(--font-playfair, serif)' }}
+            >
+              The Practical Engineer
+            </span>
           </Link>
-          <nav className="flex items-center gap-6 text-sm">
-            <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors text-xs uppercase tracking-widest">
-              Articles
-            </Link>
+          <nav className="flex items-center gap-4">
+            <HeaderSearch />
             <NavAuthButton />
           </nav>
         </div>

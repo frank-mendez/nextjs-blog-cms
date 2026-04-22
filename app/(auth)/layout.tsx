@@ -1,4 +1,4 @@
-import { PenLine } from 'lucide-react'
+import Image from 'next/image'
 
 export default function AuthLayout({
   children,
@@ -17,10 +17,10 @@ export default function AuthLayout({
       <div className="relative w-full max-w-md px-4 py-12 animate-page">
         {/* Brand mark */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 mb-4">
-            <PenLine className="w-7 h-7 text-white" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4">
+            <Image src="/logo.png" alt="The Practical Engineer" width={56} height={56} className="rounded-2xl" priority />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Blog CMS</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">The Practical Engineer</h1>
           <p className="text-slate-400 text-sm mt-1">Your content, beautifully managed</p>
         </div>
 

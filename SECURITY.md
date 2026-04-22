@@ -32,8 +32,8 @@ You can expect an acknowledgement within **72 hours** and a resolution or status
 ### Authentication
 
 - User authentication is handled by **Supabase Auth** (email/password and session-based).
-- All protected dashboard routes and API routes require a valid session or API key.
-- Server-side session helpers (`lib/auth/session.ts`) enforce authentication and redirect unauthenticated requests to `/login`.
+- Protected dashboard pages use session-based authentication, while API routes use the mechanism appropriate to each endpoint: some require a user session, some accept developer API keys, webhook endpoints validate an `x-webhook-secret`, and some endpoints are intentionally public (for example, rate-limited submission routes).
+- Server-side session helpers (`lib/auth/session.ts`) are used to enforce authentication for pages/layouts and redirect unauthenticated users to `/login`; API handlers use endpoint-specific auth checks instead of page redirects.
 
 ### Role-Based Access Control
 

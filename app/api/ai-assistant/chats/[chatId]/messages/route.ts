@@ -8,13 +8,13 @@ import { sendMessage, generateChatTitle, isRateLimitError } from '@/features/ai-
 import { getDecryptedApiKey } from '@/features/ai-assistant/llmKeyService'
 import type { LLMProvider } from '@/features/ai-assistant/types'
 
-type Params = { params: { chatId: string } }
+type Params = { params: Promise<{ chatId: string }> }
 
 /**
  * GET /api/ai-assistant/chats/[chatId]/messages
  */
 export async function GET(_req: NextRequest, { params }: Params) {
-  const { chatId } = params
+  const { chatId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -34,7 +34,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
  * Returns a streaming text/plain response (LLM reply chunks).
  */
 export async function POST(req: NextRequest, { params }: Params) {
-  const { chatId } = params
+  const { chatId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

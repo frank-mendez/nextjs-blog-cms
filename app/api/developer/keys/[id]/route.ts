@@ -6,16 +6,17 @@ import { revokeApiKey, deleteApiKey } from '@/features/api-keys/apiKeyService'
 
 export async function PATCH(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getProfile()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (!can(user.role as Role, 'api_keys:write')) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  if (!params.id) return NextResponse.json({ error: 'Key ID is required' }, { status: 400 })
+  const { id } = await params
+  if (!id) return NextResponse.json({ error: 'Key ID is required' }, { status: 400 })
 
   try {
-    await revokeApiKey(params.id, user.id)
+    await revokeApiKey(id, user.id)
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('[API] Failed to revoke key:', err instanceof Error ? err.message : String(err))
@@ -25,16 +26,17 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getProfile()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (!can(user.role as Role, 'api_keys:write')) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  if (!params.id) return NextResponse.json({ error: 'Key ID is required' }, { status: 400 })
+  const { id } = await params
+  if (!id) return NextResponse.json({ error: 'Key ID is required' }, { status: 400 })
 
   try {
-    await deleteApiKey(params.id, user.id)
+    await deleteApiKey(id, user.id)
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('[API] Failed to delete key:', err instanceof Error ? err.message : String(err))

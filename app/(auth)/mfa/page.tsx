@@ -18,9 +18,8 @@ export default function MfaChallengePage() {
   const [loading, setLoading] = useState(false)
   const [initializing, setInitializing] = useState(true)
 
-  const supabase = createClient()
-
   useEffect(() => {
+    const supabase = createClient()
     async function init() {
       const { data: factorData, error: factorsErr } = await supabase.auth.mfa.listFactors()
       if (factorsErr || !factorData.totp.length) {
@@ -55,6 +54,7 @@ export default function MfaChallengePage() {
     setLoading(true)
     setError(null)
 
+    const supabase = createClient()
     const { error: verifyErr } = await supabase.auth.mfa.verify({ factorId, challengeId, code })
     if (verifyErr) {
       setError('Invalid code — please try again')

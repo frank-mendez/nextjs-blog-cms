@@ -8,7 +8,7 @@ import { resolveTagIds, resolveCategoryId, generateUniqueSlugForApi } from '@/fe
 import { createServiceClient } from '@/lib/supabase/service'
 import type { LLMProvider } from '@/features/ai-assistant/types'
 
-type Params = { params: { chatId: string } }
+type Params = { params: Promise<{ chatId: string }> }
 
 /**
  * POST /api/ai-assistant/chats/[chatId]/generate-post
@@ -16,7 +16,7 @@ type Params = { params: { chatId: string } }
  * Returns: { post_id: string, post_slug: string }
  */
 export async function POST(_req: NextRequest, { params }: Params) {
-  const { chatId } = params
+  const { chatId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
